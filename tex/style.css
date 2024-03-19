@@ -1,0 +1,119 @@
+:root {
+    --dark-color: rgb(10,10,10);
+    --dark-color-2: rgb(50,50,50);
+    --light-color:white;
+    --light-color-2: rgb(245,245,245);
+}
+
+body {
+    margin: 0;
+    background-color: var(--light-color);
+}
+
+header {
+    margin: 0;
+    font-size: 2rem;
+    background-color: var(--light-color-2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.navigation_bar {
+    list-style-type: none;
+    margin: 1rem;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+}
+
+.svg_darkmode {
+    cursor: pointer;
+}
+
+.menu_grid {
+    display: flex;
+    justify-content: center;
+    max-width: 90%;
+    width: 60rem;
+    margin: auto;
+    padding-top: 4rem;
+    gap: 2rem;
+}
+
+.menu_grid_card {
+    text-align: center;
+    text-justify: center;
+    width: 40%;
+    height: 10rem;
+    overflow: hidden;
+    background-color: var(--light-color-2);
+    border-radius: 4rem;
+}
+
+.section {
+    max-width: 90%;
+    width: 60rem;
+    margin: auto;
+}
+
+.section-button {
+    transform: translateX(-0.6rem) translateY(-3.5rem) rotate(90deg);
+    margin: -18px;
+    cursor: pointer;
+    transition: transform 0.5s ease-in-out;
+}
+
+.section-collapsable {
+    display: block;
+    overflow: hidden;
+    max-height: fit-content;
+    transition: max-height 0.2s ease-in-out;
+}
+
+.collapse-button {
+    background-color: var(--light-color-2);
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: center;
+    outline: none;
+    font-size: 15px;
+}
+
+.small-button {
+    background-color: var(--light-color-2);
+    display: inline;
+    width:fit-content;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    border-radius: 0rem 0rem 0rem 0rem;
+    transition: border-radius 0.5s ease-in-out;
+}
+
+.active, .collapse-button:hover, .small-button:hover {
+    background-color: var(--light-color-2);
+}
+
+.subsection-collapsable {
+    display: block;
+    overflow: hidden;
+    max-height: 10vh;
+    transition: max-height 0.2s ease-in-out;
+}
+
+.subsection-mathematica {
+    background-color: var(--light-color-2);
+    display: block;
+    overflow: hidden;
+    max-height: 0vh;
+    border-radius: 1rem;
+    transition: max-height 0.2s ease-in-out;
+}

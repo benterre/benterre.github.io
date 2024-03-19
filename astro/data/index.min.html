@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Benjamin Suzzoni</title><script src="../chart.js/dist/chart.js"></script></head><body style="background-color:#000"><div style="width:50em;margin:auto"><div><div style="height:40vh;background-color:#4f4f4f"></div></div><div style="height:10em;margin:auto"><canvas id="myChart"></canvas></div></div><script>// function to download a CSV file from a remote location and extract a single line as a list
+        function extractLineFromRemoteCsv(url, lineIndex, callback) {
+            fetch(url)
+                .then(response => response.text())
+                .then(csv => {
+                const lines = csv.split('\n');
+                const matrix = lines.map(str => str.split(','));
+                const nthcolumn = matrix.map(arr => arr[lineIndex])
+                nthcolumn.shift()
+                callback(nthcolumn)
+            });
+        }
+
+        // usage example: extract the second line from a remote CSV file and log it to the console
+        extractLineFromRemoteCsv('./data.csv', 1, (nthcolumn) => {
+            const labelsCSV = nthcolumn;
+            extractLineFromRemoteCsv('./data.csv', 8, (nthcolumn) => {
+                const dataCSV = nthcolumn;
+
+                const ctx = document.getElementById('myChart');
+                const myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labelsCSV,
+                        datasets: [{
+                            label: 'RAError',
+                            data: dataCSV,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Tracking Data'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        },
+                        interaction: {
+                            intersect: false
+                        }
+                    }
+                });
+            });
+        });</script></body></html>

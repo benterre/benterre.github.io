@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Ubuntu:wght@700&display=swap');
+
+body {
+    background-color: white;
+    color: black;
+    overflow-y: hidden;
+}
+
+.adventcalendar {
+    width: 50em;
+    margin: auto;
+    margin-top: 4rem;
+}
+
+.adventcontainer {
+    position: fixed;
+    width: 30.5em;
+    height: 38rem;
+    margin-left: 9rem;
+    margin-top: 11rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+
+}
+
+.adventbox {
+    width: 5.7rem;
+    height: 7rem;
+}
+
+.adventbox:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.timer {
+    font-family: 'Open Sans', sans-serif;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 5rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+}
