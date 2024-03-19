@@ -1,0 +1,49 @@
+:root {
+    --dark-bg: rgba(15, 15, 15, 0.95);
+
+    font-family: brandon-grotesque, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+    background-color: black;
+    color: white;
+    overflow: inherit;
+}
+
+header {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 3em;
+    background-color: var(--dark-bg);
+    text-align: center;
+    user-select: none;
+
+    display: grid;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3em;
+    background-color: var(--dark-bg);
+    text-align: center;
+    user-select: none;
+}
+
+#papers_canvas {
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    background: transparent;
+    position: fixed;
+    z-index: -1;
+}

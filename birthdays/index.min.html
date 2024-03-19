@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><title>Itz yur birthday</title></head><body><div style="margin:auto;width:50%;text-align:center"><h1 id="birthdayTitle"></h1><div id="birthdayGIF" class="tenor-gif-embed" data-postid="7890844" data-share-method="host" data-aspect-ratio="1.33333" data-width="100%"></div><script type="text/javascript" async src="https://tenor.com/embed.js"></script></div><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script><script>const bdTitle = document.getElementById("birthdayTitle");
+        const bdGIF = document.getElementById("birthdayGIF");
+
+        const bdays = [{day: 8, month: 12, name: "Qventine", gif: "7890844"}, {day: 3, month: 1, name: "Cassup", gif: "8848340"}, {day: 9, month: 12, name: "Ben", gif: "13569904"}, {day: 22, month: 6, name: "Shadd", gif: "11918832"}, {day: 4, month: 12, name: "Corvus Capensis", gif: "13993337"}];
+        const today = new Date();
+        const date = {day: today.getDate(), month: today.getMonth()+1};
+
+        for (const bday of bdays) {
+            if (bday.day == date.day && bday.month == date.month) {
+                bdTitle.innerText = `Happy birthday ${bday.name}`;
+                bdGIF.setAttribute("data-postid", bday.gif);
+            }
+        }
+
+        const interval1 =setInterval(() => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 1 }
+            });
+        }, 500);
+        setTimeout(() => {
+            return clearInterval(interval1);
+        }, 10000);
+
+        setTimeout(() => {
+            const interval2 = setInterval(() => {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 1 }
+                });
+                confetti({
+                    particleCount: 100,
+                    angle: 0,
+                    spread: 70,
+                    origin: {x:0, y: 0.5 }
+                });
+                confetti({
+                    particleCount: 100,
+                    angle: 180,
+                    spread: 70,
+                    origin: {x:1, y: 0.5 }
+                });
+            }, 100);
+            setTimeout(() => {
+                return clearInterval(interval2);
+            }, 22000);
+        }, 20000);
+
+        var duration = 15 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            var particleCount = 50 * (timeLeft / duration);
+            // since particles fall down, start a bit higher than random
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+
+        var end = Date.now() + (15 * 1000);
+
+        // go Buckeyes!
+        var colors = ['#bb0000', '#ffffff'];
+
+        (function frame() {
+        confetti({
+            particleCount: 2,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: colors
+        });
+        confetti({
+            particleCount: 2,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: colors
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+        }());</script></body></html>

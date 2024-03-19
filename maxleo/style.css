@@ -1,0 +1,63 @@
+.mainpage {
+    max-width: 100vh;
+    margin: auto;
+    padding-bottom: 10rem;
+}
+
+a {
+    color: rgb(36, 36, 255);
+    text-decoration: none;
+}
+
+.html-structure-html {
+    margin: 0 auto;
+    padding: 5px;
+    border: black;
+    border-width: 2px;
+    border-style: solid;
+    width: 650px;
+    background-color: rgb(240, 240, 240);
+    font-size: 20px;
+}
+
+.html-structure-in {
+    margin: 15px;
+    padding: 5px;
+    border: black;
+    border-width: 2px;
+    border-style: solid;
+    font-size: 20px;
+}
+
+.html-structure-head{
+    background-color: rgb(230, 230, 230);
+}
+
+.html-structure-headinnerbox {
+    background-color: rgb(220, 220, 220);
+}
+
+.html-structure-headcontent {
+    background-color: rgb(210, 210, 210);
+}
+
+.html-structure-body {
+    background-color: rgb(230, 230, 230);
+}
+
+.html-structure-bodyinnerbox {
+    background-color: rgb(220, 220, 220);
+}
+
+.html-structure-bodycontent {
+    background-color: rgb(210, 210, 210);
+}
+
+.css-example-1 {
+    border-style: solid;
+    border-radius: 15px;
+    border-color: red;
+    background-image: url("https://cdn.vox-cdn.com/thumbor/VVXayrypyYIMqiHWIYdL77FRF_o=/1400x1400/filters:format(png)/cdn.vox-cdn.com/uploads/chorus_asset/file/22408516/Big_Chungus.png");
+    background-size: 150px;
+    color: white;
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="./prism/prism.css" rel="stylesheet"/>
+    <script src="https://tikzjax.com/v1/tikzjax.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <title>Tex</title>
+  </head>
+  <body>
+    <header>
+      <ul class="navigation_bar">
+        <li style="float: right;"><img id="svg-darkmode" class="svg_darkmode" src="../svg/dark_mode_black_48dp.svg" onclick="darkMode()"/></li>
+        <li>My \(\LaTeX\) Notes</li>
+      </ul>
+    </header>
+      <div class="menu_grid">
+        <a class="menu_grid_card" href="./alphabet/">
+          <h1>Symbols, alphabets</h1>
+          <p id="alphabet"></p>
+        </a>
+
+        <a class="menu_grid_card" href="./susy/">
+          <h1>Supersymmetry</h1>
+        </a>
+      </div>
+
+    <script src="./js/jquery.js"></script>
+    <script>
+      $(function(){
+        $("#alphabet").load("./alphabet/index.html #mainDescription"); 
+      });
+    </script>
+    <script src="./js/collapse.js"></script>
+    <script src="./js/dark-mode.js"></script>
+    <script src="./prism/prism.js"></script>
+  </body>
+</html>
