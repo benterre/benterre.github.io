@@ -1,9 +1,9 @@
 const arXivPapers = document.getElementById('arXivPapers');
 const arXivInput = document.getElementById('arXiv-input');
-var url = 'https://export.arxiv.org/api/query?search_query='+ 'holographic entanglement entropy' +'+AND+cat:hep-th+OR+cat:math-ph&sortBy=lastUpdatedDate';
+var url = 'https://export.arxiv.org/api/query?search_query='+ 'rigid supergravity' +'+AND+cat:hep-th+OR+cat:math-ph&sortBy=lastUpdatedDate';
 let timer;
 
-arXivInput.value = "holographic entanglement entropy"
+arXivInput.value = "rigid supergravity"
 
 getArXiv(url).catch(error => {
   console.log(error);
