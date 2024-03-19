@@ -1,0 +1,212 @@
+:root {
+    --dark-bg: rgba(15, 15, 15, 0.95);
+    --spacing: 350px;
+  
+    font-family: brandon-grotesque, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    overflow-x: hidden;
+    color: white;
+}
+
+.webgl {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+
+main {
+    width: 100vw;
+    z-index: 99;
+    position: absolute;
+    width: 100%;
+    margin: 0px auto;
+    padding: 120px 0px;
+    
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+}
+
+h1, h2, h3, blockquote {
+    font-family: elevon, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+a {
+    text-decoration: none;
+}
+
+.nav_background {
+    z-index: 0;
+    position: fixed;
+    right: 1rem;
+    top: 8rem;
+    width: 5rem;
+    height: 30rem;
+    background: var(--dark-bg);
+    border-radius: 3rem;
+}
+
+nav {
+    z-index: 100;
+    position: fixed;
+    right: 1rem;
+    top: 8rem;
+    width: 5rem;
+    background: transparent;
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing);
+
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+
+    border-radius: 3rem;
+
+    justify-content: center;
+}
+
+#nav_canvas {
+    z-index: 5;
+    right: 1rem;
+    top: 8rem;
+    width: 5rem;
+    height: 70%;
+    background: transparent;
+    position: fixed;
+}
+
+.nav_bubble {
+    border-radius: 3rem;
+    background-color: transparent;
+    text-align: center;
+    width: 4rem;
+    height: 4rem;
+    margin: 1rem;
+    user-select: none;
+}
+
+.nav_bubble:hover {
+    cursor: pointer;
+}
+
+#nav_quiz {
+    border-radius: 3rem;
+    z-index: 100;
+    position: fixed;
+    top: 40rem;
+    right: 1rem;
+    height: 5rem;
+    width: 5rem;
+    background-color: transparent;
+    font-size: 2.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+#nav_quiz_bubble {
+    width: 4rem;
+    height: 4rem;
+    text-align: center;
+    justify-content: center;
+    border-radius: 2rem;
+    margin: auto;
+    margin-top: 0.5rem;
+}
+
+#nav_quiz_bubble:hover {
+    background-color: white;
+    cursor: pointer;
+}
+
+header {
+    background: var(--dark-bg);
+    grid-column: 2 / span 5;
+    font-size: 2.5rem;
+    padding: 2rem;
+    margin-bottom: var(--spacing);
+    width: 50rem;
+    border-radius: 3rem;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+header section {
+    font-size: 2.5rem;
+    height: 11rem;
+}
+
+section {
+    grid-column: 2 / 8;
+    padding: 1rem;
+    background: var(--dark-bg);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing);
+    border-radius: 3rem;
+}
+
+blockquote {
+    margin: 0;
+    padding: 0;
+    grid-column: 2 / span 8;
+    margin-bottom: var(--spacing);
+    text-align: center;
+}
+
+blockquote p {
+    color: black;
+    background-color: white;
+    font-size: 4rem;
+    display: inline;
+    line-height: 1;
+}
+
+.right {
+    grid-column: 6 / 12;
+}
+
+.svgTitle {
+    margin-top: 1rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+}
+
+.svgTitle div {
+    height: 3rem;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+footer {
+    background: var(--dark-bg);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    color: black;
+    text-align: center;
+    background-color: white;
+    font-size: 2.5rem;
+    padding: 2rem;
+    margin-bottom: 0;
+}
+
+@media all and (orientation: portrait) {
+    header {
+        grid-column: 2 / span 10;
+    }
+    section {
+        grid-column: 2 / 11;
+    }
+    .right {
+        grid-column: 2 / 11;
+    }
+}
+
+/*# sourceMappingURL=main.css.map*/
