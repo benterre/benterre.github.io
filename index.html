@@ -38,20 +38,18 @@
                 </div>
             </nav>
             <div class="nav_background" style="top: 40rem; height: 5rem; z-index: 5;"></div>
-            <div id="nav_quiz">
+            <!--<div id="nav_quiz">
                 <div onclick="location.href='./quiz'" id="nav_quiz_bubble">
                     <img src="./media/svg/g4186.svg" alt="🕵️‍♀️" style="width: 3rem; margin-top: 0.5rem;">
-                </div>
+                </div>-->
             </div>
-            <header id="section_header">
+            <section id="section_header">
                 <section style="grid-column: 1;">
                     <h1>Benjamin Suzzoni</h1>
                     <p>PhD Student in Theoretical Physics at the University of Southampton</p>
                 </section>
-                <section style="grid-column: 2;">
-                    <img src="media/Profile_picture.jpeg" alt="Suzzoni Picture" style="width: 100%; border-radius: 3rem;">
-                </section>
-            </header>
+                <img src="media/Profile_picture.jpeg" alt="Suzzoni Picture">
+            </section>
             <blockquote>
                 <p>\( \omega = d\alpha + d^\dagger\beta + \gamma \)<br>\(d\gamma = d^\dagger\gamma = 0\)</p>
             </blockquote>
@@ -64,13 +62,11 @@
                         Research interests
                     </div>
                 </div>
-                <h3><b>AdS/CFT</b> - <b>M-Theory</b> - <b>SUGRA</b></h3>
-                <p>Under the supervision of Andy O'Bannon and together with Pietro Capuozzo, we are currently interested in computing the holographic entanglement entropy of CFTs with defects. In the context of <b>String Theory</b> and <b>AdS/CFT</b>, these are holographically described by brane configurations in which some branes end on others.</p>
-                <p>The curious among us might ask: "why do we care?". If one were to ask me this question I would probably roll my eyes in disbelief before suggesting the following:</p>
-                <ul>
-                    <li>It's fun! I would never turn down an opportunity to learn fascinating things!</li><br>
-                    <li>The holographic entanglement entropy formula is to this date still unproven for the most general cases. However, its usefulness is undeniable as it allows us to relate CFT quantities on the boundary with geometrical ones in the bulk. If we have a good understanding of the bulk configuration, we are thus able to derive possibly new properties of the CFT. This can be more explicitly shown with the case of an M2-M5 brane configuration. Indeed, in this case the low energy effective field theory of the M5 being unknown, any CFT information we can derive from this configuration can help us build said effective field theory.</li>
-                </ul>
+                <h3><b>Gauge Theories</b> - <b>AdS/CFT</b> - <b>M-Theory</b> - <b>SUGRA</b></h3>
+                <p>Currently in under the supervision of <a href="https://inspirehep.net/authors/1039816">Itamar Yaakov</a> and together with <a href="https://inspirehep.net/authors/2054645">Pietro Capuozzo</a>, we are currently interested in a peculiar relationship between the superconformal index and the twisted index of 4d \(\mathcal{N}=2\) SCFTs.</p>
+                    
+                <p>My interest also lies in computing the holographic entanglement entropy of CFTs with defects. This started when under the supervision of <a href="https://inspirehep.net/authors/1034576">Andy O'Bannon</a>. In the context of <b>String Theory</b> and <b>AdS/CFT</b>, these are holographically described by brane configurations in which some branes end on others.</p>
+                <!--
                 <p>For those who wish for more details you can head to the <a href="./research?lvl=university">My Research</a> section of the website.</p>
                 <p>If all this is utter gibberish to you then please head to the <a href="./research?lvl=family">family friendly</a> section.</p>
                 </br>
@@ -80,11 +76,15 @@
                         
                     </div>
                 </div>
+                -->
+                <br>
+                <h3><b>A selection of my papers</b></h3>
+                WIP
             </section>
             <section class="right"  id="section_education">
                 <div class="svgTitle">
                     <div>
-                        <img src="./media/svg/g15216.svg" alt="🎓" style="width: 2.5rem; margin-top: 0.3rem;">
+                        <img class="sectionLogo" src="./media/svg/g15216.svg" alt="🎓">
                     </div>
                     <div>
                         Education
@@ -95,7 +95,7 @@
                 <h3>2020 - 2021: MSc Imperial College London: QFFF</h3><br>
                 <img src="https://www.imperial.ac.uk/ImageCropToolT4/imageTool/uploaded-images/homepage-default-social--tojpeg_1523872141375_x1.jpg" alt="Imperial College London" style="width: 100%; border-radius: 3rem;"><br><br>
                 <h3>2021 - Time.now(): PhD University of Southampton: Theoretical Physics</h3><br>
-                <img src="https://www.southampton.ac.uk/sites/default/files/styles/banner_medium/public/2020-06/aerial-view-highfield-sunny-day.jpg" alt="University of Southampton" style="width: 100%; border-radius: 3rem;">
+                <img src="media/university-of-southampton.jpg" alt="University of Southampton" style="width: 100%; border-radius: 3rem;">
             </section>
             <blockquote>
                 <p>\( S_{\text{EE}} = A(\gamma_{\text{RT}}) / (4G_N) \)</p>
@@ -103,7 +103,7 @@
             <section  id="section_accomplishments">
                 <div class="svgTitle">
                     <div>
-                        <img src="./media/svg/g13924.svg" alt="🛫" style="width: 2.5rem; margin-top: 0.3rem;">
+                        <img class="sectionLogo" src="./media/svg/g13924.svg" alt="🛫">
                     </div>
                     <div>
                         Summer Schools and Conferences
@@ -132,7 +132,7 @@
             <section class="right"  id="section_hobbies">
                 <div class="svgTitle">
                     <div>
-                        <img src="./media/svg/g15458.svg" alt="🎸" style="width: 2.5rem; margin-top: 0.3rem;">
+                        <img class="sectionLogo" src="./media/svg/g15458.svg" alt="🎸">
                     </div>
                     <div>
                         Hobbies
@@ -156,14 +156,8 @@
                     <li>Hand-gesture-based volume control through a webcam using openCV</li>
                     <li>This website</li>
                 </ul>
-                <h3>Gymnastics</h3>
-                I've been practicing gymnastics for many years now. I'm not immensely good at it but I enjoy it, and that's all that matters.
-                <h3>Blender</h3>
-                Blender is a free software for modeling, animating and rendering. One can use it to create photorealist art or fun 2D animations.<br>
-                Lately, I haven't been using Blender that much but here's my favorite render from a few years ago.<br>
-                <br>
-                <img src="media/Suzzoni_monthly_challenge.jpg" alt="Cute Warrior Monthly Challenge" style="width: 100%; border-radius: 3rem;">
             </section>
+            <section></section>
             <footer>
                 <a href="mailto:b.suzzoni@soton.ac.uk">b.suzzoni@soton.ac.uk</a><br>
                 <p>B46, West Highfield Campus,<br>University Road, SO17 1BJ</p>

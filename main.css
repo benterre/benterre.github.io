@@ -1,6 +1,6 @@
 :root {
-    --dark-bg: rgba(15, 15, 15, 0.95);
-    --spacing: 350px;
+    --dark-bg: rgba(62, 62, 62, 0.548);
+    --spacing: 10rem;
   
     font-family: brandon-grotesque, sans-serif;
     font-weight: 400;
@@ -38,7 +38,20 @@ h1, h2, h3, blockquote {
 }
 
 a {
-    text-decoration: none;
+    text-decoration: none; /* Keeps your current style without underlining */
+    color: #000000; /* Set the default color for unvisited links */
+}
+
+a:visited {
+    color: #555555; /* Set the color for visited links */
+}
+
+a:hover {
+    color: #FF5733; /* Set the color when the link is hovered over */
+}
+
+a:active {
+    color: #C70039; /* Set the color when the link is clicked (active) */
 }
 
 .nav_background {
@@ -50,6 +63,8 @@ a {
     height: 30rem;
     background: var(--dark-bg);
     border-radius: 3rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 nav {
@@ -123,31 +138,66 @@ nav {
     cursor: pointer;
 }
 
-header {
-    background: var(--dark-bg);
-    grid-column: 2 / span 5;
-    font-size: 2.5rem;
-    padding: 2rem;
+#section_header {
+    grid-column: 3 / span 5;
+    font-size: 1.5rem;
+    padding: 1rem;
     margin-bottom: var(--spacing);
     width: 50rem;
-    border-radius: 3rem;
+    height: 30rem;
+    border-radius: 2rem;
 
     display: grid;
     grid-template-columns: 1fr 1fr;
+    align-items: start;
 }
-header section {
+#section_header section {
     font-size: 2.5rem;
-    height: 11rem;
+    background:transparent;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Ensures content stays at the top */
+    padding-top: 0; /* Adjusts padding if needed */
+    margin: 0;
+}
+
+#section_header img {
+    grid-column: 2;
+    height: 30rem; /* Full height of the section */
+    width: 100%; /* Full width of the section */
+    object-fit: cover; /* Ensure the image covers the area */
+    object-position: center 30%; /* Crop from the center */
+    border-radius: 3rem; /* Apply the border-radius to the image */
 }
 
 section {
+    background: var(--dark-bg);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+
     grid-column: 2 / 8;
     padding: 1rem;
-    background: var(--dark-bg);
-    font-size: 1.25rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.1;
     margin-bottom: var(--spacing);
-    border-radius: 3rem;
+    border-radius: 2rem;
+}
+
+#section_education img {
+    height: 10rem; /* Full height of the section */
+    width: 100%; /* Full width of the section */
+    object-fit: cover; /* Ensure the image covers the area */
+    object-position: center 30%; /* Crop from the center */
+    border-radius: 3rem; /* Apply the border-radius to the image */
+}
+
+#section_accomplishments img {
+    height: 10rem; /* Full height of the section */
+    width: 100%; /* Full width of the section */
+    object-fit: cover; /* Ensure the image covers the area */
+    object-position: center 30%; /* Crop from the center */
+    border-radius: 3rem; /* Apply the border-radius to the image */
 }
 
 blockquote {
@@ -183,8 +233,19 @@ blockquote p {
     font-weight: bold;
 }
 
+.sectionLogo {
+    width: 2.5rem;
+    height: auto;
+    margin-top: 0.3rem;
+    object-fit: unset;
+    object-position: unset;
+    border-radius: 0;
+}
+
 footer {
     background: var(--dark-bg);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     left: 0;
     right: 0;
     bottom: 0;
