@@ -1,0 +1,16 @@
+{
+  "name": "benterre.com",
+  "theme_color": "#7a9ecb",
+  "background_color": "#bababa",
+  "short_name": "benterre",
+  "display": "browser",
+  "orientation": "any",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "128x128"
+    }
+  ]
+}
