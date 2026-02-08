@@ -12,7 +12,7 @@ body {
 
 header {
     margin: 0;
-    font-size: 2rem;
+    font-size: 5rem;
     background-color: var(--light-color-2);
     display: flex;
     justify-content: center;
@@ -24,6 +24,41 @@ a {
     color: inherit;
 }
 
+main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 5px;
+    align-items: start;
+    align-items: center;
+}
+
+.main-div {
+    background-color: var(--light-color-2);
+    border-radius: 4px;
+    margin: 20px;
+}
+
+.main-div a {
+    text-align: center;
+    text-justify: center;
+    width: 40%;
+    height: 10rem;
+    overflow: hidden;
+    background-color: var(--light-color-2);
+    border-radius: 4rem;
+}
+
+.main-div a img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* fills box without distortion */
+    object-position: center; /* crop centered */
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
 .navigation_bar {
     list-style-type: none;
     margin: 1rem;
@@ -33,6 +68,7 @@ a {
 }
 
 .svg_darkmode {
+    height: 25px;
     cursor: pointer;
 }
 
@@ -46,20 +82,10 @@ a {
     gap: 2rem;
 }
 
-.menu_grid_card {
-    text-align: center;
-    text-justify: center;
-    width: 40%;
-    height: 10rem;
-    overflow: hidden;
-    background-color: var(--light-color-2);
-    border-radius: 4rem;
-}
-
 .section {
     max-width: 90%;
     width: 60rem;
-    margin: auto;
+    margin: 0px auto 100px auto;
 }
 
 .section-button {
@@ -74,6 +100,8 @@ a {
     overflow: hidden;
     max-height: fit-content;
     transition: max-height 0.2s ease-in-out;
+    padding-left: 10px;
+    border-left: 5px solid rgba(128, 128, 128, 0.658);
 }
 
 .collapse-button {
@@ -116,4 +144,76 @@ a {
     max-height: 0vh;
     border-radius: 1rem;
     transition: max-height 0.2s ease-in-out;
+}
+
+.figure {
+    width:90%;
+    display: block;
+    justify-content: center;
+    margin: 40px;
+}
+
+.figure img {
+    display: block;
+    width: 90%;
+    margin: auto;
+}
+
+.figure-2, .figure-3, .figure-4, .figure-1-2 {
+    display: grid;
+    width: 90%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    justify-content: center;
+}
+.figure-2 {grid-template-columns: repeat(2, 1fr);}
+.figure-3 {grid-template-columns: repeat(3, 1fr);}
+.figure-4 {grid-template-columns: repeat(4, 1fr);}
+.figure-1-2 {grid-template-columns: 1fr 2fr;}
+
+
+.figure-2 img,.figure-3 img,.figure-4 img,.figure-1-2 img {
+    width: 100%;
+    height: 100%;
+    /* Ensures images maintain aspect ratio without stretching */
+    object-fit: cover;
+    /* Ensures proper scaling within the grid context */
+    min-width: 0; 
+    min-height: 0;
+}
+
+.green-box {
+    width: 95%;
+    justify-content: center;
+    padding: 10px 20px;
+    background: rgba(0, 128, 0, 0.3);
+    border-left: 7px solid rgba(0, 128, 0, 0.511);
+}
+
+.red-box {
+    width: 95%;
+    justify-content: center;
+    padding: 10px 20px;
+    background: rgba(128, 0, 0, 0.3);
+    border-left: 7px solid rgba(128, 0, 0, 0.493);
+}
+
+.purple-box {
+    width: 95%;
+    justify-content: center;
+    padding: 10px 20px;
+    background: rgba(113, 0, 128, 0.3);
+    border-left: 7px solid rgba(113, 0, 128, 0.493);
+}
+
+@media all and (min-aspect-ratio: 16/10) {
+    .main-div {
+        flex: 33.33%;
+    }
+}
+
+@media all and (max-aspect-ratio: 1/1) {
+    .main-div {
+        flex: 100%
+    }
 }

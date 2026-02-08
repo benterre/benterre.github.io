@@ -4,170 +4,219 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Benjamin Suzzoni</title>
-        <script defer="defer" src="bundle.a0afea05f8a58defbb81.js"></script>
-        <script src="https://tikzjax.com/v1/tikzjax.js"></script>
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-        <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-        <script type="text/javascript" src="paper-full.min.js"></script>
-        <script type="text/paperscript" src="paper_navbar.js" canvas="nav_canvas"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-        <script src=" https://cdn.jsdelivr.net/npm/pdfjs-dist@3.3.122/build/pdf.min.js "></script>
-        <link href=" https://cdn.jsdelivr.net/npm/pdfjs-dist@3.3.122/web/pdf_viewer.min.css " rel="stylesheet">
+        <!--<script src="https://tikzjax.com/v1/tikzjax.js"></script>-->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
         <link href="main.css" rel="stylesheet">
+        <link rel="manifest" href="manifest.json">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="benterre">
+        <meta name="apple-mobile-web-app-title" content="benterre">
+        <meta name="theme-color" content="#7a9ecb">
+        <meta name="msapplication-navbutton-color" content="#7a9ecb">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" type="image/x-icon" sizes="128x128" href="favicon.ico">
+        <link rel="apple-touch-icon" type="image/x-icon" sizes="128x128" href="favicon.ico">
+        <script type="importmap">
+        {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+        }
+        }
+        </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
     </head>
+
+    <!-- Background CY 3-fold (so-cool) -->
+    <!--<canvas id="cy-canvas" class="CY hide-small"></canvas>-->
     <body>
-        <canvas id="threejs-canvas" class="webgl"></canvas>
-        <main>
-            <canvas id="nav_canvas"></canvas>
-            <div class="nav_background"></div>
-            <nav>
-                <div id="nav_header" class="nav_bubble">
-                    <img src="./media/svg/g9022.svg" alt="🌍" style="width: 3rem; margin-top: 0.5rem;">
+        <header>
+            <!-- NAVBAR -->
+            <div class="navbar-desktop debug-border">
+                <div class="navbar-div debug-border">
+                    <a href="/" class="navbar_item button hide-small debug-border">About</a>
+                    <!--<a href="tex" class="navbar_item button hide-small debug-border">Notes</a>
+                    <a href="photos" class="navbar_item button hide-small debug-border">Photos</a>-->
+                    <a href="Astro" class="navbar_item button hide-small debug-border">Astro</a>
                 </div>
-                <div id="nav_research" class="nav_bubble">
-                    <img src="./media/svg/g16130.svg" alt="📚" style="width: 3rem; margin-top: 0.5rem;">
-                </div>
-                <div id="nav_education" class="nav_bubble">
-                    <img src="./media/svg/g15216.svg" alt="🎓" style="width: 3rem; margin-top: 0.5rem;">
-                </div>
-                <div id="nav_accomplishments" class="nav_bubble">
-                    <img src="./media/svg/g13924.svg" alt="🛫" style="width: 3rem; margin-top: 0.5rem;">
-                </div>
-                <div id="nav_hobbies" class="nav_bubble">
-                    <img src="./media/svg/g15458.svg" alt="🎸" style="width: 3rem; margin-top: 0.5rem;">
-                </div>
-            </nav>
-            <div class="nav_background" style="top: 40rem; height: 5rem; z-index: 5;"></div>
-            <!--<div id="nav_quiz">
-                <div onclick="location.href='./quiz'" id="nav_quiz_bubble">
-                    <img src="./media/svg/g4186.svg" alt="🕵️‍♀️" style="width: 3rem; margin-top: 0.5rem;">
-                </div>-->
             </div>
-            <section id="section_header">
-                <section style="grid-column: 1;">
-                    <h1>Benjamin Suzzoni</h1>
-                    <p>PhD Student in Theoretical Physics at the University of Southampton</p>
-                </section>
-                <img src="media/Profile_picture.jpeg" alt="Suzzoni Picture">
-            </section>
-            <blockquote>
-                <p>\( \omega = d\alpha + d^\dagger\beta + \gamma \)<br>\(d\gamma = d^\dagger\gamma = 0\)</p>
-            </blockquote>
-            <section id="section_research">
-                <div class="svgTitle">
-                    <div>
-                        <img src="./media/svg/g16130.svg" alt="📚" style="width: 2.5rem; margin-top: 0.3rem;">
+            
+            <!-- NAVBAR on small screens -->
+            <div class="navbar-mobile hide">
+                <a href="/" class="navbar_item button padding-12-24" onclick="navBarMobile()">About</a>
+                <!--<a href="tex" class="navbar_item button padding-12-24" onclick="navBarMobile()">Notes</a>
+                <a href="photos" class="navbar_item button padding-12-24" onclick="navBarMobile()">Photos</a>-->
+                <a href="Astro" class="navbar_item button padding-12-24" onclick="navBarMobile()">Astro</a>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main-content margin-top-75">
+
+            <!-- Top banner -->
+            <div id="top_banner" class="main-content-div center debug-border div-max-width-720">
+                <div class="div-2-columns center padding-24-48 debug-border">
+                    <div class="div-half-width left">
+                        <h1>Benjamin Suzzoni</h1>
+                        <p>Researcher in theoretical physics</p>
                     </div>
-                    <div>
+                    <div class="div-half-width">
+                        <img src="media/hike.jpg" alt="Suzzoni Picture" class="profile-picture">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section seperation -->
+            <div class="div-height-400 div-image debug-border">
+                <img src="media/fuji.JPG" alt="Mount Fuji">
+            </div>
+            <!--
+            <div class="main-content-div center debug-border">
+                <blockquote class="debug-border">
+                    <p>\( \omega = d\alpha + d^\dagger\beta + \gamma \)<br>\(d\gamma = d^\dagger\gamma = 0\)</p>
+                </blockquote>
+            </div>
+            -->
+
+            <!-- Research Interests -->
+            <div id="section_research" class="main-content-div debug-border">
+                <div class="inner-div debug-border">
+                    <h1>
                         Research interests
-                    </div>
+                    </h1>
+                    <h2>
+                        Superconformal field theory (SCFT)
+                    </h2>
+                    <p>
+                        Superconformal field theories are uniquely positioned in the space of field theories. The cancellation between fermionic and bosonic contributions leads to many computations being attainable analytically. Being interconnected by webs of dualities across energy scales and dimensions, these theories enable us to tackle old problems in novel ways.
+                    </p>
+                    <p>
+                        Their tight connection with topological invariants of manifolds, and mirror symmetry of Calabi-Yau vareities also makes them uniquely interesting from a Mathematicians's perspective.
+                    </p>
+                    <p>
+                        I've been interested in finding new properties of the superconformal index of certain SCFTs. This can be approached from a background supergravity perspective (Festuccia-Seiberg), or by looking at properties of its UV construction, say for D3-branes probing a toric Calabi-Yau 3-fold.
+                    </p>
+                    <h2>
+                        Holography or AdS/CFT
+                    </h2>
+                    <p>
+                        The anti-de-Sitter/conformal field theory (AdS/CFT) correspondence has introduced novel ways of studying the strong-coupling regime of SCFTs. By leveraging its weak form, we can study strongly-coupled SCFTs at large rank using classical supergravity.
+                    </p>
+                    <p>
+                        This is the standard approach used in computing holographic entanglement entropy and large-\(N\) limits of the superconformal index.
+                    </p>
+                    <h2>
+                        Machine Learning (ML)
+                    </h2>
+                    <p>
+                        Machine learning applications in high-energy Physics have seen a huge surge in the past decade. Due to ML's usefulness in studying systems with large symmetries, it has vertue of become a ubiquitous tool for Physicists.
+                    </p>
                 </div>
-                <h3><b>Gauge Theories</b> - <b>AdS/CFT</b> - <b>M-Theory</b> - <b>SUGRA</b></h3>
-                <p>Currently in under the supervision of <a href="https://inspirehep.net/authors/1039816">Itamar Yaakov</a> and together with <a href="https://inspirehep.net/authors/2054645">Pietro Capuozzo</a>, we are currently interested in a peculiar relationship between the superconformal index and the twisted index of 4d \(\mathcal{N}=2\) SCFTs.</p>
-                    
-                <p>My interest also lies in computing the holographic entanglement entropy of CFTs with defects. This started when under the supervision of <a href="https://inspirehep.net/authors/1034576">Andy O'Bannon</a>. In the context of <b>String Theory</b> and <b>AdS/CFT</b>, these are holographically described by brane configurations in which some branes end on others.</p>
-                <!--
-                <p>For those who wish for more details you can head to the <a href="./research?lvl=university">My Research</a> section of the website.</p>
-                <p>If all this is utter gibberish to you then please head to the <a href="./research?lvl=family">family friendly</a> section.</p>
-                </br>
-                <div>
-                    <h3>Latest papers on <input type="text" id="arXiv-input" value="holographic entanglement entropy" style="display:inline; border:none; font-family:inherit; font-size:1em; font-weight:bold; padding:none; width:24rem; background-color:inherit; color:inherit;"> on the arXiv</h3>
-                    <div id="arXivPapers" style="display: flex; flex-wrap: wrap;">
-                        
-                    </div>
+            </div>
+
+            <!-- Recent Publications -->
+            <div id="section_education" class="main-content-div center debug-border">
+                <h1>
+                    Publications
+                </h1>
+                <br><br>
+                <!-- Caroussel WIP -->
+                <div class="swiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide"><a href="https://arxiv.org/pdf/2512.19688"><img src="media/2512.19688.png"></a></div>
+                    <div class="swiper-slide"><a href="https://arxiv.org/pdf/2512.07946"><img src="media/2512.07946.png"></a></div>
+                    <div class="swiper-slide"><a href="https://inspirehep.net/files/a0fce9d1f8d929d0d666b89cd1d49166"><img src="media/25-thesis.png"></a></div>
+                    <div class="swiper-slide"><a href="https://arxiv.org/pdf/2409.15251"><img src="media/2409.15251.png"></a></div>
+                    <div class="swiper-slide"><a href="https://arxiv.org/pdf/2402.11745"><img src="media/2402.11745.png"></a></div>
+                    <div class="swiper-slide"><a href="https://arxiv.org/pdf/2310.17447"><img src="media/2310.17447.png"></a></div>
                 </div>
-                -->
+                </div>
+            </div>
+            
+            <!-- Section seperation -->
+            <div class="div-height-400 div-image debug-border">
+                <img src="media/norway.jpg" alt="Auroras in Norway">
+            </div>
+            <!--<div class="main-content-div center debug-border">
+                <blockquote class="debug-border">
+                    <p>\( S_{\text{EE}} = \frac{A(\gamma_{\text{RT}})}{4G_N} \)</p>
+                </blockquote>
+            </div>
+            -->
+
+            <!-- Past positions  -->
+            <div  id="section_positions" class="main-content-div center debug-border">
+                <h1>Past positions</h1>
                 <br>
-                <h3><b>A selection of my papers</b></h3>
-                WIP
-            </section>
-            <section class="right"  id="section_education">
-                <div class="svgTitle">
-                    <div>
-                        <img class="sectionLogo" src="./media/svg/g15216.svg" alt="🎓">
-                    </div>
-                    <div>
-                        Education
-                    </div>
-                </div>
-                <h3>2016 - 2020: MPhys University of Manchester: Physics with Astrophysics</h3><br>
-                <img src="https://content.presspage.com/uploads/1369/universityofmanchester-845224.jpg" alt="The University of Manchester" style="width: 100%; border-radius: 3rem;"><br><br>
-                <h3>2020 - 2021: MSc Imperial College London: QFFF</h3><br>
-                <img src="https://www.imperial.ac.uk/ImageCropToolT4/imageTool/uploaded-images/homepage-default-social--tojpeg_1523872141375_x1.jpg" alt="Imperial College London" style="width: 100%; border-radius: 3rem;"><br><br>
-                <h3>2021 - Time.now(): PhD University of Southampton: Theoretical Physics</h3><br>
-                <img src="media/university-of-southampton.jpg" alt="University of Southampton" style="width: 100%; border-radius: 3rem;">
-            </section>
-            <blockquote>
-                <p>\( S_{\text{EE}} = A(\gamma_{\text{RT}}) / (4G_N) \)</p>
-            </blockquote>
-            <section  id="section_accomplishments">
-                <div class="svgTitle">
-                    <div>
-                        <img class="sectionLogo" src="./media/svg/g13924.svg" alt="🛫">
-                    </div>
-                    <div>
-                        Summer Schools and Conferences
-                    </div>
-                </div>
-                <a href="https://indico.ictp.it/event/9784/" style="color: inherit;">
-                    <h3>Spring School on Superstring Theory and Related Topics</h3>
-                    <img src="https://indico.ictp.it/event/9784/material/2/0.jpg" alt="ICTP" style="width: 100%; border-radius: 3rem;">
-                </a>
-                <a href="https://www.ggi.infn.it/showevent.pl?id=427" style="color: inherit;">
-                    <h3>Reconstructing the Gravitational Hologram with Quantum Information - Training Week</h3>
-                    <img src="https://www.ggi.infn.it/eventfiles/imgs/img427.jpg" alt="GGI" style="width: 100%; border-radius: 3rem;">
-                </a>
-                <a href="https://sites.google.com/view/busstepp22" style="color: inherit;">
-                    <h3>BUSSTEPP 2022</h3>
-                    <img src="/media/BUSSTEPP.jpg" alt="BUSSTEPP" style="width: 100%; border-radius: 3rem;">
-                </a>
-                <a href="https://gravity-prague.fzu.cz/" style="color: inherit;">
-                    <h3>Gravity@Prague 2022</h3>
-                    <img src="media/prague.jpg" alt="Charles Bridge" style="width: 100%; border-radius: 3rem;">
-                </a>
-            </section>
-            <blockquote>
-                <p>\(\int_{\mathcal{M}}d\omega = \int_{\partial\mathcal{M}}\omega\)</p>
-            </blockquote>
-            <section class="right"  id="section_hobbies">
-                <div class="svgTitle">
-                    <div>
-                        <img class="sectionLogo" src="./media/svg/g15458.svg" alt="🎸">
-                    </div>
-                    <div>
-                        Hobbies
-                    </div>
-                </div>
-                <h3>Astrophotography</h3>
-                Astrophotography consists in capturing images of stellar objects. The scope of possible targets ranges from the whole Milky Way, with landscape astrophotography, to the faintest and smallest objects in the night sky, with deep-sky astrophotography. My main interest relies in the latter. Whenever I find the time I set up my telescope to capture some of these faint celestial objects. Below you can see four pictures I took with a DSLR through my 1500mm focal length telescope.<br>
                 <br>
-                <div style="grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;">
-                    <img src="astro/images/Suzzoni_M42.jpg" alt="M42" style="width: 49%; border-top-left-radius: 3rem;">
-                    <img src="astro/images/Suzzoni_M33.jpg" alt="M33" style="width: 49%; border-top-right-radius: 3rem;">
-                    <img src="astro/images/Suzzoni_NGC1435.jpg" alt="NGC1435" style="width: 49%; border-bottom-left-radius: 3rem;">
-                    <img src="astro/images/Suzzoni_M27.jpg" alt="M27" style="width: 49%; border-bottom-right-radius: 3rem;">
+                <!-- Right: 3JS Globe, Left: timeline -->
+                <div class="div-2-columns debug-border">
+                    <div class="planet" id="planet"></div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-date">2025 – now</div>
+                            <div class="timeline-content">
+                                <p>Postdoctoral researcher, UNIST.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-date">2021 – 2025</div>
+                            <div class="timeline-content">
+                                <p>PhD, Southampton.</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                You can see more details about my astro-ventures in the <a href="./astro">Astro</a> section.
-                <h3>Programming</h3>
-                I also enjoy programming quite a bit. I am clearly far from being a good programmer but I have, nevertheless, experienced programming in many languages: C++, JS, Python, Wolfram Language.<br>
-                Here a few examples of projects I have coded:
-                <ul>
-                    <li>Deep Neural Network for Japanese character recognition using tensorflow</li>
-                    <li>Hand-gesture-based volume control through a webcam using openCV</li>
-                    <li>This website</li>
-                </ul>
-            </section>
-            <section></section>
-            <footer>
-                <a href="mailto:b.suzzoni@soton.ac.uk">b.suzzoni@soton.ac.uk</a><br>
-                <p>B46, West Highfield Campus,<br>University Road, SO17 1BJ</p>
-                <a href="https://www.linkedin.com/in/benjamin-suzzoni/"><img src="media/LinkedIn_icon.svg" alt="LinkedIn" style="width: 2em;"></a>&nbsp;&nbsp;&nbsp;
-                <a href="https://orcid.org/0000-0002-3941-0256"><img src="media/ORCID_iD.svg" alt="ORCID" style="width: 2em;"></a>
-            </footer>
+            </div>
+
+            <!-- Section seperation 
+            <div class="main-content-div center debug-border">
+                <blockquote class="debug-border">
+                    <p>\(\int_{\mathcal{M}}d\omega = \int_{\partial\mathcal{M}}\omega\)</p>
+                </blockquote>
+            </div>
+            -->
+
+            <div class="main-content-div"></div>
+                
         </main>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="footer-div debug-border">
+                <div class="div-2-columns padding-24-48 debug-border">
+                    <div class="div-half-width padding-24-48 debug-border">
+                        <a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a><br>
+                        <p>
+                            Department of Mathematical Sciences<br>
+                            Ulsan National Institute of Science and Technology (UNIST)
+                        </p>
+                        <p>
+                            50 UNIST-gil, Ulsan, 44919, South Korea
+                        </p>
+                    </div>
+                    <div class="div-full-width debug-border">
+                        <iframe width="500" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?hl=en&amp;q=Ulsan%20National%20Institue%20of%20Science%20and%20Techonology+(UNIST)&amp;t=&amp;z=12&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"></iframe>
+                    </div>
+                </div>
+                <div class="footer-social padding-24-48 debug-border">
+                    <a href="https://www.linkedin.com/in/benjamin-suzzoni/"><img src="media/LinkedIn_icon.svg" alt="LinkedIn" style="width: 2em;"></a>
+                    <a href="https://orcid.org/0000-0002-3941-0256"><img src="media/ORCID_iD.svg" alt="ORCID" style="width: 2em;"></a>
+                    <a href="https://inspirehep.net/authors/2714489"><img src="media/inspire_logo.jpg" alt="ORCID" style="width: 2em;"></a>
+                </div>
+            </div>
+        </footer>
+    <script type="module" src="planet.js"></script>
     </body>
+
+    <!-- SCRIPTS -->
     <script src="main.js"></script>
-    <script>
+    <!--<script>
         const today = new Date();
         const date = {day: today.getDate(), month: today.getMonth()+1};
 
@@ -177,7 +226,5 @@
         if ((date.day == 24 && date.month == 12) || (date.day == 25 && date.month == 12)) {
             document.body.style.color = "#EA4630";
         }
-    </script>
-    <script src="./arxiv-scripts/arxiv.js"></script>
-    <script src="./arxiv-scripts/pdf_display.js"></script>
+    </script>-->
 </html>
