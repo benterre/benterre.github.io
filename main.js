@@ -33,6 +33,11 @@ new Swiper('.swiper', {
 
   slidesPerView: 1,
 
+  navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+
   breakpoints: {
     768: {
       slidesPerView: 2
@@ -42,3 +47,10 @@ new Swiper('.swiper', {
     }
   }
 });
+
+var swiper = new Swiper(".mySwiper", {
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });

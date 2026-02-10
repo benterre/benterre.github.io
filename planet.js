@@ -17,7 +17,10 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(3, 1, 0);
+camera.position.set(4, 2, 0);
+// shift framing so the scene appears slightly to the right
+camera.filmOffset = -10;   // negative → object appears right
+camera.updateProjectionMatrix();
 
 /* ---------------- Renderer ---------------- */
 
@@ -37,7 +40,7 @@ controls.update();
 
 /* ---------------- Lighting ---------------- */
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+scene.add(new THREE.AmbientLight(0xffffff, 1.0));
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
 dirLight.position.set(5, 10, 0);
