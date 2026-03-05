@@ -10,6 +10,117 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <title>Coamoeba</title>
 </head>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sections = document.querySelectorAll(".section");
+
+    // ---- Create TOC ----
+    const toc = document.createElement("nav");
+    toc.id = "toc";
+
+    const tocList = document.createElement("ul");
+    toc.appendChild(tocList);
+    document.body.appendChild(toc);
+
+    let i = 0;
+
+    sections.forEach(section => {
+
+        const h1 = section.querySelector("h1");
+        if (!h1) return;
+
+        i++;
+        let j = 0;
+        let k = 0;
+
+        numberHeading(h1, `${i}`);
+        addToToc(h1, "toc-h1");
+
+        const headings = section.querySelectorAll("h2, h3");
+
+        headings.forEach(heading => {
+
+            if (heading.tagName === "H2") {
+                j++;
+                k = 0;
+                numberHeading(heading, `${i}.${j}`);
+                addToToc(heading, "toc-h2");
+            }
+
+            if (heading.tagName === "H3") {
+                k++;
+                numberHeading(heading, `${i}.${j}.${k}`);
+                addToToc(heading, "toc-h3");
+            }
+        });
+    });
+
+    // Re-typeset MathJax after DOM modifications
+    if (window.MathJax) {
+        MathJax.typesetPromise();
+    }
+
+    setupScrollHighlight();
+});
+
+
+// ---- Insert number span (MathJax safe) ----
+function numberHeading(heading, number) {
+
+    const span = document.createElement("span");
+    span.className = "section-number";
+    span.textContent = number + " ";
+
+    heading.prepend(span);
+
+    // assign stable id
+    heading.id = "sec-" + number.replace(/\./g, "-");
+}
+
+
+// ---- Add entry to TOC ----
+function addToToc(heading, className) {
+
+    const tocList = document.querySelector("#toc ul");
+
+    const li = document.createElement("li");
+    li.classList.add(className);
+
+    const a = document.createElement("a");
+    a.href = "#" + heading.id;
+    a.innerHTML = heading.innerHTML; // preserves math
+
+    li.appendChild(a);
+    tocList.appendChild(li);
+}
+
+
+// ---- Highlight active section ----
+function setupScrollHighlight() {
+
+    const tocLinks = document.querySelectorAll("#toc a");
+
+    window.addEventListener("scroll", () => {
+
+        let current = "";
+
+        document.querySelectorAll("h1, h2, h3").forEach(heading => {
+            const rect = heading.getBoundingClientRect();
+            if (rect.top <= 120) {
+                current = heading.id;
+            }
+        });
+
+        tocLinks.forEach(link => {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === "#" + current) {
+                link.classList.add("active");
+            }
+        });
+    });
+}
+</script>
 <body>
   <header>
     <ul class="navigation_bar">
@@ -17,8 +128,8 @@
       <li>Coamoeba</li>
     </ul>
   </header>
-  <div class="section">
-    <h1>1. Introduction</h1>
+  <div class="section" data-label="sec:intro">
+    <h1>Introduction</h1>
     <p>
       Consider a toric Calabi-Yau $CY_n$ with a given toric diagram $V$, which is a convex set of points valued in $\mathbb{Z}^{n-1}$. Its mirror geometry \cite{Hori:2000kt, Hori:2000ck} is another $n$-fold $\mathcal{W}$ given by a double fibration over the complex $w$ plane
       \begin{equation}
@@ -41,7 +152,7 @@
         Starting from the toric fan $V$, all points in the toric diagram are simply given as a position vector in $\mathbb{C}^{n-1}$. Each of these gives one monomial in the polynomial, with powers of $x_i$ given by the $i^{\text{th}}$ component of $v$.
       </p>
       <p>
-        See examples in later sections.
+        See examples in later sections. And see \ref{sec:intro}.
       </p>
     </div>
     <p>
@@ -58,7 +169,10 @@
       All the $S^n$'s meet at $w=0$, where the $S^1$ fiber vanishes. The gauge theory is encoded in the way the $S^{n-2}$'s intersect on the vanishing locus $w^{-1}(0):P(x_\mu)=w=0$. For $n=3,4$ this is precisely the holomorphic surface $\Sigma$ that underlies the brane tiling \cite{Franco:2005rj} and the brane brick model. This implies that these objects can be reconstructed from the intersections of the $S^{n-2}$'s. We will refer to each $S^n$ as $\mathcal{C}_i$, $i\in\{1,\ldots,G\}$, and to the corresponding $S^{n-2}$ on $\Sigma$ as $C_i$. When studying the intersections of the $C_i$, it is often useful to consider two standard projections: the amoeba, which projects $\Sigma$ onto the log$|x_\mu|$-plane, and the coamoeba, which projects it on the arg$(x_\mu)$-torus.
     </p>
     <div class="figure">
-      <img src="assets/figure1.png" alt="w-plane">
+      <img src="assets/w-plane-fibration.png" alt="w-plane" width="300" height="300">
+      <p>
+        Illustration of the topological structure of the mirror of $\mathbb{C}^3/\mathbb{Z}^3$ with action $(1,1,1)$, given as a double fibration over the $w$-plane. At each critical point of the Newton polynomial (red, orange, and blue dot) an $(n-2)$-sphere collapses while at the origin (green dot) a $1$-sphere collapses. Following a straight line from the origin to one of the critical points $w^\star$ realises a fibration of $S^n$ in terms of $S^{n-2}\times S^1$ fibres.
+      </p>
     </div>
 
     <div class="green-box">
@@ -80,7 +194,7 @@
   </div>
 
   <div class="section">
-    <h1>2. Tomographies</h1>
+    <h1>Tomographies</h1>
 
     <!-- Example F0 -->
     <h2>Example: dP$_0$</h2>
@@ -173,7 +287,7 @@
         The quantity $(2-t^3+2\sqrt{1-t^3})^{1/3}$ being purely real and non-zero, for all $t\in[0,1]$, the branch points can only coincide when the terms proportional to $\omega^0$, $\omega$ and $\omega^2$ coincide. This happens precisely at $t=1$, where two of the points merge. A visualisation of this effect is displayed in figure~\ref{fig:dP0-ytomography}, for all three paths $\gamma_i(t)$ on the $w$-plane.
       </p>
       <div class="figure">
-        <img src="assets/dP0-tomography.png" alt="dP0 tomography">
+        <img src="assets/dP0-tomography.png" alt="dP0 tomography" width="300" height="300">
         <p>
           Figure: Visualisation of the three branch points on the elliptic curve of dP$_0$ as we move along all three paths on the $w$-plane (in \textcolor[rgb]{0.12156863, 0.46666667, 0.70588235}{blue}, \textcolor[rgb]{0.83921569, 0.15294118, 0.15686275}{red} and \textcolor[rgb]{0.96862745, 0.71372549, 0.82352941}{pink}, following the same convention as in figure~\ref{fig:dP0-wpaths}). Paths that do not close an $S^1$ cycle have been coloured gray.
         </p>
@@ -229,7 +343,7 @@
       <div class="figure">
         <img src="assets/F0_tomography_animation.gif" alt="F0 tomography">
         <p>
-          Figure: Animation of the $x$ and $y$ tomographies of F$_0$ for various values of the complex coefficients $c_i$.
+          Animation of the $x$ and $y$ tomographies of F$_0$ for various values of the complex coefficients $c_i$.
         </p>
       </div>
     </div>
@@ -262,10 +376,51 @@
     <p>
       As described in previous sections, as we move along the curves from $w=0$ to $w=w^\ast$, the singularities on the $x/y$-planes will also move around. As the equation $P(x,y)$ describes a hyperelliptic curve, the branch points on the $x/y$-planes actually describe the double fibration required to construct these higher genus curves. Whenever two branch points meet, the elliptic curve degenerates as one of its cycles vanishes. This happens precisely at $w=w^\ast$ and this coincident branch point is displayed as a black dote in Figure~\ref{fig:tomographies}. Moving from a given $w^\ast$, where one cycle of the elliptic curve vanishes, to $w=0$ thus describes the aforementioned $S^1$ fibration of $S^3$. This set of $S^1$ may intersect along the way, leading to a non-trivial configurations of superimposed $S^3$ in the mirror curve. The interestions are also marked in Figure~\ref{fig:tomographies}.
     </p>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpaceF0"></div>
+      <p>
+        2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_1$, on the right, the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
+        \begin{align}
+          P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpacedP0"></div>
+      <p>
+        2d slice of the tomography phase space of dP$_0$. On the left, phase diagram given by varying $c_{(0,0)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y.
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpacedP02"></div>
+      <p>
+        2d slice of the tomography phase space of dP$_0$. On the left, phase diagram given by varying $c_{(-1,-1)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = 1 + \frac{c_{(-1,-1)}}{xy} + x + y.
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpacedP1"></div>
+      <p>
+        2d slice of the tomography phase space of dP$_1$. On the left, phase diagram given by varying $c_{(0,0)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y + \frac{1}{y}.
+        \end{align}
+      </p>
+    </div>
+
   </div>
 
   <div class="section">
-    <h1>3. Coamoeba</h1>
+    <h1>Coamoeba</h1>
     <p>
       We are now ready to move on towards the main topic -- the \emph{coamoeba}. As mentioned earlier this variety is a projection of our curve $\Sigma$ under the $\operatorname{Arg}$ map. In otherwords, it is constructed as a the set of $\theta_{x,y}$ that solve
       \begin{align}
@@ -307,7 +462,7 @@
       Indeed, shifting our attention to the coamoeba picture, the critical points $(x^\ast,y^\ast)$ are mapped to angular values $(\theta_{x^\ast},\theta_{y^\ast})$, which correspond to the center of dimer faces. As we move along the a given path $\gamma_i$ from the critical point $w^\ast$ towards the origin, we can follow the corresponding close one-cycles on the $x$/$y$-planes. Generically, these cycles will intersect with or end on another closed one-cycle, associated to path $\gamma_j$. On the coamoeba, this indicates that as we moved away from the face center $(\theta_{x^\ast_i},\theta_{y^\ast_i})$, we eventually intersected another face, centered on $(\theta_{x^\ast_j},\theta_{y^\ast_j})$. This set of intersections is precisely the way in which the bifundamental fields are encoded in the dimer picture.
     </p>
 
-    <h2>3.1 Animation</h2>
+    <h2>Animation</h2>
     <p>
       In order to properly identify the point at which $F_0$ changes phase, let us animated both the coamoeba and the tomographies, by changing the coefficients smoothly.
     </p>
@@ -334,6 +489,120 @@
       inlineMath: {'[+]': [['$', '$']]}
     }
   };
+  </script>
+  <script>
+    // Add figure numbers
+    document.addEventListener("DOMContentLoaded", function () {
+      const figures = document.querySelectorAll(".figure");
+
+      let figureCount = 0;
+      let interactiveCount = 0;
+
+      figures.forEach(fig => {
+          const p = fig.querySelector("p");
+          if (!p) return;
+
+          const isInteractive = fig.querySelector(".dynamic-plot") !== null;
+
+          const label = document.createElement("b");
+
+          if (isInteractive) {
+              interactiveCount++;
+              label.textContent = `Interactive Figure ${interactiveCount}: `;
+          } else {
+              figureCount++;
+              label.textContent = `Figure ${figureCount}: `;
+          }
+
+          // Insert at the beginning of the paragraph
+          p.prepend(label);
+      });
+  });
+
+  // Add section numbers
+  document.addEventListener("DOMContentLoaded", function () {
+    const sections = document.querySelectorAll(".section");
+
+    let i = 0; // section counter
+
+    sections.forEach(section => {
+        const h1 = section.querySelector("h1");
+        if (!h1) return;
+
+        i++;
+        let j = 0; // subsection counter
+        let k = 0; // subsubsection counter
+
+        // Label h1
+        h1.textContent = `${i} ${h1.textContent.replace(/^\d+(\.\d+)*\s*/, '')}`;
+
+        // Get all h2 and h3 in document order inside this section
+        const headings = section.querySelectorAll("h2, h3");
+
+        headings.forEach(heading => {
+            if (heading.tagName === "H2") {
+                j++;
+                k = 0; // reset k when new h2 appears
+
+                heading.textContent =
+                    `${i}.${j} ${heading.textContent.replace(/^\d+(\.\d+)*\s*/, '')}`;
+            }
+
+            if (heading.tagName === "H3") {
+                k++;
+
+                heading.textContent =
+                    `${i}.${j}.${k} ${heading.textContent.replace(/^\d+(\.\d+)*\s*/, '')}`;
+            }
+        });
+    });
+    /* ----------------------------------
+       2️⃣ REGISTER SECTIONS
+    ---------------------------------- */
+
+    // document.querySelectorAll("h1, h2, h3").forEach(heading => {
+
+    //     const labelMatch = heading.innerHTML.match(/\\label\{([^}]+)\}/);
+    //     if (!labelMatch) return;
+
+    //     const labelName = labelMatch[1];
+    //     heading.innerHTML = heading.innerHTML.replace(labelMatch[0], '');
+
+    //     labelRegistry[labelName] = {
+    //         text: heading.querySelector(".section-number").textContent.trim(),
+    //         id: heading.id
+    //     };
+    // });
+
+
+    // /* ----------------------------------
+    //    3️⃣ REPLACE \ref{...}
+    // ---------------------------------- */
+
+    // document.body.innerHTML = document.body.innerHTML.replace(
+    //     /\\ref\{([^}]+)\}/g,
+    //     function (match, label) {
+
+    //         if (!labelRegistry[label]) {
+    //             return "??";
+    //         }
+
+    //         const ref = labelRegistry[label];
+
+    //         return `<a href="#${ref.id}" class="ref-link"><b>${ref.text}</b></a>`;
+    //     }
+    // );
+
+});
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/regl/dist/regl.min.js"></script>
+  <script src="./dynamic-plots.js"></script>
+
+  <script>
+    dynamicPlots("phaseSpaceF0", "./plot/F0", 64, 51, 4, 4, 'c_1');
+    dynamicPlots("phaseSpacedP0", "./plot/dP0", 64, 51, 3, 4, 'c_00');
+    dynamicPlots("phaseSpacedP02", "./plot/dP0_2", 64, 51, 3, 4, 'c_-1-1');
+    dynamicPlots("phaseSpacedP1", "./plot/dP1", 64, 51, 4, 4, 'c_00');
   </script>
 </body>
 </html>

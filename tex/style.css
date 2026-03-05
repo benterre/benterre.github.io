@@ -8,6 +8,90 @@
 body {
     margin: 0;
     background-color: var(--light-color);
+    font-size: 18px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 25px;
+}
+
+/* Layout offset */
+body {
+    margin-left: 270px;
+}
+
+/* Sidebar */
+#toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 25px 20px;
+    background: #f8f9fa;
+    border-right: 1px solid #ddd;
+    font-family: sans-serif;
+}
+
+/* Remove bullets */
+#toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+/* Spacing */
+#toc li {
+    margin: 6px 0;
+}
+
+/* Hierarchical indentation */
+.toc-h1 {
+    font-weight: 600;
+}
+
+.toc-h2 {
+    padding-left: 18px;
+    font-size: 0.95em;
+}
+
+.toc-h3 {
+    padding-left: 36px;
+    font-size: 0.9em;
+}
+
+/* Links */
+#toc a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+#toc a:hover {
+    color: #007acc;
+}
+
+/* Active highlight */
+#toc a.active {
+    color: #007acc;
+    font-weight: 600;
+}
+
+/* Section number styling */
+.section-number {
+    font-weight: 600;
+}
+
+.ref-link {
+    text-decoration: none;
+    color: #007acc;
+}
+
+.ref-link:hover {
+    text-decoration: underline;
+}
+
+.figure-number {
+    font-weight: 600;
 }
 
 header {
@@ -155,7 +239,7 @@ main {
 
 .figure img {
     display: block;
-    width: 90%;
+    max-width: 90%;
     margin: auto;
 }
 
@@ -180,6 +264,11 @@ main {
     /* Ensures proper scaling within the grid context */
     min-width: 0; 
     min-height: 0;
+}
+
+.dynamic-plot {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .green-box {
