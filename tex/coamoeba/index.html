@@ -380,7 +380,7 @@ function setupScrollHighlight() {
     <div class="figure">
       <div class="figure dynamic-plot" id="phaseSpaceF0"></div>
       <p>
-        2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_1$, on the right, the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
+        2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
         \begin{align}
           P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
         \end{align}
@@ -388,9 +388,19 @@ function setupScrollHighlight() {
     </div>
 
     <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpaceF02"></div>
+      <p>
+        2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=1$, and so its Newton polynomial reads
+        \begin{align}
+          P(x,y) = 1 + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
       <div class="figure dynamic-plot" id="phaseSpacedP0"></div>
       <p>
-        2d slice of the tomography phase space of dP$_0$. On the left, phase diagram given by varying $c_{(0,0)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        2d slice of the tomography phase space of dP$_0$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
         \begin{align}
           P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y.
         \end{align}
@@ -400,7 +410,7 @@ function setupScrollHighlight() {
     <div class="figure">
       <div class="figure dynamic-plot" id="phaseSpacedP02"></div>
       <p>
-        2d slice of the tomography phase space of dP$_0$. On the left, phase diagram given by varying $c_{(-1,-1)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        2d slice of the tomography phase space of dP$_0$. On the top left, phase diagram given by varying $c_{(-1,-1)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
         \begin{align}
           P(x,y) = 1 + \frac{c_{(-1,-1)}}{xy} + x + y.
         \end{align}
@@ -410,9 +420,20 @@ function setupScrollHighlight() {
     <div class="figure">
       <div class="figure dynamic-plot" id="phaseSpacedP1"></div>
       <p>
-        2d slice of the tomography phase space of dP$_1$. On the left, phase diagram given by varying $c_{(0,0)}$, on the right, the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        2d slice of the tomography phase space of dP$_1$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
         \begin{align}
           P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y + \frac{1}{y}.
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpacedP3"></div>
+      <p>
+        2d slice of the tomography phase space of dP$_3$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + \frac{1}{xy} + xy + x + 
+          \frac{1}{x} + i\left(y + \frac{1}{y}\right).
         \end{align}
       </p>
     </div>
@@ -599,10 +620,12 @@ function setupScrollHighlight() {
   <script src="./dynamic-plots.js"></script>
 
   <script>
-    dynamicPlots("phaseSpaceF0", "./plot/F0", 64, 51, 4, 4, 'c_1');
-    dynamicPlots("phaseSpacedP0", "./plot/dP0", 64, 51, 3, 4, 'c_00');
-    dynamicPlots("phaseSpacedP02", "./plot/dP0_2", 64, 51, 3, 4, 'c_-1-1');
-    dynamicPlots("phaseSpacedP1", "./plot/dP1", 64, 51, 4, 4, 'c_00');
+    dynamicPlots("phaseSpaceF0", "./plot/F0", 65, 51, 4, 2, 'c_1');
+    dynamicPlots("phaseSpaceF02", "./plot/F0_2", 65, 51, 4, 2, 'c_1');
+    dynamicPlots("phaseSpacedP0", "./plot/dP0", 65, 51, 3, 2, 'c_00');
+    dynamicPlots("phaseSpacedP02", "./plot/dP0_2", 65, 51, 3, 2, 'c_-1-1');
+    dynamicPlots("phaseSpacedP1", "./plot/dP1", 65, 51, 4, 2, 'c_00');
+    dynamicPlots("phaseSpacedP3", "./plot/dP3", 65, 51, 4, 3, 'c_00');
   </script>
 </body>
 </html>
