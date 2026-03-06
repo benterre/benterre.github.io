@@ -331,3 +331,155 @@ function dynamicPlots(containerId, file, res, nPoints, wn, rn, varStr) {
     });
 
 }
+
+function dynamicAmoeba(containerId, file, res, amoeba_res, varStr) {
+
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error("Container not found:", containerId);
+        return;
+    }
+
+    // ================= CREATE LAYOUT =================
+
+    container.innerHTML = "";
+    container.style.display = "flex";
+    container.style.flexDirection = "colunm";
+    container.style.gap = "30px";
+    // container.style.alignItems = "flex-start";
+
+    // Parameter image
+    const paramCanvas = document.createElement("canvas");
+    paramCanvas.style.border = "1px solid black";
+    paramCanvas.style.cursor = "crosshair";
+
+    // Overlay numerical value
+    const overlay = document.createElement("div");
+    overlay.style.position = "absolute";
+    overlay.style.top = "10px";
+    overlay.style.left = "10px";
+    overlay.style.background = "rgba(255,255,255,0.8)";
+    overlay.style.padding = "4px 8px";
+    overlay.style.fontFamily = "monospace";
+    overlay.style.fontSize = "14px";
+    overlay.style.border = "1px solid black";
+    overlay.style.pointerEvents = "none";
+
+    const canvasWrapper = document.createElement("div");
+    canvasWrapper.style.position = "relative";
+    canvasWrapper.appendChild(paramCanvas);
+    canvasWrapper.appendChild(overlay);
+    container.appendChild(canvasWrapper);
+
+    const imagePlotA = document.createElement("canvas");
+    const imagePlotB = document.createElement("canvas");
+
+    [imagePlotA, imagePlotB].forEach(c => {
+        c.style.width = "300px";
+        c.style.height = "300px";
+        c.style.border = "1px solid black";
+        container.appendChild(c);
+    });
+
+    // ================= LOAD DATA =================
+
+    let imageDataArray = null;
+
+    fetch(`${file}_(${res}, ${res}, 2, ${amoeba_res}, ${amoeba_res}).bin`)
+    .then(r => r.arrayBuffer())
+    .then(buf => {
+        imageDataArray = new Uint8Array(buf);
+        
+        // Render center plots on startup
+        const mid = Math.floor(res / 2);
+        renderImgA(mid, mid);
+        renderImgB(mid, mid);
+    });
+
+    function flatIndexImage(i, j, which, x, y) {
+        return (
+            ((((i * res + j)
+            * 2 + which)
+            * amoeba_res + x)
+            * amoeba_res + y)
+        );
+    }
+
+    // ================= LOAD PARAM IMAGE =================
+
+    const paramCtx = paramCanvas.getContext("2d");
+    const img = new Image();
+    img.src = `${file}.png`;
+
+    img.onload = function() {
+        paramCanvas.width  = 300;
+        paramCanvas.height = 300;
+        paramCtx.imageSmoothingEnabled = false;
+        paramCtx.drawImage(img, 0, 0, paramCanvas.width, paramCanvas.height);
+    };
+
+    // ================= REGL SETUP =================
+
+    function createImageRenderer(canvas, which) {
+
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = amoeba_res;
+        canvas.height = amoeba_res;
+
+        function render(i, j) {
+
+            if (!imageDataArray) return;
+
+            const img = ctx.createImageData(amoeba_res, amoeba_res);
+            const data = img.data;  // RGBA array
+
+            for (let x = 0; x < amoeba_res; x++) {
+                for (let y = 0; y < amoeba_res; y++) {
+
+                    const value = imageDataArray[
+                        flatIndexImage(res - j, res - i, which, y, x)
+                    ];
+
+                    const idx = 4 * (x * amoeba_res + y);
+
+                    const color = value ? 0 : 255;  // black/white
+
+                    data[idx]     = color;
+                    data[idx + 1] = color;
+                    data[idx + 2] = color;
+                    data[idx + 3] = 255;  // alpha
+                }
+            }
+
+            ctx.putImageData(img, 0, 0);
+        }
+
+        return render;
+    }
+
+    const renderImgA = createImageRenderer(imagePlotA, 0);
+    const renderImgB = createImageRenderer(imagePlotB, 1);
+
+    // ================= MOUSE =================
+
+    paramCanvas.addEventListener("mousemove", function(e) {
+
+        const rect = paramCanvas.getBoundingClientRect();
+
+        const x = (e.clientX - rect.left) / rect.width  * paramCanvas.width;
+        const y = (e.clientY - rect.top)  / rect.height * paramCanvas.height;
+
+        const i = Math.floor(x / (paramCanvas.width / res));
+        const j = Math.floor(y / (paramCanvas.height / res));
+
+        if (i >= 0 && i < res && j >= 0 && j < res) {
+            renderImgA(i, j);
+            renderImgB(i, j);
+
+            overlay.textContent =
+                `${varStr} = ${((i/res - 0.5) * 10).toFixed(3)} + ${((0.5 - j/res) * 10).toFixed(3)}i`;
+        }
+    });
+
+}

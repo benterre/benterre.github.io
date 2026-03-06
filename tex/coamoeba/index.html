@@ -352,7 +352,7 @@ function setupScrollHighlight() {
       We can automate our previous two searches to general Newton polynomial coefficients and general reflexive polytope.
     </p>
     <p>
-      Some preliminary tomographies are displayed in below, where the following choices were made for the Newton polynomial coefficients
+      Some preliminary tomographies are displayed below, where the following choices were made for the Newton polynomial coefficients
       \begin{equation}
       \begin{aligned}
         c_{(-1,1)}&=i & c_{(0,1)}&=i & c_{(1,1)}&=1\\
@@ -377,25 +377,48 @@ function setupScrollHighlight() {
       As described in previous sections, as we move along the curves from $w=0$ to $w=w^\ast$, the singularities on the $x/y$-planes will also move around. As the equation $P(x,y)$ describes a hyperelliptic curve, the branch points on the $x/y$-planes actually describe the double fibration required to construct these higher genus curves. Whenever two branch points meet, the elliptic curve degenerates as one of its cycles vanishes. This happens precisely at $w=w^\ast$ and this coincident branch point is displayed as a black dote in Figure~\ref{fig:tomographies}. Moving from a given $w^\ast$, where one cycle of the elliptic curve vanishes, to $w=0$ thus describes the aforementioned $S^1$ fibration of $S^3$. This set of $S^1$ may intersect along the way, leading to a non-trivial configurations of superimposed $S^3$ in the mirror curve. The interestions are also marked in Figure~\ref{fig:tomographies}.
     </p>
 
-    <div class="figure">
-      <div class="figure dynamic-plot" id="phaseSpaceF0"></div>
-      <p>
-        2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
-        \begin{align}
-          P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
-        \end{align}
-      </p>
-    </div>
+    <div class="subsection-collapsable">
+      <div class="figure">
+        <div class="figure dynamic-plot" id="phaseSpaceF0"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
+          \begin{align}
+            P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
 
-    <div class="figure">
-      <div class="figure dynamic-plot" id="phaseSpaceF02"></div>
-      <p>
-        2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=1$, and so its Newton polynomial reads
-        \begin{align}
-          P(x,y) = 1 + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
-        \end{align}
-      </p>
+      <div class="figure">
+        <div class="figure dynamic-plot" id="phaseSpaceF02"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_1$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_2=1$, and so its Newton polynomial reads
+          \begin{align}
+            P(x,y) = 1 + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="phaseSpaceF03"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_2$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_1=i$, and so its Newton polynomial reads
+          \begin{align}
+            P(x,y) = c_2 + \left(x+\frac{1}{x}\right) + i\left(y+\frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="phaseSpaceF04"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the top left, phase diagram given by varying $c_2$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is given at $c_1=1+\frac{i}{2}$, and so its Newton polynomial reads
+          \begin{align}
+            P(x,y) = c_2 + \left(x+\frac{1}{x}\right) + \left(1+\frac{i}{2}\right)\left(y+\frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
     </div>
+    <button type="button" class="collapse-button">Show more</button>
 
     <div class="figure">
       <div class="figure dynamic-plot" id="phaseSpacedP0"></div>
@@ -434,6 +457,27 @@ function setupScrollHighlight() {
         \begin{align}
           P(x,y) = c_{(0,0)} + \frac{1}{xy} + xy + x + 
           \frac{1}{x} + i\left(y + \frac{1}{y}\right).
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpaceY40"></div>
+      <p>
+        2d slice of the tomography phase space of $Y^{4,0}$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + \frac{1}{xy^2} + x + 
+          \frac{1}{y} + i\left(y + \frac{1}{y^2}\right).
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="phaseSpaceCZ2Z2"></div>
+      <p>
+        2d slice of the tomography phase space of $\mathcal{C}/(\mathbb{Z}_2\times\mathbb{Z}_2)$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + x + x^2 + xy^2 + yx^2 + i\left(y + xy + y^2 + x^2y^2\right).
         \end{align}
       </p>
     </div>
@@ -497,6 +541,16 @@ function setupScrollHighlight() {
     <div class="figure-1-2">
       <img src="assets/F0_coamoeba_animation_FLSV.gif" alt="">
       <img src="assets/F0_tomography_animation_FLSV.gif" alt="">
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="amoebaCoamoebaF0"></div>
+      <p>
+        2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_1$, in the middle the amoeba and on the right the coamoeba projection. The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
+        \begin{align}
+          P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+        \end{align}
+      </p>
     </div>
   </div>
 
@@ -622,10 +676,17 @@ function setupScrollHighlight() {
   <script>
     dynamicPlots("phaseSpaceF0", "./plot/F0", 65, 51, 4, 2, 'c_1');
     dynamicPlots("phaseSpaceF02", "./plot/F0_2", 65, 51, 4, 2, 'c_1');
+    dynamicPlots("phaseSpaceF03", "./plot/F0_3", 65, 51, 4, 2, 'c_2');
+    dynamicPlots("phaseSpaceF04", "./plot/F0_4", 65, 51, 4, 2, 'c_2');
+
     dynamicPlots("phaseSpacedP0", "./plot/dP0", 65, 51, 3, 2, 'c_00');
     dynamicPlots("phaseSpacedP02", "./plot/dP0_2", 65, 51, 3, 2, 'c_-1-1');
     dynamicPlots("phaseSpacedP1", "./plot/dP1", 65, 51, 4, 2, 'c_00');
     dynamicPlots("phaseSpacedP3", "./plot/dP3", 65, 51, 4, 3, 'c_00');
+    dynamicPlots("phaseSpaceY40", "./plot/Y40", 65, 51, 6, 2, 'c_00');
+    dynamicPlots("phaseSpaceCZ2Z2", "./plot/CZ2Z2", 65, 51, 5, 2, 'c_00');
+
+    dynamicAmoeba("amoebaCoamoebaF0", "./plot/F0", 65, 256, 'c_00')
   </script>
 </body>
 </html>
