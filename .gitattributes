@@ -1,3 +1,7 @@
+tex/coamoeba/plot/F0_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_2_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_3_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_4_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
 ./tex/coamoeba/plot/F0_(65 filter=lfs diff=lfs merge=lfs -text
 65 filter=lfs diff=lfs merge=lfs -text
 2 filter=lfs diff=lfs merge=lfs -text
@@ -6,3 +10,7 @@
 ./tex/coamoeba/plot/F0_2_(65 filter=lfs diff=lfs merge=lfs -text
 ./tex/coamoeba/plot/F0_3_(65 filter=lfs diff=lfs merge=lfs -text
 ./tex/coamoeba/plot/F0_4_(65 filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_2_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_3_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
+tex/coamoeba/plot/F0_4_(65,[[:space:]]65,[[:space:]]2,[[:space:]]128,[[:space:]]128).bin filter=lfs diff=lfs merge=lfs -text
