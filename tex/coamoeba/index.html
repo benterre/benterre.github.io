@@ -554,6 +554,53 @@ function setupScrollHighlight() {
     </div>
   </div>
 
+  <div class="section">
+    <h1>Phase spaces: tomography and (co)amoebae</h1>
+    <h2>$F_0$</h2>
+    <img src="../change_history_black_18dp.svg" class="section-button">
+    <div class="section-collapsable">
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingF0"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_1$, on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is given at $c_2=-3-3i$, and so its Newton polynomial reads
+          \begin{align}
+            P(x,y) = -3-3i + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingF02"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_1$, on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is given at $c_2=1$, and so its Newton polynomial reads
+            \begin{align}
+              P(x,y) = 1 + \left(x+\frac{1}{x}\right) + c_{1}\left(y+\frac{1}{y}\right).
+            \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingF03"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_2$, on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is given at $c_1=i$, and so its Newton polynomial reads
+            \begin{align}
+              P(x,y) = c_2 + \left(x+\frac{1}{x}\right) + i\left(y+\frac{1}{y}\right).
+            \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingF04"></div>
+        <p>
+          2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_2$, on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is given at $c_1=1+\frac{i}{2}$, and so its Newton polynomial reads
+            \begin{align}
+              P(x,y) = c_2 + \left(x+\frac{1}{x}\right) + \left(1+\frac{i}{2}\right)\left(y+\frac{1}{y}\right).
+            \end{align}
+        </p>
+      </div>
+    </div>
+  </div>
+
   <script src="/tex/collapse.js"></script>
   <script src="/tex/dark-mode.js"></script>
   <script src="/tex/prism.js"></script>
@@ -674,19 +721,24 @@ function setupScrollHighlight() {
   <script src="./dynamic-plots.js"></script>
 
   <script>
-    dynamicPlots("phaseSpaceF0", "./plot/F0", 65, 51, 4, 2, 'c_1');
-    dynamicPlots("phaseSpaceF02", "./plot/F0_2", 65, 51, 4, 2, 'c_1');
-    dynamicPlots("phaseSpaceF03", "./plot/F0_3", 65, 51, 4, 2, 'c_2');
-    dynamicPlots("phaseSpaceF04", "./plot/F0_4", 65, 51, 4, 2, 'c_2');
+    dynamicTomography("phaseSpaceF0", "./plot/F0", 65, 51, 4, 2, 'c_1');
+    dynamicTomography("phaseSpaceF02", "./plot/F0_2", 65, 51, 4, 2, 'c_1');
+    dynamicTomography("phaseSpaceF03", "./plot/F0_3", 65, 51, 4, 2, 'c_2');
+    dynamicTomography("phaseSpaceF04", "./plot/F0_4", 65, 51, 4, 2, 'c_2');
 
-    dynamicPlots("phaseSpacedP0", "./plot/dP0", 65, 51, 3, 2, 'c_00');
-    dynamicPlots("phaseSpacedP02", "./plot/dP0_2", 65, 51, 3, 2, 'c_-1-1');
-    dynamicPlots("phaseSpacedP1", "./plot/dP1", 65, 51, 4, 2, 'c_00');
-    dynamicPlots("phaseSpacedP3", "./plot/dP3", 65, 51, 4, 3, 'c_00');
-    dynamicPlots("phaseSpaceY40", "./plot/Y40", 65, 51, 6, 2, 'c_00');
-    dynamicPlots("phaseSpaceCZ2Z2", "./plot/CZ2Z2", 65, 51, 5, 2, 'c_00');
+    dynamicTomography("phaseSpacedP0", "./plot/dP0", 65, 51, 3, 2, 'c_00');
+    dynamicTomography("phaseSpacedP02", "./plot/dP0_2", 65, 51, 3, 2, 'c_-1-1');
+    dynamicTomography("phaseSpacedP1", "./plot/dP1", 65, 51, 4, 2, 'c_00');
+    dynamicTomography("phaseSpacedP3", "./plot/dP3", 65, 51, 4, 3, 'c_00');
+    dynamicTomography("phaseSpaceY40", "./plot/Y40", 65, 51, 6, 2, 'c_00');
+    dynamicTomography("phaseSpaceCZ2Z2", "./plot/CZ2Z2", 65, 51, 5, 2, 'c_00');
 
-    dynamicAmoeba("amoebaCoamoebaF0", "./plot/F0", 65, 256, 'c_00')
+    dynamicAmoeba("amoebaCoamoebaF0", "./plot/F0", 65, 128, 'c_1')
+
+    dynamicTomographyAmoeba("everythingF0", "./plot/F0", 65, 128, 51, 4, 2, 'c_1')
+    dynamicTomographyAmoeba("everythingF02", "./plot/F0_2", 65, 128, 51, 4, 2, 'c_1')
+    dynamicTomographyAmoeba("everythingF03", "./plot/F0_3", 65, 128, 51, 4, 2, 'c_2')
+    dynamicTomographyAmoeba("everythingF04", "./plot/F0_4", 65, 128, 51, 4, 2, 'c_2')
   </script>
 </body>
 </html>
