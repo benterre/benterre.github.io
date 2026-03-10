@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
     <link rel="stylesheet" href="../style.css">
     <script src="https://tikzjax.com/v1/tikzjax.js"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <title>Coamoeba</title>
 </head>
 <script>
@@ -58,7 +58,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Re-typeset MathJax after DOM modifications
     if (window.MathJax) {
-        MathJax.typesetPromise();
+      MathJax.startup.promise.then(() => {
+          MathJax.typesetPromise();
+      });
     }
 
     setupScrollHighlight();
@@ -556,7 +558,7 @@ function setupScrollHighlight() {
 
   <div class="section">
     <h1>Phase spaces: tomography and (co)amoebae</h1>
-    <h2>$F_0$</h2>
+    <h2>F$_0$</h2>
     <img src="../change_history_black_18dp.svg" class="section-button">
     <div class="section-collapsable">
       <div class="figure">
@@ -594,10 +596,115 @@ function setupScrollHighlight() {
         <p>
           2d slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_2$, on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is given at $c_1=1+\frac{i}{2}$, and so its Newton polynomial reads
             \begin{align}
-              P(x,y) = c_2 + \left(x+\frac{1}{x}\right) + \left(1+\frac{i}{2}\right)\left(y+\frac{1}{y}\right).
+              P(x,y) = c_2 + x+\frac{1}{x} + \left(1+\frac{i}{2}\right)\left(y+\frac{1}{y}\right).
             \end{align}
         </p>
       </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingF05"></div>
+        <p>
+          Real slice of the tomography phase space of F$_0$. On the left, phase diagram given by varying $c_2$ (horizontal axis) and $C_1$ (vertical axis), on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). Its Newton polynomial reads
+            \begin{align}
+              P(x,y) = c_2 + x+\frac{1}{x} + c_1\left(y+\frac{1}{y}\right).
+            \end{align}
+        </p>
+      </div>
+    </div>
+
+    <h2>dP$_0$</h2>
+    <img src="../change_history_black_18dp.svg" class="section-button">
+    <div class="section-collapsable">
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP0"></div>
+        <p>
+          2d slice of the tomography phase space of dP$_0$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y.
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP02"></div>
+        <p>
+          2d slice of the tomography phase space of dP$_0$. On the top left, phase diagram given by varying $c_{(-1,-1)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = 1 + \frac{c_{(-1,-1)}}{xy} + x + y.
+          \end{align}
+        </p>
+      </div>
+    </div>
+
+    <h2>dP$_1$</h2>
+    <img src="../change_history_black_18dp.svg" class="section-button">
+    <div class="section-collapsable">
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP1"></div>
+        <p>
+          2d slice of the tomography phase space of dP$_1$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = c_{(0,0)} + \frac{1}{xy} + x + y + \frac{1}{y}.
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP12"></div>
+        <p>
+          Real slice of the tomography phase space of dP$_1$. On the left, phase diagram given by varying $c_{(0,0)}$ (horizontal axis) and $c_{(-1,-1)}$ (vertical axis), on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = c_{(0,0)} + \frac{c_{(-1,-1)}}{xy} + x + y + \frac{1}{y}.
+          \end{align}
+        </p>
+      </div>
+    </div>
+
+    <h2>dP$_3$</h2>
+    <img src="../change_history_black_18dp.svg" class="section-button">
+    <div class="section-collapsable">
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP3"></div>
+        <p>
+          2d slice of the tomography phase space of dP$_3$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = c_{(0,0)} + \frac{1}{xy} + xy + x + 
+            \frac{1}{x} + i\left(y + \frac{1}{y}\right).
+          \end{align}
+        </p>
+      </div>
+
+      <div class="figure">
+        <div class="figure dynamic-plot" id="everythingdP32"></div>
+        <p>
+          Real slice of the tomography phase space of dP$_3$. On the left, phase diagram given by varying $c_{(0,0)}$ (horizontal axis) and $c_{(-1,-1)}$ (vertical axis), on the right a visualisation of the $x$/$y$-tomographies (top) and amoeba and coamoeba (bottom). The slice is described by the Newton polynomial
+          \begin{align}
+            P(x,y) = c_{(0,0)} + \frac{c_{(-1,-1)}}{xy} + xy + x + 
+            \frac{1}{x} + y + \frac{1}{y}.
+          \end{align}
+        </p>
+      </div>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="everythingY40"></div>
+      <p>
+        2d slice of the tomography phase space of $Y^{4,0}$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + \frac{1}{xy^2} + x + 
+          \frac{1}{y} + i\left(y + \frac{1}{y^2}\right).
+        \end{align}
+      </p>
+    </div>
+
+    <div class="figure">
+      <div class="figure dynamic-plot" id="everythingCZ2Z2"></div>
+      <p>
+        2d slice of the tomography phase space of $\mathcal{C}/(\mathbb{Z}_2\times\mathbb{Z}_2)$. On the top left, phase diagram given by varying $c_{(0,0)}$, on the top right the $w$-plane together with the curves from the origin to the critical points $w^\star$, on the bottom the corresponding $x$ and $y$ tomographies. The slice is described by the Newton polynomial
+        \begin{align}
+          P(x,y) = c_{(0,0)} + x + x^2 + xy^2 + yx^2 + i\left(y + xy + y^2 + x^2y^2\right).
+        \end{align}
+      </p>
     </div>
   </div>
 
@@ -739,6 +846,19 @@ function setupScrollHighlight() {
     dynamicTomographyAmoeba("everythingF02", "./plot/F0_2", 65, 128, 51, 4, 2, 'c_1')
     dynamicTomographyAmoeba("everythingF03", "./plot/F0_3", 65, 128, 51, 4, 2, 'c_2')
     dynamicTomographyAmoeba("everythingF04", "./plot/F0_4", 65, 128, 51, 4, 2, 'c_2')
+    dynamicTomographyAmoeba("everythingF05", "./plot/F0_5", 65, 128, 51, 4, 2, 'c_2+ic_1')
+
+    dynamicTomographyAmoeba("everythingdP0", "./plot/dP0", 65, 128, 51, 3, 2, 'c_00')
+    dynamicTomographyAmoeba("everythingdP02", "./plot/dP0_2", 65, 128, 51, 3, 2, 'c_-1-1')
+
+    dynamicTomographyAmoeba("everythingdP1", "./plot/dP1", 65, 128, 51, 4, 2, 'c_00');
+    dynamicTomographyAmoeba("everythingdP12", "./plot/dP1_2", 65, 128, 51, 4, 2, 'c_00+ic_-1-1');
+
+    dynamicTomographyAmoeba("everythingdP3", "./plot/dP3", 65, 128, 51, 4, 3, 'c_00');
+    dynamicTomographyAmoeba("everythingdP32", "./plot/dP3_2", 65, 128, 51, 6, 3, 'c_00+ic_-1-1');
+
+    dynamicTomographyAmoeba("everythingY40", "./plot/Y40", 65, 128, 51, 6, 2, 'c_00');
+    dynamicTomographyAmoeba("everythingCZ2Z2", "./plot/CZ2Z2", 65, 128, 51, 5, 2, 'c_00');
   </script>
 </body>
 </html>
