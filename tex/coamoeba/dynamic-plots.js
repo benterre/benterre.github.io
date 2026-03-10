@@ -154,13 +154,20 @@ function dynamicTomography(containerId, file, res, nPoints, wn, rn, varStr) {
 
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width  = canvas.clientWidth  * dpr;
-        canvas.height = canvas.clientHeight * dpr;
+        const rect = canvas.getBoundingClientRect();
+
+        canvas.width  = rect.width  * dpr;
+        canvas.height = rect.height * dpr;
 
         const regl = window.createREGL({
             canvas: canvas,
             attributes: { antialias: true }
         });
+
+        if (!regl) {
+            console.error("WebGL failed to initialize for canvas:", canvas);
+            return () => {};
+        }
 
         regl._gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -640,13 +647,20 @@ function dynamicTomographyAmoeba(containerId, file, res, amoeba_res, nPoints, wn
 
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width  = canvas.offsetWidth  * dpr;
-        canvas.height = canvas.offsetHeight * dpr;
+        const rect = canvas.getBoundingClientRect();
+
+        canvas.width  = rect.width  * dpr;
+        canvas.height = rect.height * dpr;
 
         const regl = window.createREGL({
             canvas: canvas,
             attributes: { antialias: true }
         });
+
+        if (!regl) {
+            console.error("WebGL failed to initialize for canvas:", canvas);
+            return () => {};
+        }
 
         regl._gl.viewport(0, 0, canvas.width, canvas.height);
 
