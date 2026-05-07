@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="../dist/plugin/highlight/monokai.css" />
+
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="../plugin/math/math.js"></script>
+
+        <script type="importmap">
+        {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+        }
+        }
+        </script>
+
+        <style>
+            .reveal section {
+                text-align: left;
+            }
+
+            .reveal h1,
+            .reveal h2,
+            .reveal h3 {
+                text-transform: none;
+            }
+
+            .reveal table {
+                margin-top: 20px;
+            }
+
+            .reveal pre {
+                background: transparent;
+                box-shadow: none;
+                font-size: 0.8em;
+                line-height: 1.2;
+            }
+            .reveal {
+                font-size: 30px; /* default is usually ~40px */
+            }
+
+            .reveal h1 {
+                font-size: 2.0em;
+            }
+
+            .reveal h2 {
+                font-size: 1.5em;
+            }
+
+            .reveal h3 {
+                font-size: 1.2em;
+            }
+
+            .reveal p,
+            .reveal li,
+            .reveal table {
+                font-size: 0.8em;
+            }
+        </style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section>
+                <h1>Conformal Defects in Neural Network Field Theories</h1>
+                <h3>
+                    <a href="https://arxiv.org/abs/2512.07946" target="_blank">2512.07946</a>
+                </h3>
+                <p>
+                    Benjamin Suzzoni<br />
+                    In collaboration with P. Capuozzo and B. Robinson
+                </p>
+                <p>2026 KPS Spring Meeting</p>
+                </section>
+
+                <section>
+                <h2>What is a Neural-Network QFT and Why Do We Care?</h2>
+
+                <p><strong>Neural Network:</strong> a map \(f: \mathbb{R}^m \rightarrow \mathbb{R}^n\)</p>
+
+                <p><strong>Operations:</strong> composition, addition, scalar multiplication</p>
+
+                <p>
+                    <strong>Universal Approximation Theorems (UATs):</strong>
+                    Neural networks are dense in a space of maps (in some limit).
+                </p>
+
+                <div style="display:flex; justify-content:space-around; align-items:center; margin-top:30px;">
+                    <div>
+                    <p>Wide Network</p>
+                    <pre>
+                Input → ● ● ● ● ● → Output
+                        ⋮
+                    </pre>
+                    </div>
+
+                    <div>
+                    <p>Shallow Network</p>
+                    <pre>
+                Input → ● ● ● → Output
+                    </pre>
+                    </div>
+
+                    <div>
+                    <p>Deep Network</p>
+                    <pre>
+                Input → ● ● ● → ● ● ● → ● ● ● → Output
+                    </pre>
+                    </div>
+                </div>
+
+                <p style="margin-top:30px;">
+                    \(\hookrightarrow\) Depends on choice of basis and infinite-node limit.
+                </p>
+                </section>
+
+                <section>
+                <h2>What is a Neural-Network QFT and Why Do We Care?</h2>
+
+                <p>
+                    <strong>QFT:</strong>
+                    Generating functional
+                </p>
+
+                <p>
+                    \[
+                    Z[J] = \int \mathcal{D}\phi\, e^{-S[\phi] + \int d^Dx\, \phi(x)J(x)}
+                    \]
+                </p>
+
+                <p>
+                    <strong>Key Idea:</strong>
+                    Approximate the functional integral using UATs and neural networks.
+                </p>
+
+                <p style="color:lightgreen;">
+                    [Halverson, Maiti and Stoner; 2008]
+                </p>
+
+                <p>
+                    Neural networks come with a set of parameters,
+                    e.g. sigmoids \(\sigma(a \cdot x + b)\).
+                </p>
+
+                <p>Integrate over these parameters with a measure:</p>
+
+                <p>
+                    \[
+                    \int \mathcal{D}\phi\, e^{-S[\phi]}
+                    \longleftrightarrow
+                    \lim_{N\rightarrow\infty}
+                    \int \prod_i^N d\theta_i\, P(\theta_i)
+                    \]
+                </p>
+
+                <p>
+                    In the limit where the UAT applies, both sides become equal.
+                </p>
+
+                <p><strong>Result:</strong> Novel way of constructing QFT correlators.</p>
+                </section>
+
+                <section>
+                <h2>What About Neural-Network CFTs?</h2>
+
+                <p>
+                    <strong>CFT:</strong>
+                    More symmetry \(\rightarrow\) more constrained dynamics.
+                </p>
+
+                <p>
+                    Full CFT data encoded in \((\Delta_i, \lambda_{ij})\).
+                </p>
+
+                <p>
+                    <strong>NN-CFT:</strong>
+                    <span style="color:#ff6666;">
+                    Approximation is exact at any number of neurons.
+                    </span>
+                    No UAT limit required.
+                </p>
+
+                <p style="color:lightgreen;">
+                    [Halverson, Naskar, Tian; 2024]
+                </p>
+
+                <table style="width:100%; font-size:0.8em; border-collapse:collapse;">
+                    <thead>
+                    <tr>
+                        <th style="border:1px solid white; padding:8px;">Concept</th>
+                        <th style="border:1px solid white; padding:8px;">Field Theory</th>
+                        <th style="border:1px solid white; padding:8px;">Neural Network Theory</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="border:1px solid white; padding:8px;">Conformal Primary</td>
+                        <td style="border:1px solid white; padding:8px;">\(\phi(x) \mapsto \lambda^{-\Delta}\phi(x)\)</td>
+                        <td style="border:1px solid white; padding:8px;">\(\Phi(X) \mapsto \lambda^{-\Delta}\Phi(X)\)</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid white; padding:8px;">Partition Function</td>
+                        <td style="border:1px solid white; padding:8px;">\(Z[J]=\int \mathcal{D}\phi\,e^{-S[\phi]}e^{\int d^dxJ(x)\phi(x)}\)</td>
+                        <td style="border:1px solid white; padding:8px;">\(Z[J]=\int d\theta\,\mathcal{P}(\theta)e^{\int d^dxJ(x)\Phi(x)}\)</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid white; padding:8px;">Correlators</td>
+                        <td style="border:1px solid white; padding:8px;">\(\langle \phi(x)\phi(y) \rangle\)</td>
+                        <td style="border:1px solid white; padding:8px;">\(\mathbb{E}[\Phi(x)\Phi(y)]\)</td>
+                    </tr>
+                    </tbody>
+                </table>
+                </section>
+
+                <section>
+                <h2>Extending This to Theories with Defects</h2>
+
+                <p>
+                    <strong>Break the symmetry group:</strong>
+                    \(SO(D+2) \rightarrow SO(p+2) \times SO(q)\)
+                </p>
+
+                <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin:40px 0;">
+                    <div style="border:2px solid white; padding:20px; min-width:150px; text-align:center;">
+                    \(SO(D+2)\)
+                    </div>
+
+                    <div style="font-size:2em;">→</div>
+
+                    <div style="border:2px solid white; padding:20px; min-width:150px; text-align:center; position:relative;">
+                    <div style="border-top:4px solid lightgreen; width:100%; margin-bottom:10px;"></div>
+                    <div>\(SO(p+2)\)</div>
+                    <div style="margin-top:10px;">\(SO(q)\)</div>
+                    </div>
+                </div>
+
+                <p>
+                    <strong>dCFT:</strong>
+                    Full data encoded in
+                    \((\hat{\Delta}_i, \Delta_i, \lambda_{ij}, \lambda_{ijk})\)
+                </p>
+
+                <p>
+                    <strong>Result:</strong>
+                    <span style="color:#ff6666;">
+                    Neural-network approximation remains exact at finite neuron number.
+                    </span>
+                </p>
+
+                <p style="color:lightgreen;">
+                    [Capuozzo, Robinson, Suzzoni; 2025]
+                </p>
+
+                <p>
+                    New defect CFTs can be constructed from invariant distributions and
+                    conformal primary fields.
+                </p>
+                </section>
+
+                <section>
+                <h2>Conclusion</h2>
+
+                <div style="display:flex; gap:40px; align-items:flex-start;">
+                    <div style="width:50%;">
+                    <h3>What Was Known</h3>
+                    <ol>
+                        <li>Neural-network CFTs can be engineered from finite building blocks.</li>
+                        <li>Correlators are standard statistical averages.</li>
+                        <li>Neurons can be combined to generate new CFTs.</li>
+                    </ol>
+                    </div>
+
+                    <div style="width:50%;">
+                    <h3>What We Did</h3>
+                    <ol>
+                        <li>Extended NN-CFTs to defect CFTs.</li>
+                        <li>Constructed solvable examples of NN-dCFTs.</li>
+                    </ol>
+                    </div>
+                </div>
+
+                <p style="margin-top:30px;">
+                    <strong>Formalism for spin \(\neq 0\) is still missing.</strong>
+                </p>
+
+                <p>
+                    Important for condensed matter, string theory, and AdS/CFT.
+                </p>
+                </section>
+
+                <section>
+                    <h1>A nice gif as the background</h1>
+                    <img src="/notes/coamoeba/assets/F0_coamoeba_animation_FLSV.gif" alt="" style="width: 50%">
+                </section>
+
+                <section>
+                    <h1>Test slide</h1>
+
+                    <div style="width:50%" id="everythingF03"></div>
+                </section>
+
+                <section>
+                    <h1>\(Q^{1,1,1}/\mathbb{Z}_2\)</h1>
+                    <div 
+                        id="3JS_Q111Z2"
+                        style="width: 800px;
+                            height: 600px;
+                            border: 1px solid #444;"
+                    ></div>
+                </section>
+
+                <section>
+                    <h1>\(P_\pm^2\)</h1>
+                    <div 
+                        id="3JS_Ppm"
+                        style="width: 800px;
+                            height: 600px;
+                            border: 1px solid #444;"
+                    ></div>
+                </section>
+
+                <section>
+                    <h1>Coni-4-fold</h1>
+                    <div 
+                        id="3JS_Conifold4"
+                        style="width: 800px;
+                            height: 600px;
+                            border: 1px solid #444;"
+                    ></div>
+                </section>
+
+                <section>
+                    <h1>Thank You</h1>
+                </section>
+
+                <section>
+                <h2>dCFT Correlator Constraints</h2>
+
+                <div style="display:flex; justify-content:center; align-items:center; gap:50px; margin-bottom:40px;">
+                    <div>
+                    <pre>
+                ●      ●
+                \    /
+                ○--○
+                /    \
+                ●      ●
+                    </pre>
+                    </div>
+
+                    <div style="font-size:2em;">=</div>
+
+                    <div>
+                    <pre>
+                ●  ○  ●
+                \ | /
+                \|/
+                /|\\
+                / | \\
+                ●  ○  ●
+                    </pre>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; align-items:center; gap:50px;">
+                    <div>
+                    <pre>
+                ●     ●
+                \   /
+                ○
+                |
+                ------
+                    </pre>
+                    </div>
+
+                    <div style="font-size:2em;">=</div>
+
+                    <div>
+                    <pre>
+                ●     ●
+                |     |
+                ------ ------
+                    </pre>
+                    </div>
+                </div>
+                </section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../dist/plugin/notes.js"></script>
+		<script src="../dist/plugin/markdown.js"></script>
+		<script src="../dist/plugin/highlight.js"></script>
+        <script src="../dist/plugin/zoom.js"></script>
+        <script src="../dist/plugin/search.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch],
+			});
+		</script>
+        <script src="https://cdn.jsdelivr.net/npm/regl/dist/regl.min.js"></script>
+        <script src="/notes/coamoeba/dynamic-plots.js"></script>
+        <script>
+            dynamicTomographyAmoeba("everythingF03", "/notes/coamoeba/plot/F0_3", 65, 128, 51, 4, 2, 'c_2')
+        </script>
+        <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
+        function slide_add_OBJ(id, path) {
+
+            const container = document.getElementById(id);
+
+            // Scene
+            const scene = new THREE.Scene();
+            scene.background = null;
+
+            // camera
+            const camera = new THREE.PerspectiveCamera(
+                60,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 2, 5);
+
+            // renderer
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Orbit controls (rotate + zoom)
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+
+            // Load OBJ
+            const loader = new OBJLoader();
+
+            loader.load(
+                path, // path to your OBJ file
+                (obj) => {
+                scene.add(obj);
+
+                // Auto-center model
+                const box = new THREE.Box3().setFromObject(obj);
+                const center = box.getCenter(new THREE.Vector3());
+
+                obj.position.sub(center);
+
+                const size = box.getSize(new THREE.Vector3()).length();
+                camera.position.set(0, size * 0.3, size);
+                controls.update();
+                },
+                (xhr) => {
+                console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
+                },
+                (error) => {
+                console.error('OBJ load error:', error);
+                }
+            );
+
+            // Resize handling
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(width, height);
+            });
+
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.1; // adjust speed as needed
+
+            let autoRotateTimeout;
+
+            // Pause auto-rotation while user interacts
+            controls.addEventListener('start', () => {
+                controls.autoRotate = false;
+
+                if (autoRotateTimeout) {
+                    clearTimeout(autoRotateTimeout);
+                }
+            });
+
+            // Resume auto-rotation after interaction stops
+            controls.addEventListener('end', () => {
+                autoRotateTimeout = setTimeout(() => {
+                    controls.autoRotate = true;
+                }, 2000); // resume after 2 seconds
+            });
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                controls.update(); // required for damping + autoRotate
+                renderer.render(scene, camera);
+            }
+
+            animate();
+        }
+
+        slide_add_OBJ('3JS_Q111Z2', 'Q111Z2_coamoeba.obj')
+        slide_add_OBJ('3JS_Ppm', 'Ppm_coamoeba.obj')
+        slide_add_OBJ('3JS_Conifold4', 'Conifold4_coamoeba.obj')
+        </script>
+	</body>
+</html>

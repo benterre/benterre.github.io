@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+
+		<title>Suzzoni 2026 Strings</title>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/white.css" />
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="../dist/plugin/highlight/monokai.css" />
+
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="../plugin/math/math.js"></script>
+
+        <script type="importmap">
+        {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+        }
+        }
+        </script>
+
+        <style>
+            .reveal section {
+                text-align: left;
+            }
+
+            .reveal h1,
+            .reveal h2,
+            .reveal h3 {
+                text-transform: none;
+            }
+
+            .reveal table {
+                margin-top: 20px;
+            }
+
+            .reveal pre {
+                background: transparent;
+                box-shadow: none;
+                font-size: 0.8em;
+                line-height: 1.2;
+            }
+            .reveal {
+                font-size: 30px; /* default is usually ~40px */
+            }
+
+            .reveal h1 {
+                font-size: 2.0em;
+            }
+
+            .reveal h2 {
+                font-size: 1.5em;
+            }
+
+            .reveal h3 {
+                font-size: 1.2em;
+            }
+
+            .reveal p,
+            .reveal li,
+            .reveal table {
+                font-size: 0.8em;
+            }
+
+            .footer {
+                position: absolute;
+                color: black;
+                bottom: 1em;
+                left: 1em;
+                font-size: 0.5em;
+                z-index: 20; /* Ensure it stays above slide content */
+                width: 92%;
+                display: flex;
+                justify-content: space-between;
+            }
+        </style>
+	</head>
+	<body>
+		<div class="reveal">
+            <div class="footer"><span>B. Suzzoni</span> <span>Neural-Network-Wess-Zumino-Witten</span><span><a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span></div>
+			<div class="slides">
+                <section data-background-image="strings2026_edit.png" data-background-size="cover" style="color: black;">
+                <h1 style="color: black;">Neural-Network Field Theory realization of Wess-Zumino-Witten</h1>
+                <h3>
+                    <a href="https://arxiv.org/abs/2512.07946" target="_blank">26xx.xxxxx</a>
+                </h3>
+                <p>
+                    Benjamin Suzzoni<br />
+                    In collaboration with P. Capuozzo and B. Robinson
+                </p>
+                <br><br><br><br><br><br>
+                </section>
+
+                <section id="Background">
+                <h2>String Theories realized as Neural-Network Field Theories</h2>
+
+                <p>
+                    Neural-Networks can approximate any function in the \(\infty\)-width limit.<br>
+                    The generating functional of correlators can be approximated too:
+                </p>
+                <div style="display: flex">
+                    <div style="display: block; width: 50%; font-size: 0.9em;">
+                        <p>
+                            \[
+                            Z[J] = \int \mathcal{D}\phi\, e^{-S[\phi] + \int d^Dx\, \phi(x)J(x)}
+                            \]
+                        </p>
+                    </div>
+                    <div style="display: block; width: 50%; font-size: 0.9em;">
+                        <p>
+                            \[
+                            Z[J]=\lim_{N\rightarrow\infty}
+                            \int_{\Omega} \prod_i^N d\theta_i\, P(\theta_i)\, e^{\int d^Dx\,\phi(x|\theta_i)J(x)}
+                            \]
+                        </p>
+                    </div>
+                </div>
+
+                <p>
+                    Distribution \(P(\theta_i)\) usually has global symmetries of the action \(S[\phi]\).
+                </p>
+
+                <p>
+                    Full Virasoro symmetry achieved in the limit\({}^\ast\) using <strong>cos-net</strong> architecture and <strong>log-kernel</strong> <a href="https://arxiv.org/pdf/2512.24420" style="color:lightgreen;">[Robinson; 2025]</a>, <a href="https://arxiv.org/pdf/2601.06249" style="color:lightgreen;">[Frank and Halverson; 2026]</a>,
+                </p>
+                <p style="font-size: 0.7em;">
+                    \[
+                        \phi(z|\{a_i,W_i,\gamma_i\}) = \frac{1}{N}\sum_{i=1}^N a_i\cos(zW_i+\bar{z}\overline{W}_i + \gamma_i)
+                    \]
+                </p>
+                <p style="font-size: 0.7em;">
+                    \[
+                        \mathbb{E}_{a_iW_i,\gamma_i}[\phi(z|\{a_i,W_i,\gamma_i\})\phi(w|\{a_i,W_i,\gamma_i\})] \overset{N\to\infty}{\longrightarrow} -\alpha^\prime\ln(|z-w)
+                    \]
+                </p>
+                <p style="color: brown;">
+                    <strong>Key idea:</strong> Finite-\(N\) corrections are deformations away from the free boson theory.
+                </p>
+
+                </section>
+
+                <section id="nn-WZW">
+                <h2>Neural-Network Wess-Zumino-Witten</h2>
+                <p>
+                    String theory with a group manifold target space \(\longrightarrow\) Wess-Zumino-Witten.<br>
+                    Use the Wakimoto representation: \(\beta\gamma\)-ghosts and free boson \(\phi(z)\).<br>
+                    Approximate those using the <strong>cos-net</strong> architecture.
+                </p>
+
+                <p style="color: brown;">
+                    <strong>Result:</strong> limit is well behaved and neural-network approximation is numerically powerful!
+                </p>
+
+                <p>
+                    eg. \(\widehat{\mathfrak{su}(2)}_k\) has three base fields
+                </p>
+                <p style="font-size: 0.7em;">
+                    \[
+                    \begin{align}
+                        e(z) &= \beta(z)\\
+                        h(z) &= i\sqrt{2k+4}\partial\phi(z)+2\gamma(z)\beta(z)\\
+                        f(z) &= -i\sqrt{2k+4}\partial\phi(z)\gamma(z)-k\partial\gamma(z)-\beta(z)\gamma^2(z)
+                    \end{align}
+                    \]
+                    \[
+                        T(z) = \frac{1}{2k+4}\left(\frac{1}{2}h^2(z)+2e(z)f(z)\right)
+                    \]
+                </p>
+
+                <p>
+                    WZW Kac-Moody algebra with central charge \(c=\frac{3k}{k+2}\) is recovered in the \(\infty\)-width limit!
+                </p>
+                <p style="font-size: 0.7em;">
+                    \[
+                        \mathbb{E}[T(z)T(w)] = \frac{c/2}{(z-w)^4} + \mathcal{O}\left(\frac{1}{N}\right)
+                    \]
+                </p>
+
+                <p style="color: brown;">
+                    <strong>Question:</strong> what physics do the finite-\(N\) corrections hold?
+                </p>
+                
+                </section>
+
+                <section>
+                    <h1>Thank You</h1>
+                </section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../dist/plugin/notes.js"></script>
+		<script src="../dist/plugin/markdown.js"></script>
+		<script src="../dist/plugin/highlight.js"></script>
+        <script src="../dist/plugin/zoom.js"></script>
+        <script src="../dist/plugin/search.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+                slideNumber: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+			});
+		</script>
+	</body>
+</html>
