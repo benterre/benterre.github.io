@@ -110,7 +110,7 @@
             <div class="footer"><span>B. Suzzoni</span> <span>Neural-Network Field Theory Correspondence for Wess-Zumino-Witten Theories</span><span><a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span></div>
 			<div class="slides">
                 <section>
-                <h1 style="color: black;">Neural-Network Field Theory Correspondence for Wess-Zumino-Witten Theories</h1>
+                <h1 style="color: black;">Neural-Network Field Theory Correspondence (for Wess-Zumino-Witten Theories)</h1>
                 <h3>
                     <a href="" target="_blank">26xx.xxxxx</a>
                 </h3>
@@ -123,19 +123,20 @@
                 
                 <section>
                 <h2>Table of Contents</h2>
-                <br>
                 <h3>I Background</h3>
                 <h3 data-id="toc-NN" style="color: black;">&nbsp;&nbsp;&nbsp; 1.1 Neural Networks and UATs</h3>
                 <h3 data-id="toc-NNFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.2 NN-FT Correspondence</h3>
-                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.3 NN-CFT Correspondence</h3>
-                <h3>II A Timeline of NNFT</h3>
-                <h3>III Advertizing</h3>
-                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-Free Strings</h3>
-                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 NN-Wess-Zumino-Witten</h3>
+                <h3 style="color: black;">II A Timeline of NNFT</h3>
+                <h3>III CFTs, Bosonic Strings and WZW</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-CFT Correspondence</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 Bosonic Strings and WZW</h3>
+                <h3>IV Advertizing</h3>
+                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 4.1 Topological effects</h3>
+                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 4.2 Superstrings</h3>
                 </section>
 
                 <section data-gif="restart">
-                <h2>Neural-Networks</h2>
+                <h2>1.1 Neural-Networks</h2>
                 <p>
                     What do we call a Neural Network (NN)? How do they work?
                 </p>
@@ -145,21 +146,24 @@
                 <p>
                     <b>Operations</b>: composition, addition, scalar multiplication
                 </p>
+                <p>
+                    Functional form of \(f\) is called an <b>architecture</b>
+                </p>
                 <p>eg. Feed forward network</p>
                 
-                <img height="400px" src="nn-animation.gif" alt="animation for feed-forward network">
+                <img height="350px" src="nn-animation.gif" alt="animation for feed-forward network">
                 <!-- <video width="600" height="400" autoplay muted loop controls>
                 <source src="nn-animation.mp4" type="video/mp4">
                 </video> -->
                 </section>
 
                 <section>
-                <h2>Neural-Networks</h2>
+                <h2>1.1 Neural-Networks</h2>
                 <p>
-                    <b>Initialization</b>: pick parameters from a distribution.
+                    <b>Initialization</b>: pick parameters from a distribution \(\longrightarrow\) get a random function \(f\)
                 </p>
                 <p>
-                    Eg. \(f(x) = \sigma(w_1x_1+w_2x_2+w_3x_3+b)\),
+                    Eg. \(f(x) = \sigma(\sum_i^3 w_ix_i+b)\),
                     $$ w_1,w_2,w_3 \sim P_w \qquad\qquad\qquad b \sim P_b $$
                 </p>
                 <br>
@@ -176,7 +180,7 @@
                 </section>
 
                 <section data-gif="restart">
-                <h2>Universal Approximation Theorems</h2>
+                <h2>1.1 Universal Approximation Theorems</h2>
                 <p>
                     How well do NNs approximate functions?
                 </p>
@@ -193,7 +197,7 @@
                 </section>
 
                 <section>
-                <h2>The Neural-Network Field-Theory Correspondence</h2>
+                <h2>1.2 The Neural-Network Field-Theory Correspondence</h2>
                 <p>
                     Textbook method for describing a Quantum Field Theory: <b>path integral</b>
                 </p>
@@ -218,9 +222,9 @@
                 </section>
 
                 <section>
-                <h2>The Neural-Network Field-Theory Correspondence</h2>
+                <h2>1.2 The Neural-Network Field-Theory Correspondence</h2>
                 <p>
-                    Key idea: use initialization distributions together UATs to integrate over all possible neural-network configurations.
+                    Key idea: use initialization distributions together with UATs to integrate over all possible neural-network configurations.
                 </p>
                 <p>
                     We recover the standard path integral in the UAT limit&#42; (\(N\to\infty\))
@@ -240,7 +244,7 @@
                 </section>
 
                 <section>
-                <h2>The Neural-Network Field-Theory Correspondence</h2>
+                <h2>1.2 The Neural-Network Field-Theory Correspondence</h2>
                 <p>
                     Can compute correlators in the usual way, using generating functional \(Z[J]\)
                     $$ Z[J] = \lim_{N\to\infty}\int_{\Omega}\prod_i^N d\theta_i P(\theta_i)\,e^{\int dx\, J(x)\phi_{\theta}(x)} $$
@@ -259,7 +263,7 @@
                 </section>
 
                 <section>
-                <h2>The Neural-Network Field-Theory Correspondence</h2>
+                <h2>1.2 The Neural-Network Field-Theory Correspondence</h2>
                 <h3>Going beyond the Gaussian limit</h3>
                 <p>
                     There are two ways of introducing interactions
@@ -269,31 +273,46 @@
                     <li>Break UAT requirements (eg. statistical dependence of parameters)</li>
                 </ul>
                 <p>
-                    eg. \(\phi^4\)-theory can be defined by deformation of the distribution of parameters
+                    eg. \(\phi^4\)-theory can be defined via a deformation of the distribution of parameters
                     $$ P(\theta) \to P(\theta)\exp\left(-\frac{\lambda}{4!}\int dx\,\phi^4_{\theta}(x)\right) $$
                 </p>
                 </section>
 
                 <section>
-                <h2>Neural-Network-Field-Theory - What to remember?</h2>
-                ...
+                <h2>1.2 Neural-Network-Field-Theory - What to remember?</h2>
+                <ul>
+                    <li>Convert functional integral into average over parameters of a NN</li>
+                    <li>Large NN parameter limit gives (generalized) free theory</li>
+                    <li>Integration measure \(\int d\theta\, P(\theta)\) is synonymous to \(\int D\phi e^{-S[\phi]}\)</li>
+                    <li>Interactions appear by moving away from the UAT limit</li>
+                    <ul>
+                        <li>\(\hookrightarrow\) finite NN parameter corrections</li>
+                        <li>\(\hookrightarrow\) other choices of parameter distributions</li>
+                    </ul>
+                    <br>
+                    <p>
+                        NNFT: good playground for analytics but also <b>strong numerical convergence!</b><br>
+                        \(\hookrightarrow\) good for simulations
+                    </p>
+                </ul>
                 </section>
 
                 <section>
                 <h2>Table of Contents</h2>
-                <br>
                 <h3>I Background</h3>
                 <h3 data-id="toc-NN" style="color: black;">&nbsp;&nbsp;&nbsp; 1.1 Neural Networks and UATs</h3>
                 <h3 data-id="toc-NNFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.2 NN-FT Correspondence</h3>
-                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.3 NN-CFT Correspondence</h3>
                 <h3 style="color: rgb(38, 150, 219);">II A Timeline of NNFT</h3>
-                <h3>III Advertizing</h3>
-                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-Free Strings</h3>
-                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 NN-Wess-Zumino-Witten</h3>
+                <h3>III CFTs, Bosonic Strings and WZW</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-CFT Correspondence</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 Bosonic Strings and WZW</h3>
+                <h3>IV Advertizing</h3>
+                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 4.1 Topological effects</h3>
+                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 4.2 Superstrings</h3>
                 </section>
 
                 <section data-auto-animate>
-                <h2>The NNFT Timeline</h2>
+                <h2>II The NNFT Timeline</h2>
                 <table>
                     <colgroup>
                         <col span="1" style="background-color:rgb(200, 200, 200)">
@@ -362,7 +381,7 @@
                 </section>
 
                 <section data-auto-animate>
-                <h2>The NNFT Timeline</h2>
+                <h2>II The NNFT Timeline</h2>
                 <table>
                     <colgroup>
                         <col span="1" style="background-color:rgb(200, 200, 200)">
@@ -431,85 +450,98 @@
                 </section>
 
                 <section>
-                <h2>Neural-Network Conformal-Field-Theory</h2>
-                <p>
-                    The general philosophy in NNFT is <b>global symmetries of the action should appear as global symmetries of the parameter distribution</b>.
-                </p>
-                <p>
-                    So for a theory with conformal symmetry in \(D\) dimensions we want a distribution of parameters with \(SO(D+2)\) isometry&#42;.
-                </p>
-                <p>
-                    &#42; we truly want \(SO(1,D+1)\) but should consider the Wick rotation for a well-defined probability distribution.
-                </p>
-                <p>
-                    WIP...
-                </p>
-                </section>
-
-                <section>
                 <h2>Table of Contents</h2>
-                <br>
                 <h3>I Background</h3>
                 <h3 data-id="toc-NN" style="color: black;">&nbsp;&nbsp;&nbsp; 1.1 Neural Networks and UATs</h3>
                 <h3 data-id="toc-NNFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.2 NN-FT Correspondence</h3>
-                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.3 NN-CFT Correspondence</h3>
-                <h3>II A Timeline of NNFT</h3>
-                <h3 style="color: rgb(38, 150, 219);">III Advertizing</h3>
-                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-Free Strings</h3>
-                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 NN-Wess-Zumino-Witten</h3>
+                <h3 style="color: black;">II A Timeline of NNFT</h3>
+                <h3>III CFTs, Bosonic Strings and WZW</h3>
+                <h3 data-id="toc-NNCFT" style="color: rgb(38, 150, 219);">&nbsp;&nbsp;&nbsp; 3.1 NN-CFT Correspondence</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 Bosonic Strings and WZW</h3>
+                <h3>IV Advertizing</h3>
+                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 4.1 Topological effects</h3>
+                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 4.2 Superstrings</h3>
                 </section>
 
                 <section>
-                <h2>Topological effects</h2>
-                <div style="display: flex; justify-content: space-between;">
-                    <img height="300px" src="BKT_vortices.png" alt="BKT vortices">
-                    <p style="margin: 20px;">
-                        Added a discrete/topological sector to the distribution of parameters.<br><br>
-                        The NNFT reproduces known phase transitions in the \(XY\) model.<br><br>
-                        <b>NNFT have strong numerical capabilities!</b>
-                    </p>
-                </div>
-                <div style="display: flex;">
-                <div class="profile-container">
-                    <img class="circle-image" src="Ferko.jpg" alt="C. Ferko">
-                    <p><a href="https://inspirehep.net/authors/1838025">C. Ferko</a></p>  
-                </div>
-                <div class="profile-container">
-                    <img class="circle-image" src="Halverson.jpeg" alt="J. Halverson">
-                    <p><a href="https://inspirehep.net/authors/1065176">J. Halverson</a></p>  
-                </div>
-                <div class="profile-container">
-                    <img class="circle-image" src="Jejjala.jpg" alt="V. Jejjala">
-                    <p><a href="https://inspirehep.net/authors/1004416">V. Jejjala</a></p>                
-                </div>
-                <div class="profile-container">
-                    <img class="circle-image" src="Robinson.jpg" alt="B. Robinson">
-                    <p><a href="https://inspirehep.net/authors/1288263">B. Robinson</a></p>
-                </div>
-                </div>
+                <h2>3.1 Neural-Network Conformal-Field-Theory</h2>
+                <a href="https://arxiv.org/pdf/2409.12222" style="color:lightgreen;">[Halverson, Naskar and Tian; 2024]</a>
+                <p>
+                    General philosophy in NNFT: <b>global symmetries of the action should appear as global symmetries of the parameter distribution</b>.
+                </p>
+                <p>
+                    Conformal symmetry in \(D\) dimensions \(\longrightarrow\) distribution of parameters with \(SO(D+2)\) isometry&#42;.
+                </p>
+                <p>
+                    &#42; actually \(SO(1,D+1)\) but should consider Wick rotation for well-defined probability distribution.
+                </p>
+                <p>
+                    NN architecture for conformal primary should obey
+                    $$ \phi_{\theta}(\lambda x) \longrightarrow \lambda^{-\Delta}\phi_{\theta}(x) $$
+                    with \(x \in \mathbb{R}^{D+2}\) (i.e. embedding space)
+                </p>
+                <p>
+                    eg. \(\phi_{\theta}(x) = (x\cdot\theta)^{-\Delta}\)
+                </p>
                 </section>
 
                 <section>
-                <h2>Wess-Zumino-Witten</h2>
-                <div style="display: flex;">
-                <div class="profile-container">
-                    <img class="circle-image" src="Capuozzo.jpeg" alt="P. Capuozzo">
-                    <p><a href="https://inspirehep.net/authors/2054645">P. Capuozzo</a></p>  
-                </div>
-                <div class="profile-container">
-                    <img class="circle-image" src="Robinson.jpg" alt="B. Robinson">
-                    <p><a href="https://inspirehep.net/authors/1288263">B. Robinson</a></p>  
-                </div>
-                <div class="profile-container">
-                    <img class="circle-image" src="Suzzoni.jpg" alt="B. Suzzoni">
-                    <p><a href="https://inspirehep.net/authors/2714489">B. Suzzoni</a></p>                
-                </div>
-                </div>
+                <h2>3.1 Neural-Network Conformal-Field-Theory</h2>
+                <p>
+                    We have a NN with one node.
+                </p>
+                <p>
+                    <b>Architecture</b>:
+                    $$\phi_{\theta}(x) = (x\cdot\theta)^{-\Delta}$$
+                </p>
+                <p>
+                    <b>Distribution</b>:
+                    $$ P(\theta) = f(\theta\cdot\theta) $$
+                </p>
+                <br>
+                <p>
+                    Compute correlators
+                    $$ Z[J] = \int_{\mathbb{R}^{D+2}}d\theta\,P(\theta)\, e^{\int dx\, J(x)\phi_{\theta}(x)} $$
+                </p>
+                <p>
+                    One single NN node \(\longrightarrow\) UAT doesn't apply<br>
+                    \(\hookrightarrow\) don't expect a CFT
+                </p>
                 </section>
 
-                <!-- <section id="Background">
-                <h2>String Theories realized as Neural-Network Field Theories</h2>
+                <section>
+                <h2>3.1 Neural-Network Conformal-Field-Theory</h2>
+                <p>
+                    One single NN node \(\longrightarrow\) don't expect a CFT
+                </p>
+                <p>
+                    <b>Correlators obey crossing symmetry and have standard CFT structure!</b>
+                </p>
+                <p>
+                    eg.
+                    $$ \mathbb{E}[\phi_{\theta,\Delta_1}(x_1)\phi_{\theta,\Delta_2}(x_2)] = \delta_{\Delta_1,\Delta_2}\frac{c_{12}}{(x_1\cdot x_2)^{\Delta_1+\Delta_2}} $$
+                </p>
+                <p>
+                    Choose <b>architecture</b> and <b>distribution</b> to get any CFT you want&#42;.
+                </p>
+                <p>
+                    Can combine NN nodes together to make new CFTs.
+                </p>
+                <p>
+                    Formalism also works with conformal defects <a href="https://arxiv.org/pdf/2512.07946" style="color:lightgreen;">[Capuozzo, Robinson, Suzzoni; 2025]</a>.
+                </p>
+                <br>
+                <p>
+                    What about CFTs in 2d?
+                </p>
+                </section>
 
+                <section>
+                <h2>3.2 Bosonic Strings</h2>
+                <aside class="notes">
+                    Random Fourier features give wanted behaviour<br>
+                    Distribution doesn't have full Witt symmetry, instead choose weighted distribution on the annulus to get Witt symmetry in limit
+                </aside>
                 <p>
                     Neural-Networks can approximate any function in the \(\infty\)-width limit.<br>
                     The generating functional of correlators can be approximated too:
@@ -555,10 +587,34 @@
 
                 </section>
 
-                <section id="nn-WZW">
-                <h2>Neural-Network Wess-Zumino-Witten</h2>
+                <section>
+                <h2>3.2 Wess-Zumino-Witten</h2>
+                <aside class="notes">
+                    \(\widehat{\mathfrak{g}}_k\) is not full symmetry<br>
+                    zero modes form a symmetry algebra: \(\mathfrak{g}\)
+                </aside>
                 <p>
-                    String theory with a group manifold target space \(\longrightarrow\) Wess-Zumino-Witten.<br>
+                    String theory with group manifold target space: \(S^2\rightarrow G\).
+                </p>
+                <p>
+                    $$ S = \frac{1}{4\lambda^2}\int_{S^2} \operatorname{tr}\left(g^{-1}\partial_{\mu}gg^{-1}\partial^{\mu}g\right) - \frac{ik}{2\pi}\int_{B_3}\operatorname{tr}\left(g^{-1}dg\wedge g^{-1}dg\wedge g^{-1}dg\right) $$
+                </p>
+                <p>
+                    The quantum theory unearths the affine Kac-Moody algebra \(\widehat{\mathfrak{g}}_k\) as its <b>spectrum-generating algebra</b>.
+                </p>
+                <br>
+                <p>
+                    With \(J(z)=-k\partial gg^{-1}\),
+                    $$ J^a(z)J^b(z) \sim \frac{k\delta^{ab}}{(z-w)^2} + \frac{if^{ab}{}_cJ^c(w)}{z-w} $$
+                    and \(T(z) = \gamma:J^aJ^a:(z)\),
+                    $$ T(z)T(w) \sim \frac{c/2}{(z-w)^4} + \frac{2T(w)}{(z-w)^2} + \frac{\partial T(w)}{z-w} $$
+                </p>
+                
+                </section>
+
+                <section>
+                <h2>3.2 Wess-Zumino-Witten</h2>
+                <p>
                     Use the Wakimoto representation: \(\beta\gamma\)-ghosts and free boson \(\phi(z)\).<br>
                     Approximate those using the <strong>cos-net</strong> architecture.
                 </p>
@@ -591,16 +647,94 @@
                         \mathbb{E}[T(z)T(w)] = \frac{c/2}{(z-w)^4} + \mathcal{O}\left(\frac{1}{N}\right)
                     \]
                 </p>
-
-                <p style="color: brown;">
-                    <strong>Question:</strong> what physics do the finite-\(N\) corrections hold?
-                </p>
                 
-                </section> -->
+                </section>
 
                 <section>
-                <h2>Superstrings</h2>
-                <div style="display: flex;">
+                <h2>Neural-Network Field Theory: Key takeaways (aka conclusion)</h2>
+                <h3>
+                    <ul>
+                        <li>NNFTs recast functional integrals into statistical averages of network parameters</li>
+                        <li>Can engineer new free theories and add perturbative interactions (eg. finite-\(N\) effects)</li>
+                        <li>NN-CFTs are CFT for all \(N\)</li>
+                        <ul>
+                            <li>\(\hookrightarrow\) new playground for generating CFT data</li>
+                        </ul>
+                        <li>NNFTs are interesting both analytically and numerically</li>
+                        <ul>
+                            <li>\(\hookrightarrow\) can reproduce bosonic strings amplitudes and WZW correlators</li>
+                        </ul>
+                    </ul>
+                </h3>
+                <br>
+                <h3>
+                    Limitations<br>
+                    <ul>
+                        <li>Hard to engineer specific theories (or even local theories)</li>
+                        <li>Formalism works well for spin-\(0\) and spin-\(\frac{1}{2}\)... unknown for higher spin</li>
+                        <li>NN-CFT only known for spin-\(0\) conformal primaries</li>
+                        <li>Gauge field?</li>
+                    </ul>
+                </h3>
+                </section>
+
+                <section>
+                <h2>Table of Contents</h2>
+                <h3>I Background</h3>
+                <h3 data-id="toc-NN" style="color: black;">&nbsp;&nbsp;&nbsp; 1.1 Neural Networks and UATs</h3>
+                <h3 data-id="toc-NNFT" style="color: black;">&nbsp;&nbsp;&nbsp; 1.2 NN-FT Correspondence</h3>
+                <h3 style="color: black;">II A Timeline of NNFT</h3>
+                <h3>III CFTs, Bosonic Strings and WZW</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.1 NN-CFT Correspondence</h3>
+                <h3 data-id="toc-NNCFT" style="color: black;">&nbsp;&nbsp;&nbsp; 3.2 Bosonic Strings and WZW</h3>
+                <h3 style="color: rgb(38, 150, 219);">IV Advertizing</h3>
+                <h3 data-id="toc-Strings" style="color: black;">&nbsp;&nbsp;&nbsp; 4.1 Topological effects</h3>
+                <h3 data-id="toc-WZW" style="color: black;">&nbsp;&nbsp;&nbsp; 4.2 Superstrings</h3>
+                </section>
+
+                <section>
+                <h2>4.1 Topological effects</h2>
+                <div style="display: flex; justify-content: space-between;">
+                    <img height="300px" src="BKT_vortices.png" alt="BKT vortices">
+                    <p style="margin: 20px;">
+                        Added a discrete/topological sector to the distribution of parameters.<br><br>
+                        The NNFT reproduces known phase transitions in the \(XY\) model.<br><br>
+                        <b>NNFT have strong numerical capabilities!</b>
+                    </p>
+                </div>
+                <div style="display: flex; justify-content: space-around;">
+                <div class="profile-container">
+                    <img class="circle-image" src="Ferko.jpg" alt="C. Ferko">
+                    <p><a href="https://inspirehep.net/authors/1838025">C. Ferko</a></p>  
+                </div>
+                <div class="profile-container">
+                    <img class="circle-image" src="Halverson.jpeg" alt="J. Halverson">
+                    <p><a href="https://inspirehep.net/authors/1065176">J. Halverson</a></p>  
+                </div>
+                <div class="profile-container">
+                    <img class="circle-image" src="Jejjala.jpg" alt="V. Jejjala">
+                    <p><a href="https://inspirehep.net/authors/1004416">V. Jejjala</a></p>                
+                </div>
+                <div class="profile-container">
+                    <img class="circle-image" src="Robinson.jpg" alt="B. Robinson">
+                    <p><a href="https://inspirehep.net/authors/1288263">B. Robinson</a></p>
+                </div>
+                </div>
+                </section>
+
+                <section>
+                <h2>4.2 Superstrings</h2>
+                <p>
+                    Developing a program to reconstruct all superstrings from NNs!
+                </p>
+                <p>
+                    T-duality was already shown to work in NNFT, can NN-superstring give new predictions?
+                </p>
+                <p>
+                    NNFT allow us to efficiently <b>simulate</b> the superstrings.
+                </p>
+                <br><br><br><br>
+                <div style="display: flex; justify-content: space-around;">
                 <div class="profile-container">
                     <img class="circle-image" src="Halverson.jpeg" alt="J. Halverson">
                     <p><a href="https://inspirehep.net/authors/1065176">J. Halverson</a></p>  
@@ -610,14 +744,30 @@
                     <p><a href="https://inspirehep.net/authors/1288263">B. Robinson</a></p>  
                 </div>
                 <div class="profile-container">
-                    <img class="circle-image" src="Jejjala.jpg" alt="V. Jejjala">
-                    <p><a href="https://inspirehep.net/authors/1004416">V. Jejjala</a></p>                
+                    <img class="circle-image" src="image-profile.jpeg" alt="S. Frank">
+                    <p><a href="https://inspirehep.net/authors/2218240">S. Frank</a></p>                
                 </div>
                 </div>
                 </section>
 
                 <section>
-                    <h1>Thank You</h1>
+                <h2>Thank you</h2>
+                <br>
+                My collaborators<br><br>
+                <div style="display: flex; justify-content: space-around;">
+                <div class="profile-container">
+                    <img class="circle-image" src="Capuozzo.jpeg" alt="P. Capuozzo">
+                    <p><a href="https://inspirehep.net/authors/2054645">P. Capuozzo</a></p>  
+                </div>
+                <div class="profile-container">
+                    <img class="circle-image" src="Robinson.jpg" alt="B. Robinson">
+                    <p><a href="https://inspirehep.net/authors/1288263">B. Robinson</a></p>  
+                <!-- </div>
+                <div class="profile-container">
+                    <img class="circle-image" src="Suzzoni.jpg" alt="B. Suzzoni">
+                    <p><a href="https://inspirehep.net/authors/2714489">B. Suzzoni</a></p>                
+                </div> -->
+                </div>
                 </section>
 			</div>
 		</div>
