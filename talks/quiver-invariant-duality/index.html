@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+
+<title>Dynamic 3D Force Graph</title>
+
+<style>
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+}
+
+#3d-graph {
+    width: 100vw;
+    height: 100vh;
+}
+
+</style>
+
+<!-- 3D Force Graph -->
+<script src="https://unpkg.com/3d-force-graph"></script>
+
+</head>
+
+<body>
+
+<div id="3d-graph"></div>
+
+<script>
+
+///////////////////////////////////////////////////////////////////////////////
+// INITIALIZE GRAPH
+///////////////////////////////////////////////////////////////////////////////
+
+const Graph = ForceGraph3D()
+(document.getElementById('3d-graph'))
+
+
+.backgroundColor('#000000')
+
+.nodeLabel(node => `
+    <div style="color:white">
+        ${node.id}
+    </div>
+`)
+
+.nodeAutoColorBy('group')
+
+.nodeVal(node => node.val || 2)
+
+.linkWidth(link =>
+    Math.sqrt(link.weight || 1)
+)
+
+.linkOpacity(0.35)
+
+// .linkDirectionalParticles(link =>
+//     Math.min(link.weight || 1, 5)
+// )
+
+// .linkDirectionalParticleWidth(2)
+
+.linkColor(() => 'rgba(180,180,180,0.5)')
+.linkWidth(link => 1.5)
+.linkOpacity(0.7)
+
+.d3AlphaDecay(0.01)
+
+.d3VelocityDecay(0.2)
+
+.cooldownTicks(Infinity);
+
+///////////////////////////////////////////////////////////////////////////////
+// EMPTY GRAPH
+///////////////////////////////////////////////////////////////////////////////
+
+const gData = {
+    nodes: [],
+    links: []
+};
+
+Graph.graphData(gData);
+
+Graph
+    .d3Force('charge')
+    .strength(-100);
+
+Graph
+    .d3Force('link')
+    .distance(100);
+
+Graph
+    .d3Force('link')
+    .strength(0.08);
+
+///////////////////////////////////////////////////////////////////////////////
+// CAMERA ROTATION
+///////////////////////////////////////////////////////////////////////////////
+
+// let angle = 0;
+
+// function rotateCamera() {
+
+//     const distance = 350;
+
+//     Graph.cameraPosition({
+//         x: distance * Math.sin(angle),
+//         z: distance * Math.cos(angle),
+//         y: 120
+//     });
+
+//     angle += 0.002;
+// }
+
+// setInterval(rotateCamera, 16);
+
+///////////////////////////////////////////////////////////////////////////////
+// LOAD FULL GRAPH JSON
+///////////////////////////////////////////////////////////////////////////////
+
+fetch('CZ4Z4.json')
+
+.then(res => res.json())
+
+.then(fullGraph => {
+
+    console.log("Loaded graph");
+
+    ///////////////////////////////////////////////////////////////////////////
+    // NETWORKX FORMAT HANDLING
+    ///////////////////////////////////////////////////////////////////////////
+
+    const allNodes = fullGraph.nodes;
+
+    // NetworkX may export as "links" or "edges"
+    const allLinks =
+        fullGraph.links ||
+        fullGraph.edges;
+
+    ///////////////////////////////////////////////////////////////////////////
+    // BUILD EDGE LOOKUP
+    ///////////////////////////////////////////////////////////////////////////
+
+    const edgesByNode = {};
+
+    allNodes.forEach(node => {
+        edgesByNode[node.id] = [];
+    });
+
+    console.log(allNodes.slice(0, 5))
+
+    allLinks.forEach(link => {
+
+        const source =
+            typeof link.source === 'object'
+            ? link.source.id
+            : link.source;
+
+        const target =
+            typeof link.target === 'object'
+            ? link.target.id
+            : link.target;
+
+        if (!edgesByNode[source]) {
+            edgesByNode[source] = [];
+        }
+
+        if (!edgesByNode[target]) {
+            edgesByNode[target] = [];
+        }
+
+        edgesByNode[source].push(link);
+        edgesByNode[target].push(link);
+    });
+
+    ///////////////////////////////////////////////////////////////////////////
+    // DYNAMIC INSERTION
+    ///////////////////////////////////////////////////////////////////////////
+
+    let currentIndex = 0;
+
+    const insertedNodes = new Set();
+
+    const insertedEdges = new Set();
+
+    function edgeKey(a, b) {
+        return [a, b].sort().join('---');
+    }
+
+    function addNextNode() {
+
+        ///////////////////////////////////////////////////////////////////////
+        // FINISHED
+        ///////////////////////////////////////////////////////////////////////
+
+        if (currentIndex >= allNodes.length) {
+
+            console.log("Finished loading graph");
+
+            return;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // ADD NODE
+        ///////////////////////////////////////////////////////////////////////
+
+        const node = allNodes[currentIndex];
+
+        gData.nodes.push(node);
+
+        insertedNodes.add(node.id);
+
+        ///////////////////////////////////////////////////////////////////////
+        // ADD EDGES
+        ///////////////////////////////////////////////////////////////////////
+
+        const candidateEdges =
+            edgesByNode[node.id];
+
+        candidateEdges.forEach(link => {
+
+            const source =
+                typeof link.source === 'object'
+                ? link.source.id
+                : link.source;
+
+            const target =
+                typeof link.target === 'object'
+                ? link.target.id
+                : link.target;
+
+            // Skip self loops
+            if (source === target) return;
+
+            // CRITICAL SAFETY CHECK
+            if (
+                !insertedNodes.has(source) ||
+                !insertedNodes.has(target)
+            ) {
+                return;
+            }
+
+            const key = edgeKey(source, target);
+
+            if (!insertedEdges.has(key)) {
+
+                // IMPORTANT:
+                // create NEW object
+                gData.links.push({
+                    source: source,
+                    target: target,
+                    width: link.width || 1
+                });
+
+                insertedEdges.add(key);
+            }
+        });
+
+        ///////////////////////////////////////////////////////////////////////
+        // UPDATE GRAPH
+        ///////////////////////////////////////////////////////////////////////
+
+        Graph.graphData({
+            nodes: [...gData.nodes],
+            links: [...gData.links]
+        });
+
+        ///////////////////////////////////////////////////////////////////////
+        // REHEAT PHYSICS
+        ///////////////////////////////////////////////////////////////////////
+
+        Graph.d3ReheatSimulation();
+
+        ///////////////////////////////////////////////////////////////////////
+        // NEXT
+        ///////////////////////////////////////////////////////////////////////
+
+        currentIndex++;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INSERTION SPEED
+    ///////////////////////////////////////////////////////////////////////////
+
+    setInterval(addNextNode, 10);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// RESIZE
+///////////////////////////////////////////////////////////////////////////////
+
+window.addEventListener('resize', () => {
+
+    Graph.width(window.innerWidth);
+    Graph.height(window.innerHeight);
+});
+
+</script>
+
+</body>
+</html>
