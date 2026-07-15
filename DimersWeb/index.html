@@ -5,12 +5,25 @@
     <meta charset="utf-8">
     <title>Brane Tiling Editor</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["\\(", "\\)"]] },
+            svg: { fontCache: "global" },
+            startup: { typeset: false }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
     <style>
         html, body {
             margin: 0;
-            display: flex;
             font-family: sans-serif;
+            width: 100%;
             height: 100%;
+        }
+
+        body {
+            display: flex;
+            overflow: hidden;
         }
 
         #ui {
@@ -50,6 +63,42 @@
         #qw h3 {
             text-align: center;
             margin: 4px 0 8px;
+        }
+
+        #qwTitle {
+            font-size: 15px;
+            line-height: 1.4;
+            overflow-wrap: break-word;
+        }
+
+        /* MathJax inline SVGs must escape the global `svg` sizing rule */
+        #qw mjx-container svg {
+            width: auto;
+            height: auto;
+            flex: none;
+            background: transparent;
+            vertical-align: middle;
+        }
+
+        .qw-pre.qw-math {
+            color: #fff;
+            font-family: serif;
+            font-size: 13px;
+            line-height: 1.7;
+            min-height: 22px;
+        }
+
+        #quiverBox {
+            background: #111;
+            border-radius: 4px;
+        }
+
+        #quiverSvg {
+            display: block;
+            width: 100%;
+            height: 190px;
+            flex: none;
+            background: transparent;
         }
 
         .qw-section {
@@ -220,23 +269,23 @@
     <svg id="svg"></svg>
 
     <div id="qw">
-        <h3>Dimer model</h3>
+        <h3 id="qwTitle">Dimer model</h3>
         <div class="qw-section">
             <div class="qw-head"><span>Kasteleyn matrix</span><button class="copy-btn" data-copy="kasteleyn"
                     title="Copy to clipboard">⧉</button></div>
-            <pre id="kasteleyn" class="qw-pre"></pre>
+            <div id="kasteleyn" class="qw-pre qw-math"></div>
             <p id="kasteleynNote" class="qw-note"></p>
         </div>
         <div class="qw-section">
             <div class="qw-head"><span>Quiver</span><button class="copy-btn" data-copy="quiver"
                     title="Copy to clipboard">⧉</button></div>
-            <pre id="quiver" class="qw-pre"></pre>
+            <div id="quiverBox"><svg id="quiverSvg"></svg></div>
             <p id="quiverNote" class="qw-note"></p>
         </div>
         <div class="qw-section">
             <div class="qw-head"><span>Superpotential</span><button class="copy-btn" data-copy="superpotential"
                     title="Copy to clipboard">⧉</button></div>
-            <pre id="superpotential" class="qw-pre"></pre>
+            <div id="superpotential" class="qw-pre qw-math"></div>
         </div>
         <div class="qw-section">
             <div class="qw-head"><span>Toric diagram</span><button class="copy-btn" data-copy="toric"
