@@ -831,12 +831,15 @@ function computeArrows(dimer) {
         arrowByEdge.set(qe.key, a);
     });
     arrows.sort((a, b) => a.from - b.from || a.to - b.to);
-    const totals = new Map(), seen = new Map();
-    arrows.forEach(a => { const p = `${a.from},${a.to}`; totals.set(p, (totals.get(p) || 0) + 1); });
+    // multiple arrows between the same ordered pair get successive letters:
+    // X[i,j], Y[i,j], Z[i,j], ...
+    const ARROW_LETTERS = ["X", "Y", "Z", "W", "V", "U", "T", "S"];
+    const seen = new Map();
     arrows.forEach(a => {
         const p = `${a.from},${a.to}`;
         const k = (seen.get(p) || 0) + 1; seen.set(p, k);
-        a.name = totals.get(p) === 1 ? `X[${a.from},${a.to}]` : `X[${a.from},${a.to},${k}]`;
+        const letter = k <= ARROW_LETTERS.length ? ARROW_LETTERS[k - 1] : `X${k}`;
+        a.name = `${letter}[${a.from},${a.to}]`;
     });
     return { arrows, arrowByEdge };
 }
@@ -1009,6 +1012,329 @@ function computeToric(dimer, kast) {
     return { points: pts, hull, twoArea, reasons, consistent: reasons.length === 0 };
 }
 
+/* ================== TORIC DIAGRAM RECOGNITION ================== */
+// Two toric diagrams describe the same CY3 iff they are related by an affine
+// unimodular map: SL(2,Z), reflections (det = -1) and translations.  No
+// rescaling is possible in this group — a dilated polygon is a genuinely
+// different geometry (an orbifold cover) and never matches its parent.
+//
+// canonicalPolygonKey() computes an exact canonical form under this group:
+// for every hull edge (and for the reflected polygon), a unimodular map sends
+// the edge's primitive vector to (1,0) and the base vertex to the origin; the
+// residual x-shear freedom is fixed with the preceding vertex, and the
+// lexicographically smallest serialization wins.
+
+function egcdPair(a, b) {   // a*x + b*y = g = gcd(a,b) >= 0
+    let or_ = a, r = b, os = 1, s = 0, ot = 0, t = 1;
+    while (r !== 0) {
+        const q = Math.trunc(or_ / r);
+        [or_, r] = [r, or_ - q * r];
+        [os, s] = [s, os - q * s];
+        [ot, t] = [t, ot - q * t];
+    }
+    if (or_ < 0) { or_ = -or_; os = -os; ot = -ot; }
+    return { g: or_, x: os, y: ot };
+}
+
+function canonicalPolygonKey(hullCCW) {
+    if (hullCCW.length < 3) return null;
+    const refl = hullCCW.map(p => ({ x: p.x, y: -p.y })).reverse();
+    let best = null;
+    for (const V of [hullCCW, refl]) {
+        const n = V.length;
+        for (let i = 0; i < n; i++) {
+            const A = V[i], B = V[(i + 1) % n];
+            const g = gcd(B.x - A.x, B.y - A.y);
+            const dx = (B.x - A.x) / g, dy = (B.y - A.y) / g;
+            const { x: a, y: b } = egcdPair(dx, dy);   // a*dx + b*dy = 1
+            const pts = [];
+            for (let k = 0; k < n; k++) {
+                const p = V[(i + k) % n];
+                const px = p.x - A.x, py = p.y - A.y;
+                pts.push({ x: a * px + b * py, y: -dy * px + dx * py });
+            }
+            // last vertex (the one preceding A) has y > 0 on a strict hull
+            const C = pts[n - 1];
+            const t = -Math.floor(C.x / C.y);
+            const key = pts.map(p => `${p.x + t * p.y},${p.y}`).join(";");
+            if (best === null || key < best) best = key;
+        }
+    }
+    return best;
+}
+
+function latticePolygonInvariants(hull) {
+    const twoA = polygonTwoArea(hull);
+    let B = 0;
+    for (let i = 0; i < hull.length; i++) {
+        const a = hull[i], b = hull[(i + 1) % hull.length];
+        B += gcd(b.x - a.x, b.y - a.y);
+    }
+    return { twoA, B, I: (twoA - B + 2) / 2 };   // Pick's theorem
+}
+
+// ---- parametric recognizers -------------------------------------------------
+
+// Any lattice triangle is an abelian orbifold of C^3; the group is
+// Z^2/(edge lattice) and cyclic weights come from barycentric coordinates of
+// a generator, canonicalized over generator rescalings.
+function recognizeTriangle(hull) {
+    const [v1, v2, v3] = hull;
+    const u = { x: v2.x - v1.x, y: v2.y - v1.y };
+    const w = { x: v3.x - v1.x, y: v3.y - v1.y };
+    const D = u.x * w.y - u.y * w.x;
+    const n = Math.abs(D);
+    if (n === 1) return [{ name: "C³", rank: 0 }];
+    const d1 = gcd(gcd(u.x, u.y), gcd(w.x, w.y));
+    if (d1 > 1) return [{ name: `C³/(Z${d1}×Z${n / d1})`, rank: 2 }];
+    // cyclic — find a generator of Z²/L
+    let gen = null;
+    for (let gx = 0; gx < n && !gen; gx++) {
+        for (let gy = 0; gy < n; gy++) {
+            const aN = gx * w.y - gy * w.x;
+            const bN = u.x * gy - u.y * gx;
+            if (n / gcd(gcd(Math.abs(aN), Math.abs(bN)), n) === n) {
+                gen = { x: v1.x + gx, y: v1.y + gy };
+                break;
+            }
+        }
+    }
+    if (!gen) return [{ name: `C³/Z${n}`, rank: 2 }];
+    const cr = (p, q) => (p.x - gen.x) * (q.y - gen.y) - (p.y - gen.y) * (q.x - gen.x);
+    const sgn = D > 0 ? 1 : -1;
+    const raw = [cr(v2, v3), cr(v3, v1), cr(v1, v2)].map(v => ((sgn * v) % n + n) % n);
+    let bestW = null;
+    for (let k = 1; k < n; k++) {
+        if (gcd(k, n) !== 1) continue;
+        const s = raw.map(v => (v * k) % n).sort((A, B) => A - B).join(",");
+        if (bestW === null || compareWeightStrings(s, bestW) < 0) bestW = s;
+    }
+    const wts = bestW.split(",").map(Number);
+    const out = [{ name: `C³/Z${n} (${wts.join(",")})`, rank: 2 }];
+    if (wts[0] === 0) out.unshift({ name: `C²/Z${n} × C`, rank: 1 });
+    return out;
+}
+function compareWeightStrings(a, b) {
+    const A = a.split(",").map(Number), B = b.split(",").map(Number);
+    for (let i = 0; i < A.length; i++) if (A[i] !== B[i]) return A[i] - B[i];
+    return 0;
+}
+
+// Any lattice parallelogram is an abelian orbifold of the conifold.
+function recognizeParallelogram(hull) {
+    if (hull.length !== 4) return [];
+    const e1 = { x: hull[1].x - hull[0].x, y: hull[1].y - hull[0].y };
+    const e2 = { x: hull[2].x - hull[1].x, y: hull[2].y - hull[1].y };
+    const e3 = { x: hull[3].x - hull[2].x, y: hull[3].y - hull[2].y };
+    if (e1.x + e3.x !== 0 || e1.y + e3.y !== 0) return [];
+    const n = Math.abs(e1.x * e2.y - e1.y * e2.x);
+    if (n === 1) return [{ name: "Conifold (T^{1,1})", rank: 0 }];
+    const d1 = gcd(gcd(e1.x, e1.y), gcd(e2.x, e2.y));
+    const gname = d1 === 1 ? `Z${n}` : `Z${d1}×Z${n / d1}`;
+    return [{ name: `C/${gname} (conifold orbifold)`, rank: 2.5 }];
+}
+
+// ---- database of named diagrams --------------------------------------------
+// Family conventions (verified in the tests):
+//   Y^{p,q} = hull{(0,0),(1,0),(0,p),(-1,p+q)},      0 <= q <= p,   2A = 2p
+//   X^{p,q} = Y^{p,q} + point (-1,p+q-1),             1 <= q <= p,   2A = 2p+1
+//   L^{a,b,c} = hull{(0,0),(1,0),(ak,b),(-al,c)}, ck+bl = 1,         2A = a+b
+//   (Y^{p,q} = L^{p-q,p+q,p};  SPP = L^{1,2,1} = X^{1,1};  dP1 = Y^{2,1};
+//    F0 = Y^{2,0} = C/Z2 (1,1,1,1))
+// Abelian orbifolds: the diagram of X/Γ is the image of X's diagram under an
+// integer matrix of determinant |Γ| (row-Hermite forms enumerate all actions).
+
+function yPoints(p, q) {
+    return [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: p }, { x: -1, y: p + q }];
+}
+function xPoints(p, q) {
+    return [...yPoints(p, q), { x: -1, y: p + q - 1 }];
+}
+// Z^{p,q} (Oota–Yasui, hep-th/0610092 eq. (3.1)): X^{p,q} plus the vertex
+// (0, p-q+1) in their convention; 0 < q < p, 2A = 2p+2, Z^{2,1} = dP3.
+function zPoints(p, q) {
+    return [{ x: 1, y: p }, { x: 0, y: p - q + 1 }, { x: 0, y: p - q },
+    { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 1 }];
+}
+function lPoints(a, b, c) {
+    const { g, x: k, y: l } = egcdPair(c, b);
+    if (g !== 1) return null;
+    return [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: a * k, y: b }, { x: -a * l, y: c }];
+}
+
+const TORIC_AMAX = 32;   // largest 2·Area kept in the database
+let TORIC_DB = null;
+
+// Pseudo del Pezzo diagrams — coordinates fixed by enumerating ALL reflexive
+// polygons (exactly 16 classes, matching arXiv:1201.2614) and assigning the
+// remaining classes by elimination using their 2·Area and vertex counts:
+// PdP2 (2A=5 quad, = X^{2,2} = L^{2,3,1}), PdP3b (2A=6 pentagon),
+// PdP3c (2A=6 quad, = SPP/Z2), PdP4a (2A=7 pentagon), PdP4b (2A=7 quad,
+// = L^{3,4,1}), PdP5 (2A=8 square, = C/Z2×Z2) — PdP5 sits in `specials`.
+const PDP_COORDS = [
+    ["PdP2", [{ x: -2, y: -1 }, { x: -1, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }]],
+    ["PdP3b", [{ x: -2, y: -1 }, { x: -1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }]],
+    ["PdP3c", [{ x: -2, y: -1 }, { x: -1, y: -1 }, { x: 2, y: 1 }, { x: 0, y: 1 }]],
+    ["PdP4a", [{ x: -2, y: -1 }, { x: -1, y: -1 }, { x: 1, y: 0 }, { x: 2, y: 1 }, { x: 0, y: 1 }]],
+    ["PdP4b", [{ x: -2, y: -1 }, { x: -1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 2 }]],
+];
+
+function dbAdd(db, pts, name, rank) {
+    if (!pts) return;
+    const h = convexHull(pts);
+    if (h.length < 3 || polygonTwoArea(h) > TORIC_AMAX) return;
+    const key = canonicalPolygonKey(h);
+    if (!db.has(key)) db.set(key, []);
+    const list = db.get(key);
+    if (!list.some(e => e.name === name)) list.push({ name, rank });
+}
+
+function buildToricDB() {
+    const db = new Map();
+
+    // named diagrams (rank 0) — the 16 reflexive polygons are all covered:
+    // 4 triangles + F0/PdP5 (parallelograms) are handled by the parametric
+    // recognizers as well; PdP coordinates verified against the classification
+    // of one-interior-point polygons (Hanany–Seong arXiv:1201.2614).
+    const specials = [
+        ["C³", [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]],
+        ["Conifold (T^{1,1})", [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }]],
+        ["SPP", lPoints(1, 2, 1)],
+        ["dP0", [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: -1 }]],
+        ["dP1", yPoints(2, 1)],
+        ["dP2", [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }]],
+        ["dP3", [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }, { x: 1, y: -1 }]],
+        ["F₀", yPoints(2, 0)],
+        ["PdP3a", [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -2, y: -3 }]],
+        ["PdP5", [{ x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 }]],
+        // PdP2 / PdP3b / PdP3c / PdP4a / PdP4b filled in below (see PDP_COORDS)
+    ];
+    specials.forEach(([n, p]) => dbAdd(db, p, n, 0));
+    PDP_COORDS.forEach(([n, p]) => dbAdd(db, p, n, 0));
+
+    // families
+    for (let p = 1; 2 * p <= TORIC_AMAX; p++)
+        for (let q = 0; q <= p; q++)
+            dbAdd(db, yPoints(p, q), `Y^{${p},${q}}`, 1);
+    for (let p = 1; 2 * p + 1 <= TORIC_AMAX; p++)
+        for (let q = 1; q <= p; q++)
+            dbAdd(db, xPoints(p, q), `X^{${p},${q}}`, 1);
+    for (let p = 2; 2 * p + 2 <= TORIC_AMAX; p++)
+        for (let q = 1; q < p; q++)
+            dbAdd(db, zPoints(p, q), `Z^{${p},${q}}`, 1);
+    for (let b = 1; b <= TORIC_AMAX; b++)
+        for (let a = 1; a <= b && a + b <= TORIC_AMAX; a++)
+            for (let c = 1; 2 * c <= a + b; c++)          // convention c <= d = a+b-c
+                dbAdd(db, lPoints(a, b, c), `L^{${a},${b},${c}}`, 2);
+
+    // abelian orbifolds of the named parents (C³ and conifold orbifolds are
+    // already handled exactly by the triangle/parallelogram recognizers)
+    const parents = [
+        ["SPP", lPoints(1, 2, 1)],
+        ["dP1", yPoints(2, 1)],
+        ["dP2", specials[5][1]],
+        ["dP3", specials[6][1]],
+        ["F₀", yPoints(2, 0)],
+        ["PdP5", specials[9][1]],
+        ["L^{1,3,1}", lPoints(1, 3, 1)],
+        ["L^{2,3,2}", lPoints(2, 3, 2)],
+        ["L^{1,4,1}", lPoints(1, 4, 1)],
+        ["L^{1,5,1}", lPoints(1, 5, 1)],
+        ...PDP_COORDS,
+    ];
+    for (const [pname, pts] of parents) {
+        if (!pts) continue;
+        const base = polygonTwoArea(convexHull(pts));
+        for (let k = 2; k * base <= TORIC_AMAX; k++) {
+            for (let m = 1; m <= k; m++) {
+                if (k % m) continue;
+                const nn = k / m;
+                for (let s = 0; s < nn; s++) {       // row-Hermite forms [[m,s],[0,nn]]
+                    const img = pts.map(P => ({ x: m * P.x + s * P.y, y: nn * P.y }));
+                    const d1 = gcd(gcd(m, s), nn);
+                    const gname = d1 === 1 ? `Z${k}` : `Z${d1}×Z${k / d1}`;
+                    dbAdd(db, img, `${pname}/${gname}`, 3);
+                }
+            }
+        }
+    }
+    return db;
+}
+
+function recognizeToric(toric) {
+    if (!toric || !toric.hull || toric.hull.length < 3) return null;
+    if (!TORIC_DB) TORIC_DB = buildToricDB();
+    const hull = toric.hull;
+    const names = [...(TORIC_DB.get(canonicalPolygonKey(hull)) || [])];
+    if (hull.length === 3) names.push(...recognizeTriangle(hull));
+    if (hull.length === 4) names.push(...recognizeParallelogram(hull));
+    if (!names.length) {
+        const inv = latticePolygonInvariants(hull);
+        let s = `Toric CY₃: ${hull.length}-gon, 2·Area = ${inv.twoA}, ${inv.I} interior pt${inv.I === 1 ? "" : "s"}`;
+        if (inv.I === 2) s += " — cf. arXiv:2004.05295";
+        return s;
+    }
+    names.sort((A, B) => A.rank - B.rank);
+    const seen = new Set(), out = [];
+    for (const e of names) {
+        if (seen.has(e.name)) continue;
+        seen.add(e.name);
+        out.push(e.name);
+        if (out.length === 3) break;
+    }
+    return out.join(" = ");
+}
+
+/* ================== PANEL TITLE (MathJax) ================== */
+
+// Convert a plain recognition string (e.g. "dP1 = Y^{2,1} = L^{2,2,1}",
+// "C³/Z6 (1,2,3)", "C/Z2×Z2 (conifold orbifold)") into TeX.
+function titleToTeX(name) {
+    return name.split(" = ").map(part => {
+        let t = part;
+        t = t.replace(/^Conifold \(T\^\{1,1\}\)$/, "\\text{Conifold}\\ (T^{1,1})");
+        t = t.replace(/ \(conifold orbifold\)/, "\\ \\text{(conifold orbifold)}");
+        t = t.replace(/PdP(\d[a-f]?)/g, "\\mathrm{PdP}_{$1}");
+        t = t.replace(/dP(\d)/g, "\\mathrm{dP}_{$1}");
+        t = t.replace(/SPP/g, "\\mathrm{SPP}");
+        t = t.replace(/F₀/g, "F_0");
+        t = t.replace(/C³/g, "\\mathbb{C}^3");
+        t = t.replace(/C²/g, "\\mathbb{C}^2");
+        t = t.replace(/^C\//, "\\mathcal{C}/");
+        t = t.replace(/× C$/, "\\times \\mathbb{C}");
+        t = t.replace(/Z(\d+)/g, "\\mathbb{Z}_{$1}");
+        t = t.replace(/×/g, "\\times ");
+        return t;
+    }).join(" = ");
+}
+
+// Typeset TeX into an element with MathJax when available; fall back to
+// plain text (offline or MathJax still loading — re-typesets once ready).
+function typesetMath(el, tex, fallbackText) {
+    const mj = window.MathJax;
+    if (mj && mj.typesetPromise) {
+        el.innerHTML = "\\(" + tex + "\\)";
+        mj.typesetClear && mj.typesetClear([el]);
+        mj.typesetPromise([el]).catch(() => { el.textContent = fallbackText; });
+    } else {
+        el.textContent = fallbackText;
+        if (mj && mj.startup && mj.startup.promise)
+            mj.startup.promise.then(() => typesetMath(el, tex, fallbackText));
+    }
+}
+
+function setPanelTitle(plainName) {
+    const el = document.getElementById("qwTitle");
+    if (!plainName) { el.textContent = "Dimer model"; return; }
+    if (plainName.startsWith("Toric CY")) { el.textContent = plainName; return; }
+    typesetMath(el, titleToTeX(plainName), plainName);
+}
+
+// X[1,2] → X_{1,2}
+function fieldToTeX(name) {
+    return name.replace(/^([A-Z]\d*)\[(\d+),(\d+)\]$/, "$1_{$2,$3}");
+}
+
 /* ================== ANALYSIS PANEL ================== */
 
 const copyPayloads = { kasteleyn: "", quiver: "", superpotential: "", toric: "" };
@@ -1029,11 +1355,14 @@ function updateAnalysis() {
     renderSuperpotential(terms);
     renderToricDiagram(toric);
 
+    setPanelTitle(toric.consistent ? recognizeToric(toric) : null);
+
     display_qw(true);
 }
 
 function renderKasteleyn(kast) {
     const n = kast.whites.length, m = kast.blacks.length;
+    // plain-text fallback (also what pre-MathJax environments see)
     const rowHead = i => `w${i + 1}`;
     const colHead = j => `b${j + 1}`;
     const headW = Math.max(3, rowHead(n - 1).length + 1);
@@ -1043,7 +1372,15 @@ function renderKasteleyn(kast) {
     const head = " ".repeat(headW) + kast.blacks.map((_, j) => colHead(j).padEnd(colW[j])).join("");
     const rows = kast.strMatrix.map((r, i) =>
         rowHead(i).padEnd(headW) + r.map((e, j) => e.padEnd(colW[j])).join(""));
-    document.getElementById("kasteleyn").textContent = [head, ...rows].join("\n");
+    const fallback = [head, ...rows].join("\n");
+
+    const entryTeX = e => e === "0" ? "0" :
+        e.replace(/\^(-?\d+)/g, "^{$1}").replace(/\*/g, "\\,");
+    const tex = "K = \\begin{pmatrix} " +
+        kast.strMatrix.map(r => r.map(entryTeX).join(" & ")).join(" \\\\ ") +
+        " \\end{pmatrix}";
+    typesetMath(document.getElementById("kasteleyn"), tex, fallback);
+
     document.getElementById("kasteleynNote").textContent =
         `${n}×${m} (white × black); x, y wind around the two torus cycles`;
     copyPayloads.kasteleyn =
@@ -1051,18 +1388,98 @@ function renderKasteleyn(kast) {
 }
 
 function renderQuiverSection(dimer, arrows) {
-    const txt = `Q = [\n  [${arrows.map(a => a.from).join(", ")}],\n  [${arrows.map(a => a.to).join(", ")}]\n]`;
-    document.getElementById("quiver").textContent = txt;
+    drawQuiverGraph(dimer.nFaces, arrows);
     document.getElementById("quiverNote").textContent =
-        `${dimer.nFaces} gauge group(s), ${arrows.length} arrow(s) — [sources; targets]`;
-    copyPayloads.quiver = txt;
+        `${dimer.nFaces} gauge group(s), ${arrows.length} arrow(s) — copy gives [sources; targets]`;
+    copyPayloads.quiver =
+        `Q = [\n  [${arrows.map(a => a.from).join(", ")}],\n  [${arrows.map(a => a.to).join(", ")}]\n]`;
+}
+
+// Draw the quiver: gauge nodes on a circle, one arrow per bifundamental.
+// Arrows between the same pair of nodes are spread by bowing the curves;
+// adjoints are drawn as loops pointing away from the graph centre.
+function drawQuiverGraph(nFaces, arrows) {
+    const svgQ = d3.select("#quiverSvg");
+    svgQ.selectAll("*").remove();
+    const W = 260, H = 190, NR = 12;
+    svgQ.attr("viewBox", `0 0 ${W} ${H}`);
+    svgQ.append("defs").append("marker")
+        .attr("id", "qv-arrow")
+        .attr("markerWidth", 7).attr("markerHeight", 7)
+        .attr("refX", 6).attr("refY", 2.5).attr("orient", "auto")
+        .append("path").attr("d", "M0,0 L0,5 L6.5,2.5 z").attr("fill", "#ddd");
+
+    const cx = W / 2, cy = H / 2;
+    const R = Math.min(W, H) / 2 - 34;
+    const pos = [];
+    for (let i = 0; i < nFaces; i++) {
+        const a = -Math.PI / 2 + 2 * Math.PI * i / nFaces;
+        pos.push(nFaces === 1
+            ? { x: cx, y: cy + 14 }
+            : { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) });
+    }
+
+    const drawPath = d => svgQ.append("path")
+        .attr("d", d).attr("fill", "none")
+        .attr("stroke", "#ddd").attr("stroke-width", 1.3)
+        .attr("marker-end", "url(#qv-arrow)");
+
+    // group by unordered pair so opposite arrows bow apart
+    const groups = new Map();
+    arrows.forEach(a => {
+        const key = a.from <= a.to ? `${a.from},${a.to}` : `${a.to},${a.from}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(a);
+    });
+
+    groups.forEach((list, key) => {
+        const [i, j] = key.split(",").map(Number);
+        if (i === j) {
+            const p = pos[i - 1];
+            const out = nFaces === 1 ? -Math.PI / 2 : Math.atan2(p.y - cy, p.x - cx);
+            list.forEach((a, k) => {
+                const spread = 0.55, L = 34 + 15 * k;
+                const a1 = out - spread, a2 = out + spread;
+                drawPath(`M ${p.x + NR * Math.cos(a1)} ${p.y + NR * Math.sin(a1)} ` +
+                    `C ${p.x + L * Math.cos(a1)} ${p.y + L * Math.sin(a1)} ` +
+                    `${p.x + L * Math.cos(a2)} ${p.y + L * Math.sin(a2)} ` +
+                    `${p.x + NR * Math.cos(a2)} ${p.y + NR * Math.sin(a2)}`);
+            });
+        } else {
+            const A = pos[i - 1], B = pos[j - 1];
+            const pl = Math.hypot(B.x - A.x, B.y - A.y);
+            const nx = -(B.y - A.y) / pl, ny = (B.x - A.x) / pl;
+            const trim = (P, Q, r) => {
+                const d = Math.hypot(Q.x - P.x, Q.y - P.y) || 1;
+                return { x: P.x + (Q.x - P.x) / d * r, y: P.y + (Q.y - P.y) / d * r };
+            };
+            list.forEach((a, k) => {
+                const bow = (k - (list.length - 1) / 2) * 18;
+                const M = { x: (A.x + B.x) / 2 + nx * bow, y: (A.y + B.y) / 2 + ny * bow };
+                const from = pos[a.from - 1], to = pos[a.to - 1];
+                const S = trim(from, M, NR), E = trim(to, M, NR + 3);
+                drawPath(`M ${S.x} ${S.y} Q ${M.x} ${M.y} ${E.x} ${E.y}`);
+            });
+        }
+    });
+
+    pos.forEach((p, i) => {
+        svgQ.append("circle").attr("cx", p.x).attr("cy", p.y).attr("r", NR)
+            .attr("fill", "#1c1c1c").attr("stroke", "#9f9").attr("stroke-width", 1.5);
+        svgQ.append("text").attr("x", p.x).attr("y", p.y)
+            .attr("text-anchor", "middle").attr("dominant-baseline", "central")
+            .attr("font-size", "12px").attr("fill", "#9f9").text(i + 1);
+    });
 }
 
 function renderSuperpotential(terms) {
-    const lines = terms.map(t => (t.sign > 0 ? "+ " : "- ") + t.names.join("*"));
-    const txt = "W = " + lines.join("\n    ");
-    document.getElementById("superpotential").textContent = txt;
-    copyPayloads.superpotential = txt;
+    const raw = "W = " +
+        terms.map(t => (t.sign > 0 ? "+ " : "- ") + t.names.join("*")).join("\n    ");
+    const texLines = terms.map(t =>
+        (t.sign > 0 ? "+" : "-") + t.names.map(fieldToTeX).join("\\,"));
+    const tex = "\\begin{aligned} W ={}& " + texLines.join(" \\\\ & ") + " \\end{aligned}";
+    typesetMath(document.getElementById("superpotential"), tex, raw);
+    copyPayloads.superpotential = raw;
 }
 
 function renderToricDiagram(toric) {
@@ -1116,7 +1533,9 @@ function renderToricDiagram(toric) {
 }
 
 function renderPanelError(reason) {
-    ["kasteleyn", "quiver", "superpotential"].forEach(id => document.getElementById(id).textContent = "—");
+    setPanelTitle(null);
+    ["kasteleyn", "superpotential"].forEach(id => document.getElementById(id).textContent = "—");
+    d3.select("#quiverSvg").selectAll("*").remove();
     document.getElementById("kasteleynNote").textContent = "";
     document.getElementById("quiverNote").textContent = "";
     d3.select("#toricSvg").selectAll("*").remove();
@@ -1160,22 +1579,12 @@ function fallbackCopy(text, done) {
 
 
 /* ================== RESIZE ================= */
+// The drawing lives in world coordinates inside zoomGroup, so nothing needs
+// re-rendering on resize — the svg element just has to track the window.
 function resizeSVG() {
-
-    const rect = svg.node().getBoundingClientRect();
-
-    svg
-        .attr("width", rect.width)
-        .attr("height", rect.height);
-
-    WIDTH = rect.width;
-    HEIGHT = rect.height;
-
-    renderBWVertices();
-    buildTilePalette();
-    drawGridDots();
-    drawFD();
-    render();
+    WIDTH = window.innerWidth;
+    HEIGHT = window.innerHeight;
+    svg.attr("width", WIDTH).attr("height", HEIGHT);
 }
 
 window.addEventListener("resize", resizeSVG);
@@ -1183,8 +1592,8 @@ window.addEventListener("resize", resizeSVG);
 
 /* ================== INIT ================= */
 resizeSVG();
-// renderBWVertices();
-// buildTilePalette();
-// drawGridDots();
-// drawFD();
-// render();
+buildTilePalette();
+drawGridDots();
+drawFD();
+render();
+renderBWVertices();
