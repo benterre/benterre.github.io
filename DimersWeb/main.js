@@ -224,7 +224,7 @@ function placePlainHex(q, r) {
     for (let i = 0; i < 6; i++) getEdge(v[i], v[(i + 1) % 6]);
     Graph.faces.set(crypto.randomUUID(), {
         id: crypto.randomUUID(), verts: v.map(x => x.id), quad: false,
-        color: HEX_COLORS.plain, hex_q: q, hex_r: r
+        color: HEX_COLORS.plain, hex_q: q, hex_r: r, kind: "plain"
     });
 }
 function placeCrossedHex(q, r, kind) {
@@ -236,8 +236,8 @@ function placeCrossedHex(q, r, kind) {
     const f2 = [v[(i + 3) % 6], v[(i + 4) % 6], v[(i + 5) % 6], v[i]];
     const color = kind === "diagNE" ? HEX_COLORS.diagNE : kind === "diagNW" ? HEX_COLORS.diagNW : HEX_COLORS.vertical;
     // hex_sub distinguishes the two quads (same hex centre, different canonical key → different face_id)
-    Graph.faces.set(crypto.randomUUID(), { id: crypto.randomUUID(), verts: f1.map(x => x.id), quad: true, color, hex_q: q, hex_r: r, hex_sub: 0 });
-    Graph.faces.set(crypto.randomUUID(), { id: crypto.randomUUID(), verts: f2.map(x => x.id), quad: true, color, hex_q: q, hex_r: r, hex_sub: 1 });
+    Graph.faces.set(crypto.randomUUID(), { id: crypto.randomUUID(), verts: f1.map(x => x.id), quad: true, color, hex_q: q, hex_r: r, hex_sub: 0, kind });
+    Graph.faces.set(crypto.randomUUID(), { id: crypto.randomUUID(), verts: f2.map(x => x.id), quad: true, color, hex_q: q, hex_r: r, hex_sub: 1, kind });
 }
 // Remove every face equivalent to hex (q, r) on the torus — the tile may have
 // been placed at a different periodic copy of this hex (the click handler
@@ -1340,6 +1340,8 @@ function fieldToTeX(name) {
 const copyPayloads = { kasteleyn: "", quiver: "", superpotential: "", toric: "" };
 
 function updateAnalysis() {
+    saveStateToURL();   // every editing event lands here — persist the state
+
     if (!allTilesFilled()) { display_qw(false); return; }
 
     const dimer = buildQuotientDimer();
@@ -1578,6 +1580,87 @@ function fallbackCopy(text, done) {
 }
 
 
+/* ================== URL PERSISTENCE ================== */
+// The whole editor state is (FD tips) + (ordered tile list) — placement is
+// deterministic, so replaying the list reproduces the identical Graph and
+// face numbering.  Encoded as a compact token of URL-unreserved characters:
+//   d = 1_<t1q>.<t1r>_<t2q>.<t2r>_<q>.<r><T>_<q>.<r><T>_...
+// with version "1" and tile type T ∈ {p,v,n,w} (plain, vertical, diagNE,
+// diagNW).  Saved with history.replaceState on every editing event; on
+// file:// URLs where replaceState may be forbidden we fall back to the hash.
+
+const TILE_CODES = { plain: "p", vertical: "v", diagNE: "n", diagNW: "w" };
+const CODE_TILES = { p: "plain", v: "vertical", n: "diagNE", w: "diagNW" };
+let restoringState = false;
+
+function encodeState() {
+    const t1 = pixelToHex(fdTip1.x, fdTip1.y);
+    const t2 = pixelToHex(fdTip2.x, fdTip2.y);
+    const parts = ["1", `${t1.q}.${t1.r}`, `${t2.q}.${t2.r}`];
+    const seen = new Set();
+    Graph.faces.forEach(face => {
+        if (face.hex_q == null || !face.kind) return;
+        const key = `${face.hex_q}.${face.hex_r}`;
+        if (seen.has(key)) return;          // crossed hexes carry two faces
+        seen.add(key);
+        parts.push(key + TILE_CODES[face.kind]);
+    });
+    return parts.join("_");
+}
+
+function saveStateToURL() {
+    if (restoringState) return;
+    if (typeof window === "undefined" || !window.location || !window.location.href) return;
+    const enc = encodeState();
+    try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("d") === enc) return;
+        url.searchParams.set("d", enc);
+        window.history.replaceState(null, "", url);
+    } catch (e) {
+        try { window.location.hash = "d=" + enc; } catch (e2) { }
+    }
+}
+
+function readStateString() {
+    if (typeof window === "undefined" || !window.location || !window.location.href) return null;
+    try {
+        const url = new URL(window.location.href);
+        const q = url.searchParams.get("d");
+        if (q) return q;
+        const h = (url.hash || "").replace(/^#/, "");
+        if (h.startsWith("d=")) return h.slice(2);
+    } catch (e) { }
+    return null;
+}
+
+function restoreStateFromURL() {
+    const s = readStateString();
+    if (!s) return false;
+    const parts = s.split("_");
+    if (parts[0] !== "1" || parts.length < 3) return false;
+    const tipOf = tok => {
+        const m = /^(-?\d+)\.(-?\d+)$/.exec(tok);
+        return m ? hexToPixel(Number(m[1]), Number(m[2])) : null;
+    };
+    const p1 = tipOf(parts[1]), p2 = tipOf(parts[2]);
+    if (!p1 || !p2) return false;
+    if (Math.abs(cross2D(p1.x - fdOriginPx.x, p1.y - fdOriginPx.y,
+        p2.x - fdOriginPx.x, p2.y - fdOriginPx.y)) < 1e-6) return false;
+    const tiles = [];
+    for (let i = 3; i < parts.length; i++) {
+        const m = /^(-?\d+)\.(-?\d+)([pvnw])$/.exec(parts[i]);
+        if (!m) return false;               // malformed token — reject the string
+        tiles.push([Number(m[1]), Number(m[2]), CODE_TILES[m[3]]]);
+    }
+    restoringState = true;
+    fdTip1 = p1;
+    fdTip2 = p2;
+    tiles.forEach(([q, r, k]) => placeTile(q, r, k));
+    restoringState = false;
+    return true;
+}
+
 /* ================== RESIZE ================= */
 // The drawing lives in world coordinates inside zoomGroup, so nothing needs
 // re-rendering on resize — the svg element just has to track the window.
@@ -1591,9 +1674,11 @@ window.addEventListener("resize", resizeSVG);
 
 
 /* ================== INIT ================= */
+restoreStateFromURL();
 resizeSVG();
 buildTilePalette();
 drawGridDots();
 drawFD();
 render();
 renderBWVertices();
+saveStateToURL();       // normalize the URL to the (possibly restored) state
