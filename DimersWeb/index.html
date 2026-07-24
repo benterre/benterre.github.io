@@ -257,6 +257,60 @@
         #zoomControls button:hover {
             background: #666;
         }
+
+        /* "Open in Database" float — shown only when the current toric
+           diagram matches a theory in the DimerDatabase */
+        #dbLink {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 6px;
+            padding: 10px 12px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 10;
+            color: #eee;
+            max-width: 300px;
+        }
+
+        #dbLink .db-head {
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #9aa;
+        }
+
+        #dbLinkName {
+            font-size: 15px;
+            line-height: 1.4;
+            overflow-wrap: break-word;
+        }
+
+        #dbLink mjx-container svg {
+            width: auto;
+            height: auto;
+            flex: none;
+            background: transparent;
+            vertical-align: middle;
+        }
+
+        #dbLinkBtn {
+            background: rgb(232, 77, 5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 7px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #dbLinkBtn:hover {
+            background: rgb(255, 100, 25);
+        }
     </style>
 </head>
 
@@ -303,6 +357,14 @@
         <button id="zoomHome">⌂</button>
     </div>
 
+    <div id="dbLink">
+        <span class="db-head">Found in database</span>
+        <span id="dbLinkName"></span>
+        <button id="dbLinkBtn">Open in Database ↗</button>
+    </div>
+
+    <!-- DimerDatabase search index (window.DIMER_DB_INDEX); optional -->
+    <script src="DimerDatabase/db/index.js"></script>
     <script src="main.js"></script>
 </body>
 
