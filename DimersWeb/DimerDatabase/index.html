@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brane Tiling Database</title>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["\\(", "\\)"]] },
+            svg: { fontCache: "global" },
+            startup: { typeset: false }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    <script src="https://unpkg.com/three@0.160.1/build/three.min.js"></script>
+    <script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
+    <style>
+        :root {
+            --bg0: #0b0e17;
+            --bg1: #121729;
+            --panel: rgba(255, 255, 255, 0.045);
+            --panel-border: rgba(255, 255, 255, 0.09);
+            --text: #e8ecf5;
+            --muted: #93a0b8;
+            --accent: #5eead4;
+            --accent2: #a78bfa;
+            --danger: #f87171;
+            --mono: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background:
+                radial-gradient(1200px 800px at 80% -10%, rgba(94, 234, 212, 0.09), transparent 60%),
+                radial-gradient(1000px 700px at -10% 30%, rgba(167, 139, 250, 0.10), transparent 55%),
+                linear-gradient(180deg, var(--bg0), var(--bg1));
+            color: var(--text);
+            font-family: "Segoe UI", Inter, system-ui, sans-serif;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+
+        #app { max-width: 1180px; margin: 0 auto; padding: 24px 24px 80px; }
+
+        /* ---------- header ---------- */
+        header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        header h1 {
+            font-size: 26px;
+            letter-spacing: 0.4px;
+            margin: 12px 0 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        header .sub { color: var(--muted); font-size: 13px; }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 18px;
+            backdrop-filter: blur(6px);
+        }
+
+        /* ---------- landing search ---------- */
+        #hero { margin-top: 26px; }
+
+        #hero .lead { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+
+        #searchWrap { position: relative; }
+
+        #nameSearch {
+            width: 100%;
+            font-size: 18px;
+            padding: 14px 18px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            outline: none;
+        }
+
+        #nameSearch:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.15); }
+
+        #suggestions {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #161c30;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: 30;
+            display: none;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .sugg {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .sugg .meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+        .sugg.active, .sugg:hover { background: rgba(94, 234, 212, 0.12); }
+
+        /* ---------- search mode tabs ---------- */
+        #modes { display: flex; gap: 10px; margin: 22px 0 14px; flex-wrap: wrap; }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--panel-border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .mode-btn.active { color: var(--bg0); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+
+        .mode-panel { display: none; }
+        .mode-panel.active { display: block; }
+
+        /* ---------- property search ---------- */
+        #propGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .prop {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .prop label { font-size: 12px; color: var(--muted); }
+
+        .prop .range { display: flex; gap: 6px; align-items: center; }
+
+        .prop input, .prop select {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .prop input:focus { border-color: var(--accent2); }
+
+        .btn {
+            padding: 10px 22px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(90deg, var(--accent), #38bdf8);
+            color: #06281f;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn.secondary { background: rgba(255, 255, 255, 0.1); color: var(--text); font-weight: 500; }
+
+        .btn:hover { filter: brightness(1.1); }
+
+        /* ---------- toric draw search ---------- */
+        #toricDraw { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
+
+        #drawCanvas {
+            background: #0d1220;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        #drawInfo { flex: 1; min-width: 240px; }
+
+        #drawMatch { font-size: 17px; margin: 8px 0; min-height: 28px; }
+
+        #drawMatch .none { color: var(--muted); font-size: 14px; }
+
+        /* ---------- results ---------- */
+        #results { margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+
+        #resultsMsg { margin-top: 22px; color: var(--muted); }
+
+        #resultsMsg.error { color: var(--danger); }
+
+        .rcard { cursor: pointer; transition: transform 0.12s ease, border-color 0.12s; display: flex; gap: 14px; align-items: center; overflow: hidden; }
+
+        .rcard:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+        .rcard .tinfo { flex: 1; min-width: 0; }
+
+        .rcard h3 { margin: 2px 0 6px; font-size: 15.5px; overflow-wrap: anywhere; }
+
+        .rcard h3 mjx-container { margin: 0 !important; }
+
+        .rcard .stats { color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+        .rcard canvas.rtoric { border-radius: 8px; background: #0d1220; flex: none; align-self: center; }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px; }
+
+        .chip {
+            display: inline-block;
+            font-size: 10.5px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(167, 139, 250, 0.18);
+            color: var(--accent2);
+            white-space: nowrap;
+        }
+
+        /* ---------- theory page ---------- */
+        #theoryPage .backlink { font-size: 13px; }
+
+        #tTitle { font-size: 24px; margin: 10px 0 2px; }
+
+        #tTitle mjx-container { font-size: 115%; }
+
+        .tgrid { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+
+        .tgrid .card { flex: 1; min-width: 300px; }
+
+        .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; font-size: 14px; }
+
+        .kv .k { color: var(--muted); }
+
+        .kv .v { font-family: var(--mono); font-size: 13.5px; }
+
+        #toricCanvas { background: #0d1220; border-radius: 10px; display: block; }
+
+        h2.sect { font-size: 16px; color: var(--accent); margin: 30px 0 10px; letter-spacing: 0.5px; }
+
+        #seibergWrap { position: relative; height: 380px; border-radius: 14px; overflow: hidden; border: 1px solid var(--panel-border); }
+
+        #seibergGraph { width: 100%; height: 100%; }
+
+        #seibergHint { position: absolute; bottom: 10px; left: 14px; color: var(--muted); font-size: 12px; pointer-events: none; }
+
+        #phaseSect .phase-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+        #phasePills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .pill {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+            color: var(--muted);
+        }
+
+        .pill.active { background: var(--accent2); color: #150b2e; border-color: var(--accent2); font-weight: 700; }
+
+        .phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 14px; }
+
+        .phase-grid h4 { margin: 0 0 10px; font-size: 13px; color: var(--muted); letter-spacing: 0.6px; text-transform: uppercase; }
+
+        #quiverCanvas, #tilingCanvas { max-width: 100%; background: #0d1220; border-radius: 10px; display: block; margin: 0 auto; }
+
+        #wBox {
+            background: #0d1220;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.9;
+            overflow-x: auto;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        details { margin-top: 10px; }
+
+        details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+
+        details .mono, .mono {
+            font-family: var(--mono);
+            font-size: 12px;
+            background: #0d1220;
+            border-radius: 8px;
+            padding: 10px;
+            overflow: auto;
+            max-height: 260px;
+            white-space: pre;
+            margin-top: 8px;
+        }
+
+        table.rt { border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+
+        table.rt td, table.rt th {
+            padding: 4px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            text-align: left;
+        }
+
+        table.rt th { color: var(--muted); font-weight: 600; background: rgba(255, 255, 255, 0.04); }
+
+        table.rt td.num { font-family: var(--mono); font-size: 12.5px; }
+
+        .rt-wrap { max-height: 300px; overflow: auto; margin-top: 8px; }
+
+        details summary .copy-group { float: none; margin-left: 12px; }
+
+        .copy-group { float: right; display: inline-flex; gap: 4px; }
+
+        .copy-mini {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .copy-mini:hover { color: var(--accent); border-color: var(--accent); }
+
+        .hidden { display: none !important; }
+
+        #qwErr { color: var(--danger); }
+
+        footer { margin-top: 60px; color: var(--muted); font-size: 12px; text-align: center; }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header onclick="location.hash=''">
+            <h1>Brane Tiling Database</h1>
+            <span class="sub" id="dbCount"></span>
+        </header>
+
+        <!-- ==================== landing / search ==================== -->
+        <div id="homePage">
+            <div id="hero">
+                <p class="lead">Search dimer models by name, by gauge-theory properties, or by drawing the toric
+                    diagram.</p>
+                <div id="searchWrap">
+                    <input id="nameSearch" type="text" autocomplete="off" spellcheck="false"
+                        placeholder="Search a theory…   e.g.  SPP,  Y32,  L131,  dP3,  C/Z2xZ2" />
+                    <div id="suggestions"></div>
+                </div>
+            </div>
+
+            <div id="modes">
+                <button class="mode-btn active" data-mode="name">Name search</button>
+                <button class="mode-btn" data-mode="props">Search by properties</button>
+                <button class="mode-btn" data-mode="draw">Draw the toric diagram</button>
+            </div>
+
+            <div id="panel-props" class="mode-panel card">
+                <div id="propGrid"></div>
+                <div style="margin-top:14px; display:flex; gap:10px;">
+                    <button class="btn" id="propSearchBtn">Search</button>
+                    <button class="btn secondary" id="propClearBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="panel-draw" class="mode-panel card">
+                <div id="toricDraw">
+                    <canvas id="drawCanvas" width="360" height="360"></canvas>
+                    <div id="drawInfo">
+                        <p style="color:var(--muted);font-size:13px;margin-top:0">Click lattice sites to toggle
+                            toric-diagram points. The convex hull is taken automatically; matching is up to
+                            SL(2,&#8484;), reflections and translations.</p>
+                        <div id="drawMatch"><span class="none">— draw at least 3 points —</span></div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="btn" id="drawSearchBtn">Open theory</button>
+                            <button class="btn secondary" id="drawClearBtn">Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultsMsg"></div>
+            <div id="results"></div>
+        </div>
+
+        <!-- ==================== theory page ==================== -->
+        <div id="theoryPage" class="hidden">
+            <a class="backlink" href="#" onclick="history.back(); return false;">&#8592; back to search</a>
+            <h1 id="tTitle"></h1>
+            <div id="tAliases" class="sub" style="color:var(--muted);font-size:13px;"></div>
+
+            <div class="tgrid">
+                <div class="card">
+                    <div class="kv" id="tCommon"></div>
+                    <details id="glsmDetails" class="hidden">
+                        <summary>GLSM R-charges (extremal points)
+                            <span class="copy-group"><button class="copy-mini" data-copy="glsm_m"
+                                    title="Copy as Mathematica">M</button><button class="copy-mini"
+                                    data-copy="glsm_py" title="Copy as Python">Py</button></span>
+                        </summary>
+                        <div id="glsmBox" class="rt-wrap"></div>
+                        <div id="glsmNote" style="color:var(--muted);font-size:11px;margin-top:4px;"></div>
+                    </details>
+                </div>
+                <div class="card" style="flex:0 0 auto;">
+                    <h4 style="margin:0 0 10px;color:var(--muted);font-size:12px;letter-spacing:.6px;">TORIC DIAGRAM
+                        (multiplicities)
+                        <span class="copy-group"><button class="copy-mini" data-copy="toric_m"
+                                title="Copy as Mathematica">M</button><button class="copy-mini" data-copy="toric_py"
+                                title="Copy as Python">Py</button></span>
+                    </h4>
+                    <canvas id="toricCanvas" width="280" height="250"></canvas>
+                </div>
+            </div>
+
+            <h2 class="sect">SEIBERG DUALITY GRAPH — <span style="color:var(--muted);font-weight:400;">click a phase
+                    to inspect it</span></h2>
+            <div id="seibergWrap">
+                <div id="seibergGraph"></div>
+                <div id="seibergHint"></div>
+            </div>
+
+            <div id="phaseSect">
+                <h2 class="sect">TORIC PHASE DATA</h2>
+                <div class="phase-head">
+                    <div id="phasePills"></div>
+                </div>
+                <div class="phase-grid">
+                    <div class="card">
+                        <h4>Quiver
+                            <span class="copy-group"><button class="copy-mini" data-copy="quiver_m"
+                                    title="Copy as Mathematica">M</button><button class="copy-mini"
+                                    data-copy="quiver_py" title="Copy as Python">Py</button></span>
+                        </h4>
+                        <canvas id="quiverCanvas" width="420" height="330"></canvas>
+                    </div>
+                    <div class="card">
+                        <h4>Brane tiling</h4>
+                        <canvas id="tilingCanvas" width="420" height="330"></canvas>
+                        <div id="tilingNote" style="color:var(--muted);font-size:12px;margin-top:6px;"></div>
+                    </div>
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <h4>Superpotential
+                            <span class="copy-group"><button class="copy-mini" data-copy="w_m"
+                                    title="Copy as Mathematica">M</button><button class="copy-mini" data-copy="w_py"
+                                    title="Copy as Python">Py</button></span>
+                        </h4>
+                        <div id="wBox"></div>
+                        <div id="phaseStats" style="color:var(--muted);font-size:13px;margin-top:8px;"></div>
+                        <details id="rDetails">
+                            <summary>R-charges of the chiral fields</summary>
+                            <div id="rBox" class="rt-wrap"></div>
+                        </details>
+                        <details id="zzDetails">
+                            <summary>Zigzag paths
+                                <span class="copy-group"><button class="copy-mini" data-copy="zz_m"
+                                        title="Copy as Mathematica">M</button><button class="copy-mini"
+                                        data-copy="zz_py" title="Copy as Python">Py</button></span>
+                            </summary>
+                            <div id="zzBox" class="rt-wrap"></div>
+                        </details>
+                        <details id="pmDetails">
+                            <summary>Perfect matching matrix
+                                <span class="copy-group"><button class="copy-mini" data-copy="pm_m"
+                                        title="Copy as Mathematica">M</button><button class="copy-mini"
+                                        data-copy="pm_py" title="Copy as Python">Py</button></span>
+                            </summary>
+                            <div id="pmBox" style="overflow:auto;max-height:320px;margin-top:8px;"></div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>DimerDatabase — generated with the DimerGNN package.</footer>
+    </div>
+
+    <script src="db/index.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

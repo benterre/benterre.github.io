@@ -1285,6 +1285,88 @@ function recognizeToric(toric) {
     return out.join(" = ");
 }
 
+/* ================== DIMERDATABASE MATCH ================== */
+// If window.DIMER_DB_INDEX is present (DimerDatabase/db/index.js), match the
+// current toric diagram against it by canonical polygon key — the same
+// SL(2,Z)+reflection+translation-invariant key the database is indexed by, so
+// the display frame is irrelevant.  A hit reveals the "Open in Database" float.
+
+let DB_KEY_LOOKUP = null;   // canonical key -> database entry
+
+function buildDbKeyLookup() {
+    const idx = window.DIMER_DB_INDEX;
+    if (!Array.isArray(idx)) return new Map();
+    const map = new Map();
+    for (const e of idx) {
+        const hull = (e.hull || e.points || []).map(p => ({ x: p[0], y: p[1] }));
+        const key = canonicalPolygonKey(hull);
+        if (key && !map.has(key)) map.set(key, e);
+    }
+    return map;
+}
+
+// TeX for a database display name (ported from DimerDatabase/app.js nameToTeX
+// so the float renders names exactly as the database does).
+function dbNameToTeX(name) {
+    let t = name;
+    if (t === "C") return "\\mathcal{C}";
+    if (/^[A-Za-z0-9_ .\-]+$/.test(t) && !/\d/.test(t)) return null;
+    t = t.replace(/^L(\d+),(\d+),(\d+)_/, "L^{$1,$2,$3}/");
+    t = t.replace(/^L(\d+),(\d+),(\d+)$/, "L^{$1,$2,$3}");
+    t = t.replace(/^Y(\d+)(\d)$/, "Y^{$1,$2}");
+    t = t.replace(/^X(\d+)(\d)$/, "X^{$1,$2}");
+    t = t.replace(/^Z(\d)(\d)$/, "Z^{$1,$2}");
+    t = t.replace(/^PP?2$/, "\\mathbb{P}^2");
+    t = t.replace(/^C\^3$/, "\\mathbb{C}^3");
+    t = t.replace(/ cover \[/, "\\text{ cover }[");
+    t = t.replace(/\[HNF /, "[\\text{HNF}\\;");
+    t = t.replace(/_/g, "\\_");
+    t = t.replace(/PdP(\d[a-f]?)/g, "\\mathrm{PdP}_{$1}");
+    t = t.replace(/\bdP(\d)/g, "\\mathrm{dP}_{$1}");
+    t = t.replace(/\bpseudo /g, "\\text{pseudo }");
+    t = t.replace(/SPP/g, "\\mathrm{SPP}");
+    t = t.replace(/\bF0\b/g, "F_0");
+    t = t.replace(/T11/g, "T^{1,1}");
+    t = t.replace(/P1xP1/g, "\\mathbb{P}^1\\times\\mathbb{P}^1");
+    t = t.replace(/C3/g, "\\mathbb{C}^3");
+    t = t.replace(/^C\//, "\\mathcal{C}/");
+    t = t.replace(/^C$/, "\\mathcal{C}");
+    t = t.replace(/Conifold/g, "\\text{Conifold}");
+    t = t.replace(/Z(\d+)/g, "\\mathbb{Z}_{$1}");
+    t = t.replace(/x\\mathbb{Z}/g, "\\times \\mathbb{Z}");
+    t = t.replace(/ \[/g, "\\ [");
+    t = t.replace(/ \(/g, "\\ (");
+    return t;
+}
+
+let dbMatchId = null;
+
+function updateDbLink(toric) {
+    const float = document.getElementById("dbLink");
+    if (!float) return;
+    dbMatchId = null;
+    const ok = toric && toric.consistent && toric.hull && toric.hull.length >= 3
+        && Array.isArray(window.DIMER_DB_INDEX);
+    if (ok) {
+        if (!DB_KEY_LOOKUP) DB_KEY_LOOKUP = buildDbKeyLookup();
+        const entry = DB_KEY_LOOKUP.get(canonicalPolygonKey(toric.hull));
+        if (entry) {
+            dbMatchId = entry.id;
+            const nameEl = document.getElementById("dbLinkName");
+            const disp = entry.names && entry.names.length ? entry.names[0] : entry.id;
+            const tex = dbNameToTeX(disp);
+            if (tex) typesetMath(nameEl, tex, disp);
+            else nameEl.textContent = disp;
+        }
+    }
+    float.style.display = dbMatchId ? "flex" : "none";
+}
+
+document.getElementById("dbLinkBtn").addEventListener("click", () => {
+    if (dbMatchId) window.open(
+        "DimerDatabase/index.html#/theory/" + encodeURIComponent(dbMatchId), "_blank");
+});
+
 /* ================== PANEL TITLE (MathJax) ================== */
 
 // Convert a plain recognition string (e.g. "dP1 = Y^{2,1} = L^{2,2,1}",
@@ -1342,10 +1424,10 @@ const copyPayloads = { kasteleyn: "", quiver: "", superpotential: "", toric: "" 
 function updateAnalysis() {
     saveStateToURL();   // every editing event lands here — persist the state
 
-    if (!allTilesFilled()) { display_qw(false); return; }
+    if (!allTilesFilled()) { display_qw(false); updateDbLink(null); return; }
 
     const dimer = buildQuotientDimer();
-    if (!dimer.ok) { renderPanelError(dimer.reason); display_qw(true); return; }
+    if (!dimer.ok) { renderPanelError(dimer.reason); display_qw(true); updateDbLink(null); return; }
 
     const { arrows, arrowByEdge } = computeArrows(dimer);
     const terms = computeSuperpotential(dimer, arrowByEdge);
@@ -1358,6 +1440,7 @@ function updateAnalysis() {
     renderToricDiagram(toric);
 
     setPanelTitle(toric.consistent ? recognizeToric(toric) : null);
+    updateDbLink(toric);
 
     display_qw(true);
 }
