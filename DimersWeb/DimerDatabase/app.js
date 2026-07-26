@@ -261,7 +261,10 @@ function renderSuggestions() {
 
 searchInput.addEventListener("input", () => {
     suggEntries = nameMatches(searchInput.value).slice(0, 8);
-    suggActive = suggEntries.length ? 0 : -1;
+    // do NOT auto-highlight the first suggestion: plain Enter should show ALL
+    // results (or open the theory only when there is a single match); the user
+    // opts into a specific suggestion with the arrow keys or the mouse
+    suggActive = -1;
     renderSuggestions();
 });
 
@@ -309,6 +312,8 @@ const FAMILY_LABELS = {
     ypq: { text: "Y^{p,q}", tex: "Y^{p,q}" },
     xpq: { text: "X^{p,q}", tex: "X^{p,q}" },
     zpq: { text: "Z^{p,q}", tex: "Z^{p,q}" },
+    habcd: { text: "H^{a,b,c,d}", tex: "H^{a,b,c,d}" },
+    kabcd: { text: "K^{a,b,c,d}", tex: "K^{a,b,c,d}" },
     delpezzo: { text: "del Pezzo", tex: "\\text{del Pezzo}" },
     pseudo_delpezzo: { text: "pseudo del Pezzo", tex: "\\text{pseudo del Pezzo}" },
     reflexive: { text: "reflexive polygon", tex: "\\text{reflexive polygon}" },
@@ -316,10 +321,46 @@ const FAMILY_LABELS = {
     conifold_orbifold: { text: "Orbifolds of the conifold", tex: "\\text{Orbifolds of the conifold}" },
     labc_orbifold: { text: "Orbifolds of L^{a,b,c}", tex: "\\text{Orbifolds of } L^{a,b,c}" },
     ypq_orbifold: { text: "Orbifolds of Y^{p,q}", tex: "\\text{Orbifolds of } Y^{p,q}" },
+    xpq_orbifold: { text: "Orbifolds of X^{p,q}", tex: "\\text{Orbifolds of } X^{p,q}" },
+    zpq_orbifold: { text: "Orbifolds of Z^{p,q}", tex: "\\text{Orbifolds of } Z^{p,q}" },
+    habcd_orbifold: { text: "Orbifolds of H^{a,b,c,d}", tex: "\\text{Orbifolds of } H^{a,b,c,d}" },
+    kabcd_orbifold: { text: "Orbifolds of K^{a,b,c,d}", tex: "\\text{Orbifolds of } K^{a,b,c,d}" },
 };
 function famText(id) { return (FAMILY_LABELS[id] || { text: id }).text; }
 function famTeX(id) { return (FAMILY_LABELS[id] || { tex: `\\text{${id}}` }).tex; }
 function familiesOf(e) { return e.families || (e.family ? [e.family] : []); }
+
+// which of a theory's names belong to a given family id (mirrors the
+// name-based family derivation in generate_db.derive_families) — used to show
+// the relevant name first when the results were filtered by that family
+const FAMILY_NAME_TESTS = {
+    c3: n => n === "C3",
+    conifold: n => n === "Conifold",
+    labc: n => /^L\^\{\d+,\d+,\d+\}$/.test(n),
+    ypq: n => /^Y\^\{\d+,\d+\}$/.test(n),
+    xpq: n => /^X\^\{\d+,\d+\}$/.test(n),
+    zpq: n => /^Z\^\{\d+,\d+\}$/.test(n),
+    habcd: n => /^H\^\{\d+,\d+,\d+,\d+\}$/.test(n),
+    kabcd: n => /^K\^\{\d+,\d+,\d+,\d+\}$/.test(n),
+    delpezzo: n => /^dP\d+$/.test(n),
+    pseudo_delpezzo: n => /^PdP/.test(n),
+    c3_orbifold: n => /^C3\//.test(n),
+    conifold_orbifold: n => /^(C|Conifold|L\^\{1,1,1\})\//.test(n),
+    labc_orbifold: n => /^L\^\{\d+,\d+,\d+\}\//.test(n),
+    ypq_orbifold: n => /^Y\^\{\d+,\d+\}\//.test(n),
+    xpq_orbifold: n => /^X\^\{\d+,\d+\}\//.test(n),
+    zpq_orbifold: n => /^Z\^\{\d+,\d+\}\//.test(n),
+    habcd_orbifold: n => /^H\^\{\d+,\d+,\d+,\d+\}\//.test(n),
+    kabcd_orbifold: n => /^K\^\{\d+,\d+,\d+,\d+\}\//.test(n),
+};
+
+// reorder names so those belonging to `famId` come first (stable otherwise)
+function namesFamilyFirst(names, famId) {
+    const test = famId && FAMILY_NAME_TESTS[famId];
+    if (!test) return names;
+    const match = names.filter(test), rest = names.filter(n => !test(n));
+    return match.length ? [...match, ...rest] : names;
+}
 
 // toric point classification (index carries precomputed counts; fall back to
 // hull/points for any older index that predates them)
@@ -343,10 +384,11 @@ const CRITERIA = [
         match: (vals, x) => vals.some(v => Math.abs(v - x) <= 0.02 * Math.max(1e-9, Math.abs(x)))
     },
     {
-        key: "family", label: "family", type: "select",
+        key: "family", label: "family", type: "select", mathjax: true,
         options: () => [...new Set(INDEX.flatMap(familiesOf))]
             .sort((a, b) => famText(a).localeCompare(famText(b))),
         optionLabel: famText,
+        optionTeX: famTeX,
         get: e => familiesOf(e)
     },
 ];
@@ -373,6 +415,8 @@ function buildPropForm() {
             const inp = document.createElement("input");
             inp.type = "number"; inp.step = "any"; inp.placeholder = "value"; inp.id = `prop_${c.key}`;
             div.appendChild(inp);
+        } else if (c.type === "select" && c.mathjax) {
+            div.appendChild(buildMathSelect(c));
         } else if (c.type === "select") {
             const sel = document.createElement("select");
             sel.id = `prop_${c.key}`;
@@ -391,9 +435,53 @@ function buildPropForm() {
     }
 }
 
+// A lightweight custom dropdown whose options render through MathJax (native
+// <option> elements cannot show typeset math).  A hidden <input id=prop_KEY>
+// holds the value so runPropSearch reads it exactly like a native <select>.
+function buildMathSelect(c) {
+    const wrap = document.createElement("div");
+    wrap.className = "mathselect";
+    const val = document.createElement("input");
+    val.type = "hidden"; val.id = `prop_${c.key}`; val.value = "";
+    const btn = document.createElement("div");
+    btn.className = "ms-btn"; btn.tabIndex = 0; btn.textContent = "any";
+    const panel = document.createElement("div");
+    panel.className = "ms-panel hidden";
+
+    const items = [["", "any", "\\text{any}"]];
+    for (const o of c.options())
+        items.push([o, c.optionLabel(o), c.optionTeX ? c.optionTeX(o) : null]);
+
+    for (const [value, text, tex] of items) {
+        const opt = document.createElement("div");
+        opt.className = "ms-opt";
+        if (tex) typesetRawTeX(opt, tex, text); else opt.textContent = text;
+        opt.addEventListener("mousedown", (ev) => {
+            ev.preventDefault();
+            val.value = value;
+            btn.innerHTML = "";
+            if (tex && value) typesetRawTeX(btn, tex, text);
+            else btn.textContent = text;
+            panel.classList.add("hidden");
+        });
+        panel.appendChild(opt);
+    }
+    btn.addEventListener("click", () => panel.classList.toggle("hidden"));
+    btn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); panel.classList.toggle("hidden"); }
+        if (e.key === "Escape") panel.classList.add("hidden");
+    });
+    document.addEventListener("click", (e) => {
+        if (!wrap.contains(e.target)) panel.classList.add("hidden");
+    });
+    wrap.append(val, btn, panel);
+    return wrap;
+}
+
 function runPropSearch() {
     let entries = INDEX;
     const parts = [];
+    let famFilter = null;
     for (const c of CRITERIA) {
         if (c.type === "range") {
             const lo = parseFloat(document.getElementById(`prop_${c.key}_lo`).value);
@@ -414,6 +502,7 @@ function runPropSearch() {
             if (v) {
                 parts.push(c.label);
                 entries = entries.filter(e => c.get(e).includes(v));
+                if (c.key === "family") famFilter = v;
             }
         }
     }
@@ -421,7 +510,7 @@ function runPropSearch() {
     if (entries.length === 1) { openTheory(entries[0].id); return; }
     showResults(entries, entries.length
         ? `${entries.length} theories match (${parts.join(", ")})`
-        : "No theory matches those criteria.");
+        : "No theory matches those criteria.", famFilter);
 }
 
 /* ===================== toric drawing search ============================= */
@@ -554,7 +643,7 @@ function miniToric(canvas, entry, size = 86) {
     }
 }
 
-function showResults(entries, msg) {
+function showResults(entries, msg, highlightFamily = null) {
     const box = document.getElementById("results");
     const m = document.getElementById("resultsMsg");
     m.textContent = msg || "";
@@ -570,11 +659,13 @@ function showResults(entries, msg) {
         for (const f of familiesOf(e)) {
             const chip = document.createElement("span");
             chip.className = "chip";
-            chip.textContent = famText(f);
+            typesetRawTeX(chip, famTeX(f), famText(f));
             chips.appendChild(chip);
         }
         const h = document.createElement("h3");
-        displayNames(e.names, 2).forEach((n, i) => {
+        // when filtered by a family, show that family's name first so the card
+        // reveals which member of the family the theory is
+        displayNames(namesFamilyFirst(e.names, highlightFamily), 2).forEach((n, i) => {
             if (i) h.appendChild(document.createTextNode("  =  "));
             const sp = document.createElement("span");
             typeset(sp, n);
@@ -958,7 +1049,7 @@ function renderPhase(i) {
     // superpotential
     const wBox = document.getElementById("wBox");
     if (p.W_latex) {
-        const terms = splitWLatex(p.W_latex);
+        const terms = wDisplayTerms(p);
         typesetRawTeX(wBox, "\\begin{aligned}W ={}& " + terms.join(" \\\\ & ") + "\\end{aligned}", p.W_latex);
     } else wBox.textContent = "—";
 
@@ -1039,6 +1130,27 @@ function chiralTeXLabels(phase) {
             : `X^{(${seen[k]})}_{${i},${j}}`);
     }
     return out;
+}
+
+// Signed term strings for the superpotential, rebuilt from the quiver edges so
+// the displayed field labels X_{i,j} start at 1 (matching the quiver, tiling
+// and R-charge table) even though the stored data is 0-based.  Replicates the
+// package's exact latex style: X_{ij} concatenated for <10 nodes, X_{i,j} with
+// a comma once a label reaches 10, X^k_{i,j} for the k-th parallel edge.
+function wDisplayTerms(p) {
+    if (!p.W || !p.Q) return splitWLatex(p.W_latex || "");
+    const Q = p.Q, E = Q[0].length;
+    let maxNode = 0;
+    for (const row of Q) for (const v of row) if (v > maxNode) maxNode = v;
+    const sep = (maxNode + 1 >= 10) ? "," : "";     // labels run 1..maxNode+1
+    const dic = {}, symbols = [];
+    for (let e = 0; e < E; e++) {
+        const i = Q[0][e] + 1, j = Q[1][e] + 1, key = i + "," + j;
+        if (dic[key]) { dic[key]++; symbols.push(`X^{${dic[key]}}_{${i},${j}}`); }
+        else { dic[key] = 1; symbols.push(`X_{${i}${sep}${j}}`); }
+    }
+    return p.W.map(([sign, edges]) =>
+        (sign < 0 ? "-" : "+") + edges.map(e => symbols[e]).join(""));
 }
 
 // split the package's W latex "AB+CD-EF" into signed term strings
