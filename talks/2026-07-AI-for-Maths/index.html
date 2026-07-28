@@ -216,6 +216,82 @@
 		.vname { font: 600 21px Inter, sans-serif; letter-spacing: -0.01em; }
 		.vdesc { font: 400 14px Inter, sans-serif; fill: #64748b; }
 
+		/* leaving the slide dives into the indigo (gauge-theory) disk: the slide
+		   carries reveal's zoom-out transition and JS parks its transform-origin
+		   on the disk's centre.  The pop-in animation is keyed on .present, so
+		   the circles would snap back to opacity 0 the instant we leave — pin
+		   them, deepen the indigo, and drop the labels early. */
+		#venn-slide { transform-origin: 41% 40%; }
+
+		/* reveal's zoom-out is scale(16) on its default ease-out curve, which is
+		   so front-loaded the disk engulfs the frame in ~80ms and then just
+		   sits there.  Own the scale and accelerate into it instead, so the
+		   indigo closes over the frame right as the slide cuts away. */
+		#venn-slide.past {
+			transform: scale(8);
+			transition-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.5);
+		}
+
+		#venn-slide.past #venn .blob { animation: none; opacity: 1; }
+		#venn-slide.past #venn .b1 { animation: venn-deepen 0.8s ease-in forwards; }
+		#venn-slide.past #venn .lbl { animation: venn-labels-out 0.28s ease forwards; }
+
+		@keyframes venn-deepen {
+			from { fill-opacity: 0.28; }
+			to { fill-opacity: 0.52; }
+		}
+
+		@keyframes venn-labels-out {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		/* -------- topic-change wash --------
+		   A coloured disk zoomed into as the deck moves to a new subject.  It
+		   rides ABOVE the slides (multiply-blended, so everything stays
+		   readable): tucked underneath them instead, the opaque t-SNE figure on
+		   the ML slide slices a straight edge out of the disk.  Drop this to
+		   z-index 0 to put it behind the slide content again. */
+		.topic-wash {
+			position: absolute;
+			inset: 0;
+			z-index: 30;
+			overflow: hidden;
+			pointer-events: none;
+		}
+
+		/* 900px is the sweet spot: big enough that the disk is rasterized near
+		   1:1 while its edge is still on screen (a small circle blown up 17x
+		   has a visibly soft edge), small enough to avoid the multi-megapixel
+		   blended layer a vmax-sized element would need */
+		.wash-disk {
+			position: absolute;
+			left: var(--wash-x, 50%);
+			top: var(--wash-y, 50%);
+			width: 900px;
+			height: 900px;
+			margin: -450px 0 0 -450px;   /* centre on (--wash-x, --wash-y) */
+			border-radius: 50%;
+			background: var(--wash-colour, #f59e0b);
+			mix-blend-mode: multiply;
+			opacity: 0;
+			transform: scale(0.02);
+		}
+
+		/* accelerating, like the venn dive — the disk rushes up at us and the
+		   colour resolves onto the new slide just after it has settled */
+		.wash-disk.run {
+			animation: topic-wash 1000ms cubic-bezier(0.5, 0.05, 0.8, 0.5);
+			will-change: transform, opacity;
+		}
+
+		@keyframes topic-wash {
+			0% { transform: scale(0.02); opacity: 0; }
+			15% { opacity: 0.34; }
+			62% { opacity: 0.34; }
+			100% { transform: scale(4.5); opacity: 0; }
+		}
+
 		/* ---------------- dimer slide ---------------- */
 		#dimer-stage { display: flex; gap: 22px; align-items: stretch; }
 
@@ -369,8 +445,14 @@
 
 <body>
 	<div class="reveal">
-		<div class="footer"><span>B. Suzzoni</span><span>Gauge theories · AI for Physics · Physics for AI</span><span><a
+		<div class="footer"><span>Benjamin Suzzoni</span><span>My Research (AI focused)</span><span><a
 					href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span></div>
+
+		<!-- topic-change wash: sits behind the slides, see data-wash below -->
+		<div class="topic-wash" aria-hidden="true">
+			<div class="wash-disk"></div>
+		</div>
+
 		<div class="slides">
 
 			<!-- ===================== title ===================== -->
@@ -392,8 +474,8 @@
 			</section>
 
 			<!-- ===================== venn ===================== -->
-			<section id="venn-slide">
-				<h2 class="slide-title">Three strands, one research programme</h2>
+			<section id="venn-slide" data-transition="slide-in zoom-out">
+				<h2 class="slide-title">Three fields of research (and more...)</h2>
 
 				<svg id="venn" viewBox="196 20 593 570" role="img" aria-label="Venn diagram">
 					<g>
@@ -468,7 +550,7 @@
 			</section>
 
 			<!-- ===================== ML on dimers ===================== -->
-			<section id="ml-slide">
+			<section id="ml-slide" data-wash="#f59e0b" data-wash-pos="62% 36%">
 				<h2 class="slide-title">Neural networks on dimer models</h2>
 
 				<div class="pillrow">
@@ -484,7 +566,7 @@
 				</div>
 
 				<p class="hl" style="font-size:0.72em;">
-					<strong>Question:</strong> what hidden structure of dimer models can ML teach us?<br />
+					<strong>Question:</strong> what hidden structure can ML help us identify?<br />
 					<span class="muted">→ unsupervised learning, explainable AI, …</span>
 				</p>
 
@@ -495,7 +577,7 @@
 			</section>
 
 			<!-- ============ NN-FT : the correspondence ============ -->
-			<section id="nnft-1">
+			<section id="nnft-1" data-wash="#14b8a6" data-wash-pos="50% 68%">
 				<h2 class="slide-title">The Neural-Network Field-Theory correspondence</h2>
 
 				<div class="cols">
@@ -588,20 +670,18 @@
 				<ul style="font-size:0.7em;">
 					<li><strong>Recover</strong> known theories — gauge theories, supersymmetric strings, CFTs — as
 						architectures</li>
-					<li><strong>Rederive</strong> their known results, now with the tools of NN-FT</li>
-					<li><strong>Predict</strong>: new results inside those same theories</li>
-					<li><strong>Discover</strong>: new theories, and their properties</li>
-					<li><strong>Flow</strong> the distribution \(P(\theta)\) — is <em>learning</em> an RG flow?</li>
+					<li><strong>Rederive</strong> their known predictions, now with the tools of NN-FT</li>
+					<li><strong>Predict</strong> new results inside those same theories</li>
+					<li><strong>Discover</strong> new theories, and their properties</li>
+					<li><strong>Flow</strong> the distribution \(P(\theta)\) (is <em>learning</em> an RG flow?)</li>
 				</ul>
 
 				<p class="hl" style="font-size:0.7em; margin-top:0.7em;">
-					The prize is not a new theory of everything, but a <strong>novel perspective on the physics we
-						already know</strong> — the same theories, written in a language where the field content is a
-					distribution over networks, and where a computer can simulate them.
+					One of the goals: <strong>use the tools of QFT to study general ML setups</strong>: Physics for AI
 				</p>
 
 				<div class="credits">
-					<span class="credits-label">NN-FT collaborators</span>
+					<span class="credits-label">NN-FT collaborators and notable figures</span>
 					<div class="people">
 						<a class="person" href="https://inspirehep.net/authors/2054645" target="_blank">
 							<img src="Capuozzo.jpg" alt="P. Capuozzo" />P. Capuozzo</a>
@@ -627,7 +707,7 @@
 				</div>
 				<h1 class="title-main">Thank you</h1>
 				<div class="title-rule"></div>
-				<p class="title-meta muted">Questions welcome — <a
+				<p class="title-meta muted">Questions are always welcome — <a
 						href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></p>
 			</section>
 
@@ -653,6 +733,62 @@
 			backgroundTransition: "fade",
 			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
 		});
+
+		/* =====================================================================
+		   Venn slide — it carries reveal's zoom-out exit transition; park the
+		   slide's transform-origin on the centre of the indigo (gauge-theory)
+		   disk so leaving the slide dives into it (and coming back flies out).
+		   ===================================================================== */
+		(function () {
+			const sec = document.getElementById("venn-slide");
+			const disk = sec && sec.querySelector("#venn .b1");
+			if (!sec || !disk) return;
+
+			function aimAtDisk() {
+				const s = sec.getBoundingClientRect();
+				const d = disk.getBoundingClientRect();
+				const k = Reveal.getScale() || 1;   // reveal scales .slides; undo it
+				sec.style.transformOrigin =
+					`${(d.left + d.width / 2 - s.left) / k}px ` +
+					`${(d.top + d.height / 2 - s.top) / k}px`;
+			}
+
+			// fires before reveal touches any class, so the slide is still
+			// untransformed and the measurement is exact
+			Reveal.on("beforeslidechange", () => {
+				if (Reveal.getCurrentSlide() === sec) aimAtDisk();
+			});
+		})();
+
+		/* =====================================================================
+		   Topic-change wash — arriving at a slide tagged `data-wash` zooms a
+		   coloured disk in behind the deck: amber for the ML section, teal for
+		   NN-FT, echoing where those circles sat in the Venn diagram.  The
+		   slides themselves keep their ordinary slide transition.
+		   ===================================================================== */
+		(function () {
+			const disk = document.querySelector(".wash-disk");
+			if (!disk) return;
+
+			Reveal.on("beforeslidechange", ev => {
+				const target = document.querySelectorAll(".reveal .slides > section")[ev.indexh];
+				const colour = target && target.dataset.wash;
+				const cur = Reveal.getCurrentSlide();
+				// skip the initial slide() during startup, and same-slide calls
+				if (!colour || !cur || cur === target) return;
+
+				const pos = (target.dataset.washPos || "50% 50%").split(/\s+/);
+				disk.style.setProperty("--wash-colour", colour);
+				disk.style.setProperty("--wash-x", pos[0]);
+				disk.style.setProperty("--wash-y", pos[1] || pos[0]);
+
+				disk.classList.remove("run");
+				void disk.offsetWidth;          // reflow, so the animation replays
+				disk.classList.add("run");
+			});
+
+			disk.addEventListener("animationend", () => disk.classList.remove("run"));
+		})();
 
 		/* =====================================================================
 		   Dimer slides — the Seiberg duality graph is built up one phase at a
@@ -962,12 +1098,22 @@
 
 				function stop() { if (timer) { clearInterval(timer); timer = null; } }
 
+				// leaving the slide: also park the WebGL render loop.  Left
+				// running it repaints a hidden canvas for the rest of the talk —
+				// two of these are enough to starve the compositor and stall the
+				// CSS transitions on every other slide.
+				function leave() {
+					stop();
+					if (graph) graph.pauseAnimation();
+				}
+
 				// full reset: new node objects, empty scene, camera home again —
 				// called every time the slide is entered
 				function run() {
 					stop();
 					if (!graph) graph = build();
 					if (!graph) return;
+					graph.resumeAnimation();
 					const el = document.getElementById(holderId);
 					graph.width(el.clientWidth || 720).height(el.clientHeight || 400);
 
@@ -997,7 +1143,7 @@
 					}, STEP_MS);
 				}
 
-				return { slideId, run, stop };
+				return { slideId, run, leave };
 			}
 
 			const stages = [
@@ -1015,7 +1161,7 @@
 
 			function sync(slide) {
 				const id = slide && slide.id;
-				stages.forEach(s => s.slideId === id ? s.run() : s.stop());
+				stages.forEach(s => s.slideId === id ? s.run() : s.leave());
 			}
 
 			Reveal.on("slidechanged", ev => sync(ev.currentSlide));
