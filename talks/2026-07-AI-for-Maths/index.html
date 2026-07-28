@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<title>Suzzoni — KIAS AI and Maths 2026</title>
+
+	<link rel="stylesheet" href="../dist/reset.css" />
+	<link rel="stylesheet" href="../dist/reveal.css" />
+	<link rel="stylesheet" href="../dist/theme/white.css" />
+	<link rel="stylesheet" href="../dist/plugin/highlight/monokai.css" />
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+		rel="stylesheet">
+
+	<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<script src="../plugin/math/math.js"></script>
+
+	<!-- Seiberg duality graph -->
+	<script src="https://unpkg.com/three@0.160.1/build/three.min.js"></script>
+	<script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
+	<script src="pdp6c.js"></script>
+
+	<style>
+		:root {
+			--ink: #0f172a;
+			--muted: #64748b;
+			--line: #e2e8f0;
+			--gauge: #6366f1;
+			--ml: #f59e0b;
+			--nnft: #14b8a6;
+			--accent: #4f46e5;
+		}
+
+		html,
+		body {
+			background: #ffffff;
+		}
+
+		.reveal-viewport {
+			background:
+				radial-gradient(900px 620px at 88% -12%, rgba(99, 102, 241, 0.10), transparent 62%),
+				radial-gradient(760px 560px at -8% 108%, rgba(20, 184, 166, 0.10), transparent 60%),
+				#ffffff;
+		}
+
+		.reveal {
+			font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+			font-size: 30px;
+			font-weight: 400;
+			color: var(--ink);
+			letter-spacing: -0.005em;
+		}
+
+		.reveal section {
+			text-align: left;
+		}
+
+		.reveal h1,
+		.reveal h2,
+		.reveal h3,
+		.reveal h4 {
+			font-family: Inter, "Segoe UI", system-ui, sans-serif;
+			text-transform: none;
+			color: var(--ink);
+			font-weight: 600;
+			letter-spacing: -0.025em;
+			text-shadow: none;
+			margin: 0 0 0.35em;
+			line-height: 1.15;
+		}
+
+		.reveal h1 { font-size: 1.95em; }
+		.reveal h2 { font-size: 1.28em; }
+		.reveal h3 { font-size: 1.05em; }
+
+		.reveal p,
+		.reveal li,
+		.reveal table {
+			font-size: 0.8em;
+			line-height: 1.5;
+		}
+
+		.reveal strong { font-weight: 600; }
+
+		/* section heading with a gradient rule underneath */
+		.slide-title {
+			position: relative;
+			padding-bottom: 0.32em;
+			margin-bottom: 0.7em;
+		}
+
+		.slide-title::after {
+			content: "";
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			width: 108px;
+			height: 3px;
+			border-radius: 3px;
+			background: linear-gradient(90deg, var(--gauge), var(--nnft));
+		}
+
+		.muted { color: var(--muted); }
+
+		.kicker {
+			font-size: 0.52em;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		.hl {
+			background: linear-gradient(90deg, rgba(99, 102, 241, 0.16), rgba(20, 184, 166, 0.13));
+			border-left: 3px solid var(--accent);
+			border-radius: 0 10px 10px 0;
+			padding: 0.5em 0.85em;
+			display: block;
+		}
+
+		.reveal a { color: var(--accent); }
+
+		.footer {
+			position: absolute;
+			color: var(--muted);
+			bottom: 0.9em;
+			left: 1.1em;
+			font-size: 0.42em;
+			z-index: 20;
+			width: 92%;
+			display: flex;
+			justify-content: space-between;
+			font-weight: 400;
+		}
+
+		.reveal .slide-number {
+			background: transparent;
+			color: var(--muted);
+			font-size: 15px;
+			font-family: Inter, sans-serif;
+		}
+
+		.reveal .progress { color: var(--accent); height: 3px; }
+
+		/* ---------------- title slide ---------------- */
+		#title-slide { text-align: left; }
+
+		.title-main {
+			font-size: 2.25em;
+			font-weight: 700;
+			letter-spacing: -0.035em;
+			line-height: 1.08;
+			margin: 0;
+		}
+
+		.title-sub {
+			font-size: 1.35em;
+			font-weight: 500;
+			letter-spacing: -0.02em;
+			margin: 0.28em 0 0;
+			background: linear-gradient(90deg, var(--gauge) 0%, #8b5cf6 45%, var(--nnft) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		.title-rule {
+			width: 140px;
+			height: 4px;
+			border-radius: 4px;
+			margin: 0.9em 0 0.85em;
+			background: linear-gradient(90deg, var(--gauge), var(--ml), var(--nnft));
+		}
+
+		.title-meta { font-size: 0.72em; line-height: 1.6; }
+		.title-meta .name { font-weight: 600; font-size: 1.15em; color: var(--ink); }
+
+		.orbs { position: absolute; inset: 0; overflow: visible; pointer-events: none; z-index: -1; }
+
+		.orb {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(26px);
+			mix-blend-mode: multiply;
+			opacity: 0.34;
+		}
+
+		/* ---------------- venn ---------------- */
+		#venn { display: block; margin: -0.35em auto 0; height: 510px; width: auto; max-width: 100%; }
+
+		#venn .blob { mix-blend-mode: multiply; opacity: 0; transform-box: fill-box; transform-origin: center; }
+
+		.present #venn .blob { animation: pop 0.75s cubic-bezier(0.2, 0.85, 0.3, 1) forwards; }
+		.present #venn .blob.b1 { animation-delay: 0.10s; }
+		.present #venn .blob.b2 { animation-delay: 0.28s; }
+		.present #venn .blob.b3 { animation-delay: 0.46s; }
+
+		#venn .lbl { opacity: 0; }
+		.present #venn .lbl { animation: fadein 0.6s ease forwards; animation-delay: 0.75s; }
+
+		@keyframes pop {
+			from { opacity: 0; transform: scale(0.55); }
+			to { opacity: 1; transform: scale(1); }
+		}
+
+		@keyframes fadein {
+			from { opacity: 0; transform: translateY(6px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		.vname { font: 600 21px Inter, sans-serif; letter-spacing: -0.01em; }
+		.vdesc { font: 400 14px Inter, sans-serif; fill: #64748b; }
+
+		/* ---------------- dimer slide ---------------- */
+		#dimer-stage { display: flex; gap: 22px; align-items: stretch; }
+
+		.graphbox {
+			flex: 1 1 58%;
+			position: relative;
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: linear-gradient(180deg, #fbfcff, #f5f7fc);
+			overflow: hidden;
+			height: 400px;
+		}
+
+		.graphholder { width: 100%; height: 100%; }
+
+		.sidebox {
+			flex: 0 0 38%;
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: #fbfcff;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+			height: 400px;
+		}
+
+		#tilingCanvas { width: 320px; height: 320px; }
+		#toricCanvas { width: 360px; height: 260px; }
+
+		.boxcap {
+			font: 500 15px Inter, sans-serif;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			color: var(--muted);
+			position: absolute;
+			top: 12px;
+			left: 16px;
+			z-index: 5;
+		}
+
+		.tcap { font: 500 15px Inter, sans-serif; color: var(--muted); letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 4px; }
+		.tphase { font: 600 17px Inter, sans-serif; color: var(--accent); margin-top: 4px; }
+
+		.flowline {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			font-size: 0.72em;
+			margin-top: 18px;
+			color: var(--ink);
+		}
+
+		.flowline .chip {
+			border: 1px solid var(--line);
+			border-radius: 999px;
+			padding: 0.25em 0.85em;
+			background: #fff;
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+		}
+
+		.flowline .arrow { color: var(--accent); font-weight: 600; }
+
+		/* ---------------- ML slide ---------------- */
+		.pillrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 0.55em; }
+
+		.pillrow > span {
+			font-size: 0.62em;
+			padding: 0.28em 0.9em;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		/* collaborator pills */
+		.people { display: flex; gap: 9px; margin-left: auto; }
+
+		.reveal .person {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+			padding: 3px 15px 3px 3px;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+			font-size: 0.55em;
+			font-weight: 500;
+			color: var(--ink);
+			text-decoration: none;
+			white-space: nowrap;
+		}
+
+		.reveal .person:hover { border-color: var(--accent); color: var(--accent); }
+
+		.person img {
+			width: 38px;
+			height: 38px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 1px solid var(--line);
+			margin: 0;
+			display: block;
+		}
+
+		/* collaborator strip at the foot of a slide */
+		.credits { margin-top: 1.1em; }
+
+		.credits-label {
+			display: block;
+			font: 500 14px Inter, sans-serif;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 9px;
+		}
+
+		.credits .people { margin-left: 0; flex-wrap: wrap; }
+
+		.figwrap { text-align: center; margin-top: 18px; }
+		.figwrap img { width: 100%; max-width: 1160px; height: auto; }
+		.figcap { font-size: 0.5em; color: var(--muted); margin-top: -4px; }
+
+		/* ---------------- two-column ---------------- */
+		.cols { display: flex; gap: 30px; align-items: stretch; }
+		.cols > div { flex: 1; }
+
+		.card {
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			padding: 0.7em 1em;
+			background: rgba(255, 255, 255, 0.7);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.card > p { margin: 0; }
+
+		.eq { font-size: 0.72em; }
+		.eq-sm { font-size: 0.62em; }
+		.eq-xs { font-size: 0.52em; }
+
+		/* MathJax leaves a full em above and below every display equation */
+		.reveal mjx-container[display="true"] { margin: 0.3em 0 !important; }
+	</style>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="footer"><span>B. Suzzoni</span><span>Gauge theories · AI for Physics · Physics for AI</span><span><a
+					href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span></div>
+		<div class="slides">
+
+			<!-- ===================== title ===================== -->
+			<section id="title-slide">
+				<div class="orbs">
+					<div class="orb" style="width:420px;height:420px;right:-90px;top:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:300px;height:300px;right:120px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+					<div class="orb" style="width:190px;height:190px;right:330px;top:170px;background:radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);opacity:0.26;"></div>
+				</div>
+
+				<p class="kicker">KIAS — AI and Maths 2026</p>
+				<h1 class="title-main">Gauge theories · AI for Physics · Physics for AI</h1>
+				<p class="title-sub">AI for Mathematics (Physics) &nbsp;&nbsp;·&nbsp;&nbsp;Mathematics (Physics) for AI</p>
+				<div class="title-rule"></div>
+				<p class="title-meta">
+					<span class="name">Benjamin Suzzoni</span><br />
+					<span class="muted">UNIST — Ulsan National Institute of Science and Technology</span>
+				</p>
+			</section>
+
+			<!-- ===================== venn ===================== -->
+			<section id="venn-slide">
+				<h2 class="slide-title">Three strands, one research programme</h2>
+
+				<svg id="venn" viewBox="196 20 593 570" role="img" aria-label="Venn diagram">
+					<g>
+						<circle class="blob b1" cx="375" cy="195" r="155" fill="#6366f1" fill-opacity="0.28"
+							stroke="#6366f1" stroke-opacity="0.6" stroke-width="2" />
+						<circle class="blob b2" cx="610" cy="195" r="155" fill="#f59e0b" fill-opacity="0.28"
+							stroke="#f59e0b" stroke-opacity="0.6" stroke-width="2" />
+						<circle class="blob b3" cx="492" cy="398" r="155" fill="#14b8a6" fill-opacity="0.28"
+							stroke="#14b8a6" stroke-opacity="0.6" stroke-width="2" />
+					</g>
+
+					<g class="lbl">
+						<text class="vname" x="314" y="152" text-anchor="middle" fill="#4338ca">gauge theories</text>
+						<text class="vdesc" x="314" y="175" text-anchor="middle">dimers, quivers,</text>
+						<text class="vdesc" x="314" y="194" text-anchor="middle">toric Calabi–Yau</text>
+
+						<text class="vname" x="682" y="152" text-anchor="middle" fill="#b45309">ML</text>
+						<text class="vdesc" x="682" y="175" text-anchor="middle">GNNs, unsupervised</text>
+						<text class="vdesc" x="682" y="194" text-anchor="middle">representations, XAI</text>
+
+						<text class="vname" x="492" y="464" text-anchor="middle" fill="#0f766e">NN-FT</text>
+						<text class="vdesc" x="492" y="487" text-anchor="middle">field theory from</text>
+						<text class="vdesc" x="492" y="506" text-anchor="middle">∞-width networks</text>
+					</g>
+				</svg>
+			</section>
+
+			<!-- ===================== dimers ===================== -->
+			<section id="dimer-slide">
+				<h2 class="slide-title">Dimer models and toric Calabi–Yau</h2>
+
+				<div id="dimer-stage">
+					<div id="seibergBox" class="graphbox">
+						<div class="boxcap">Seiberg duality graph — PdP<sub>6c</sub></div>
+						<div id="seibergGraph" class="graphholder"></div>
+					</div>
+					<div id="tilingBox" class="sidebox">
+						<div class="tcap">brane tiling</div>
+						<canvas id="tilingCanvas" width="640" height="640"></canvas>
+						<div class="tphase" id="phaseLabel">phase 1 / 33</div>
+					</div>
+				</div>
+
+				<div class="flowline">
+					<span class="chip">combinatorics of the brane tiling</span>
+					<span class="arrow">⟶</span>
+					<span class="chip">resolutions of the toric CY<sub>3</sub></span>
+				</div>
+			</section>
+
+			<!-- ================= dimers / toric diagram ================= -->
+			<section id="toric-slide">
+				<h2 class="slide-title">Dimer models and toric Calabi–Yau</h2>
+
+				<div id="dimer-stage">
+					<div id="seibergBox2" class="graphbox">
+						<div class="boxcap">Seiberg duality graph — PdP<sub>6c</sub></div>
+						<div id="seibergGraph2" class="graphholder"></div>
+					</div>
+					<div id="toricBox" class="sidebox">
+						<div class="tcap">toric diagram — multiplicities</div>
+						<canvas id="toricCanvas" width="720" height="520"></canvas>
+						<div class="tphase" id="phaseLabel2">phase 1 / 33</div>
+					</div>
+				</div>
+
+				<div class="flowline">
+					<span class="chip">every phase</span>
+					<span class="arrow">⟶</span>
+					<span class="chip">the same toric CY<sub>3</sub>, new perfect-matching multiplicities</span>
+				</div>
+			</section>
+
+			<!-- ===================== ML on dimers ===================== -->
+			<section id="ml-slide">
+				<h2 class="slide-title">Neural networks on dimer models</h2>
+
+				<div class="pillrow">
+					<span>MLP</span><span>GNN / GATv2</span><span>contrastive pre-training</span><span>linear
+						probes</span>
+					<div class="people">
+						<a class="person" href="https://inspirehep.net/authors/2054645" target="_blank">
+							<img src="Capuozzo.jpg" alt="P. Capuozzo" />P. Capuozzo</a>
+						<a class="person" href="https://github.com/Tancredi-Schettini-Gherardini" target="_blank">
+							<img src="SchettiniGherardini.jpg" alt="T. Schettini Gherardini" />T. Schettini
+							Gherardini</a>
+					</div>
+				</div>
+
+				<p class="hl" style="font-size:0.72em;">
+					<strong>Question:</strong> what hidden structure of dimer models can ML teach us?<br />
+					<span class="muted">→ unsupervised learning, explainable AI, …</span>
+				</p>
+
+				<div class="figwrap">
+					<img src="tsne_physics.png" alt="t-SNE of the label-free embedding coloured by physics" />
+					<p class="figcap">label-free embedding, coloured by physics it was never shown</p>
+				</div>
+			</section>
+
+			<!-- ============ NN-FT : the correspondence ============ -->
+			<section id="nnft-1">
+				<h2 class="slide-title">The Neural-Network Field-Theory correspondence</h2>
+
+				<div class="cols">
+					<div>
+						<p style="font-size:0.68em;">
+							The textbook description of a QFT is the <strong>path integral</strong>
+						</p>
+						<p class="eq-sm">\[ \langle\mathcal{O}(x)\rangle = \int\mathcal{D}\phi\; e^{-S[\phi]}\,
+							\mathcal{O}(x) \]</p>
+						<p style="font-size:0.68em;">
+							but the measure \(\mathcal{D}\phi\) is generally <strong>not well defined</strong> — it is
+							shorthand for <em>"integrate over all fields"</em>.
+						</p>
+					</div>
+					<div>
+						<p style="font-size:0.68em;">We can define it</p>
+						<ul style="font-size:0.68em;">
+							<li>rigorously, sometimes (e.g. TQFTs)</li>
+							<li>by discretizing space (lattice)</li>
+							<li>or with <strong>neural networks and UATs</strong></li>
+						</ul>
+					</div>
+				</div>
+
+				<p class="hl" style="font-size:0.7em; margin-top:0.3em;">
+					<strong>Key idea:</strong> use the initialization distribution together with the UAT to integrate
+					over all network configurations.
+				</p>
+
+				<p class="eq-sm">
+					\[ \int\mathcal{D}\phi\; e^{-S[\phi]}\,\mathcal{O}(\phi(x))
+					\qquad\longleftrightarrow\qquad
+					\lim_{N\to\infty}\int_{\Omega}\prod_i^N d\theta_i\, P(\theta_i)\,\mathcal{O}(\phi_\theta(x)) \]
+				</p>
+			</section>
+
+			<!-- ====== NN-FT : correlators, and beyond the Gaussian limit ====== -->
+			<section id="nnft-2">
+				<h2 class="slide-title">Correlators — and interactions</h2>
+
+				<div class="cols">
+					<div>
+						<p style="font-size:0.66em;">
+							Correlators come from the generating functional, now an ordinary expectation value:
+						</p>
+						<p class="eq-xs">
+							\[ Z[J] = \lim_{N\to\infty}\int_{\Omega}\prod_i^N d\theta_i\, P(\theta_i)\;
+							e^{\int dx\, J\phi_\theta} \]
+							\[ \frac{\delta^2 Z[J]}{\delta J(x)\delta J(y)} =
+							\mathbb{E}_{P(\theta)}\big[\phi_\theta(x)\phi_\theta(y)\big] = K(x,y) \]
+						</p>
+						<p style="font-size:0.66em;">
+							A free scalar with propagator \(K\):
+						</p>
+						<p class="eq-xs">\[ S[\phi] = -\frac{1}{2}\int dx\,dy\; \phi(x)\, K^{-1}(x,y)\, \phi(y) \]</p>
+					</div>
+
+					<div>
+						<p style="font-size:0.66em;">Two ways to switch on interactions:</p>
+						<div class="card" style="flex-direction:column; align-items:flex-start; margin-bottom:10px;">
+							<p style="font-size:0.64em; margin:0;"><strong>Finite-\(N\) corrections</strong><br />
+								<span class="muted">step back from the UAT limit</span>
+							</p>
+						</div>
+						<div class="card" style="flex-direction:column; align-items:flex-start;">
+							<p style="font-size:0.64em; margin:0;"><strong>Break the UAT requirements</strong><br />
+								<span class="muted">e.g. statistical dependence of the parameters</span>
+							</p>
+						</div>
+						<p style="font-size:0.66em; margin-top:0.6em;">
+							e.g. \(\phi^4\)-theory, as a deformation of \(P(\theta)\):
+						</p>
+						<p class="eq-xs">
+							\[ P(\theta) \;\longrightarrow\; P(\theta)\,
+							\exp\left(-\frac{\lambda}{4!}\int dx\; \phi_\theta^4(x)\right) \]
+						</p>
+					</div>
+				</div>
+
+				<p class="hl" style="font-size:0.68em; margin-top:0.4em;">
+					Choosing \(P(\theta)\) and \(\phi_\theta\) — hence \(K\) — <strong>engineers different
+						QFTs</strong>; leaving the UAT limit switches on the <strong>interactions</strong>.
+				</p>
+			</section>
+
+			<!-- ============ NN-FT : outlook ============ -->
+			<section id="nnft-3">
+				<h2 class="slide-title">Where the field is heading</h2>
+
+				<ul style="font-size:0.7em;">
+					<li><strong>Recover</strong> known theories — gauge theories, supersymmetric strings, CFTs — as
+						architectures</li>
+					<li><strong>Rederive</strong> their known results, now with the tools of NN-FT</li>
+					<li><strong>Predict</strong>: new results inside those same theories</li>
+					<li><strong>Discover</strong>: new theories, and their properties</li>
+					<li><strong>Flow</strong> the distribution \(P(\theta)\) — is <em>learning</em> an RG flow?</li>
+				</ul>
+
+				<p class="hl" style="font-size:0.7em; margin-top:0.7em;">
+					The prize is not a new theory of everything, but a <strong>novel perspective on the physics we
+						already know</strong> — the same theories, written in a language where the field content is a
+					distribution over networks, and where a computer can simulate them.
+				</p>
+
+				<div class="credits">
+					<span class="credits-label">NN-FT collaborators</span>
+					<div class="people">
+						<a class="person" href="https://inspirehep.net/authors/2054645" target="_blank">
+							<img src="Capuozzo.jpg" alt="P. Capuozzo" />P. Capuozzo</a>
+						<a class="person" href="https://inspirehep.net/authors/1838025" target="_blank">
+							<img src="Ferko.jpg" alt="C. Ferko" />C. Ferko</a>
+						<a class="person" href="https://inspirehep.net/authors/2218240" target="_blank">
+							<img src="Frank.jpg" alt="S. Frank" />S. Frank</a>
+						<a class="person" href="https://inspirehep.net/authors/1065176" target="_blank">
+							<img src="Halverson.jpg" alt="J. Halverson" />J. Halverson</a>
+						<a class="person" href="https://inspirehep.net/authors/1004416" target="_blank">
+							<img src="Jejjala.jpg" alt="V. Jejjala" />V. Jejjala</a>
+						<a class="person" href="https://inspirehep.net/authors/1288263" target="_blank">
+							<img src="Robinson.jpg" alt="B. Robinson" />B. Robinson</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- ===================== thanks ===================== -->
+			<section id="thanks-slide">
+				<div class="orbs">
+					<div class="orb" style="width:380px;height:380px;right:-70px;bottom:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:260px;height:260px;right:250px;top:-90px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+				</div>
+				<h1 class="title-main">Thank you</h1>
+				<div class="title-rule"></div>
+				<p class="title-meta muted">Questions welcome — <a
+						href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></p>
+			</section>
+
+		</div>
+	</div>
+
+	<script src="../dist/reveal.js"></script>
+	<script src="../dist/plugin/notes.js"></script>
+	<script src="../dist/plugin/markdown.js"></script>
+	<script src="../dist/plugin/highlight.js"></script>
+	<script src="../dist/plugin/zoom.js"></script>
+	<script src="../dist/plugin/search.js"></script>
+
+	<script>
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+			width: 1280,
+			height: 720,
+			margin: 0.05,
+			transition: "slide",
+			transitionSpeed: "default",
+			backgroundTransition: "fade",
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+		});
+
+		/* =====================================================================
+		   Dimer slides — the Seiberg duality graph is built up one phase at a
+		   time, and the panel on the right (brane tiling, then toric diagram)
+		   advances at exactly the same rhythm.
+		   Data + rendering mirror benterre.com/DimersWeb/DimerDatabase.
+		   ===================================================================== */
+		(function () {
+			const T = window.PDP6C;
+			const STEP_MS = 320;
+
+			/* ---------------- brane tiling (light theme) ---------------- */
+			function drawTiling(canvas, tiling) {
+				const ctx = canvas.getContext("2d");
+				const S = canvas.width / 320;          // hi-dpi scale factor
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				if (!tiling) return;
+
+				let L = tiling.lattice;
+				let nodes = tiling.nodes;
+
+				// de-squash strip-like fundamental domains so edges stay isotropic
+				let mxx = 0, myy = 0;
+				for (const [b, w, w1, w2] of tiling.edges) {
+					const vx = nodes[w][0] + w1 * L[0][0] + w2 * L[1][0] - nodes[b][0];
+					const vy = nodes[w][1] + w1 * L[0][1] + w2 * L[1][1] - nodes[b][1];
+					mxx += vx * vx; myy += vy * vy;
+				}
+				if (mxx > 1e-12 && myy > 1e-12) {
+					const q = Math.sqrt(myy / mxx);
+					let sx = 1, sy = 1;
+					if (q > 2) sx = Math.min(q, 24); else if (q < 0.5) sy = Math.min(1 / q, 24);
+					if (sx !== 1 || sy !== 1) {
+						nodes = nodes.map(n => [n[0] * sx, n[1] * sy, n[2]]);
+						L = [[L[0][0] * sx, L[0][1] * sy], [L[1][0] * sx, L[1][1] * sy]];
+					}
+				}
+
+				const m = 0.06;
+				const frac2xy = (u, v) => [u * L[0][0] + v * L[1][0], u * L[0][1] + v * L[1][1]];
+				const cell = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => frac2xy(u, v));
+				const view = [[-m, -m], [1 + m, -m], [1 + m, 1 + m], [-m, 1 + m]].map(([u, v]) => frac2xy(u, v));
+
+				let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+				for (const c of view) {
+					minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]);
+					minY = Math.min(minY, c[1]); maxY = Math.max(maxY, c[1]);
+				}
+				const pad = 16 * S;
+				const sc = Math.min((canvas.width - 2 * pad) / (maxX - minX),
+					(canvas.height - 2 * pad) / (maxY - minY));
+				const ox = (canvas.width - sc * (maxX - minX)) / 2 - sc * minX;
+				const oy = (canvas.height + sc * (maxY - minY)) / 2 + sc * minY;
+				const P = (x, y) => [ox + sc * x, oy - sc * y];
+
+				const segs = tiling.edges.map(([b, w, w1, w2]) => ({
+					b,
+					vx: nodes[w][0] + w1 * L[0][0] + w2 * L[1][0] - nodes[b][0],
+					vy: nodes[w][1] + w1 * L[0][1] + w2 * L[1][1] - nodes[b][1]
+				}));
+				let reach = 1;
+				for (const [b, w, w1, w2] of tiling.edges)
+					reach = Math.max(reach, Math.abs(w1) + 1, Math.abs(w2) + 1);
+
+				ctx.save();
+				ctx.beginPath();
+				view.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+				ctx.closePath();
+				ctx.clip();
+
+				ctx.strokeStyle = "#334155";
+				ctx.lineWidth = 1.7 * S;
+				ctx.lineCap = "round";
+				for (let si = -reach; si <= reach; si++)
+					for (let sj = -reach; sj <= reach; sj++) {
+						const D = frac2xy(si, sj);
+						for (const s of segs) {
+							const x1 = nodes[s.b][0] + D[0], y1 = nodes[s.b][1] + D[1];
+							const [X1, Y1] = P(x1, y1), [X2, Y2] = P(x1 + s.vx, y1 + s.vy);
+							if (Math.max(X1, X2) < 0 || Math.min(X1, X2) > canvas.width ||
+								Math.max(Y1, Y2) < 0 || Math.min(Y1, Y2) > canvas.height) continue;
+							ctx.beginPath();
+							ctx.moveTo(X1, Y1);
+							ctx.lineTo(X2, Y2);
+							ctx.stroke();
+						}
+					}
+
+				for (let si = -reach; si <= reach; si++)
+					for (let sj = -reach; sj <= reach; sj++) {
+						const D = frac2xy(si, sj);
+						for (const n of nodes) {
+							const [X, Y] = P(n[0] + D[0], n[1] + D[1]);
+							if (X < -12 * S || X > canvas.width + 12 * S ||
+								Y < -12 * S || Y > canvas.height + 12 * S) continue;
+							ctx.beginPath();
+							ctx.arc(X, Y, 5.5 * S, 0, 7);
+							ctx.fillStyle = n[2] === 1 ? "#0f172a" : "#ffffff";
+							ctx.fill();
+							ctx.strokeStyle = "#0f172a";
+							ctx.lineWidth = 1.6 * S;
+							ctx.stroke();
+						}
+					}
+				ctx.restore();
+
+				// fundamental domain
+				ctx.strokeStyle = "#f43f5e";
+				ctx.setLineDash([7 * S, 6 * S]);
+				ctx.lineWidth = 1.4 * S;
+				ctx.beginPath();
+				cell.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+				ctx.closePath();
+				ctx.stroke();
+				ctx.setLineDash([]);
+
+				// face (gauge group) labels
+				const faceEdges = new Map();
+				tiling.edges.forEach(([b, w, w1, w2, f1, f2], ei) => {
+					for (const f of new Set([f1, f2])) {
+						if (!faceEdges.has(f)) faceEdges.set(f, []);
+						faceEdges.get(f).push(ei);
+					}
+				});
+				function faceCentroid(f) {
+					const eids = faceEdges.get(f);
+					if (!eids || !eids.length) return null;
+					const lift = new Map();
+					const b0 = tiling.edges[eids[0]][0];
+					lift.set(b0, [nodes[b0][0], nodes[b0][1]]);
+					let changed = true;
+					while (changed) {
+						changed = false;
+						for (const ei of eids) {
+							const [b, w] = tiling.edges[ei];
+							const s = segs[ei];
+							if (lift.has(b) && !lift.has(w)) {
+								const pb = lift.get(b);
+								lift.set(w, [pb[0] + s.vx, pb[1] + s.vy]);
+								changed = true;
+							} else if (lift.has(w) && !lift.has(b)) {
+								const pw = lift.get(w);
+								lift.set(b, [pw[0] - s.vx, pw[1] - s.vy]);
+								changed = true;
+							}
+						}
+					}
+					let cx = 0, cy = 0, n = 0;
+					for (const ei of eids) {
+						const pb = lift.get(tiling.edges[ei][0]);
+						if (!pb) continue;
+						cx += pb[0] + segs[ei].vx / 2;
+						cy += pb[1] + segs[ei].vy / 2;
+						n++;
+					}
+					return n ? [cx / n, cy / n] : null;
+				}
+				const det = L[0][0] * L[1][1] - L[0][1] * L[1][0];
+				ctx.font = `600 ${13 * S}px Inter, sans-serif`;
+				ctx.textAlign = "center";
+				ctx.textBaseline = "middle";
+				ctx.fillStyle = "#4f46e5";
+				for (const [f, fx, fy] of tiling.faces) {
+					const c = faceCentroid(f) || [fx, fy];
+					let u = (c[0] * L[1][1] - c[1] * L[1][0]) / det;
+					let v = (-c[0] * L[0][1] + c[1] * L[0][0]) / det;
+					u -= Math.floor(u);
+					v -= Math.floor(v);
+					const [wx, wy] = frac2xy(u, v);
+					const [X, Y] = P(wx, wy);
+					ctx.fillText(String(f + 1), X, Y);
+				}
+			}
+
+			/* ------------- toric diagram with multiplicities ------------- */
+			// hull and lattice points are theory data; the multiplicities are the
+			// SELECTED phase's perfect-matching counts (phase-dependent)
+			function phaseToric(i) {
+				const mult = T.phases[i] && T.phases[i].glsm_mult;
+				return {
+					hull: T.toric.hull,
+					points: T.toric.points.map(([x, y]) => {
+						const m = mult ? mult[`${x},${y}`] : null;
+						return [x, y, m != null ? m : null];
+					})
+				};
+			}
+
+			function drawToric(canvas, toric) {
+				const ctx = canvas.getContext("2d");
+				const S = canvas.width / 360;          // hi-dpi scale factor
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				const pts = toric.points;
+				const maxX = Math.max(...pts.map(p => p[0]), 1);
+				const maxY = Math.max(...pts.map(p => p[1]), 1);
+				const pad = 46 * S;
+				const cell = Math.min((canvas.width - 2 * pad) / maxX,
+					(canvas.height - 2 * pad) / maxY, 110 * S);
+				const ox = (canvas.width - cell * maxX) / 2;
+				const oy = (canvas.height + cell * maxY) / 2;
+				const P = p => [ox + p[0] * cell, oy - p[1] * cell];
+
+				// ambient lattice
+				ctx.fillStyle = "#cbd5e1";
+				for (let x = 0; x <= maxX; x++)
+					for (let y = 0; y <= maxY; y++) {
+						const [X, Y] = P([x, y]);
+						ctx.beginPath(); ctx.arc(X, Y, 2.2 * S, 0, 7); ctx.fill();
+					}
+
+				// hull
+				ctx.beginPath();
+				toric.hull.forEach((p, i) => { const [X, Y] = P(p); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+				ctx.closePath();
+				ctx.fillStyle = "rgba(99,102,241,0.10)";
+				ctx.strokeStyle = "#6366f1";
+				ctx.lineWidth = 1.9 * S;
+				ctx.lineJoin = "round";
+				ctx.fill();
+				ctx.stroke();
+
+				// toric points + multiplicity labels
+				ctx.textAlign = "left";
+				ctx.textBaseline = "alphabetic";
+				for (const p of pts) {
+					const [X, Y] = P(p);
+					ctx.beginPath();
+					ctx.arc(X, Y, 5.2 * S, 0, 7);
+					ctx.fillStyle = "#1e293b";
+					ctx.fill();
+					if (p[2] != null && p[2] !== 1) {
+						ctx.fillStyle = "#e11d48";
+						ctx.font = `700 ${14 * S}px Inter, sans-serif`;
+						ctx.fillText(String(p[2]), X + 8 * S, Y - 8 * S);
+					}
+				}
+			}
+
+			/* ---------------- Seiberg graph stage ---------------- */
+			// pristine, never-mutated description of the duality graph: plain
+			// ids only.  3d-force-graph stamps its Three.js objects (and the
+			// resolved source/target references) onto whatever node/link
+			// objects it is handed, so every run gets its own fresh copies —
+			// sharing them between the two slides, or across a re-entry, leaves
+			// the graph holding meshes that belong to a discarded scene.
+			const N_PHASES = T.seiberg.nodes.length;
+			const LINK_DEFS = T.seiberg.links
+				.filter(l => l.source !== l.target)
+				.map(l => [l.source, l.target]);
+
+			// one independent build-up animation per slide: its own graph
+			// instance, its own timer, its own right-hand-side renderer
+			function createStage(slideId, holderId, render) {
+				let graph = null, timer = null, cur = 0;
+				let nodes = [], liveNodes = [], liveLinks = [], seen = new Set();
+
+				function build() {
+					const el = document.getElementById(holderId);
+					if (!el || typeof ForceGraph3D === "undefined") return null;
+					return ForceGraph3D()(el)
+						.width(el.clientWidth || 720)
+						.height(el.clientHeight || 400)
+						.backgroundColor("rgba(0,0,0,0)")
+						.showNavInfo(false)
+						.nodeLabel(n => `phase ${n.id + 1}`)
+						.nodeRelSize(5)
+						.nodeVal(n => (n.id === cur ? 5 : 1.6))
+						.nodeOpacity(0.95)
+						.nodeColor(n => n.id === cur ? "#f59e0b" : (n.id === 0 ? "#0f766e" : "#6366f1"))
+						.linkColor(() => "#94a3b8")
+						.linkOpacity(0.55)
+						.linkWidth(0.7)
+						.onNodeClick(n => showPhase(n.id))
+						.graphData({ nodes: [], links: [] });
+				}
+
+				// grow the live arrays in place and hand the same objects back:
+				// the library then only ADDS the new node and its links.
+				// Rebuilding the arrays each tick would make it tear down and
+				// re-create every mesh, which is where it trips over itself.
+				function pushGraph(i) {
+					liveNodes.push(nodes[i]);
+					seen.add(i);
+					for (const [s, t] of LINK_DEFS)
+						if ((s === i && seen.has(t)) || (t === i && seen.has(s)))
+							liveLinks.push({ source: s, target: t });
+					graph.graphData({ nodes: liveNodes, links: liveLinks });
+				}
+
+				// keep the whole (growing) graph in frame: zoomToFit misbehaves while
+				// only a couple of nodes exist, so drive the camera from the cloud
+				function fitCamera(ms) {
+					let r = 60;
+					for (const n of graph.graphData().nodes)
+						r = Math.max(r, Math.hypot(n.x || 0, n.y || 0, n.z || 0));
+					const d = Math.max(175, (r + 25) * 1.45);
+					graph.cameraPosition({ x: d * 0.22, y: d * 0.12, z: d * 0.96 },
+						{ x: 0, y: 0, z: 0 }, ms);
+				}
+
+				function showPhase(i) {
+					cur = i;
+					render(i);
+					graph.nodeColor(graph.nodeColor()).nodeVal(graph.nodeVal());
+				}
+
+				function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+				// full reset: new node objects, empty scene, camera home again —
+				// called every time the slide is entered
+				function run() {
+					stop();
+					if (!graph) graph = build();
+					if (!graph) return;
+					const el = document.getElementById(holderId);
+					graph.width(el.clientWidth || 720).height(el.clientHeight || 400);
+
+					cur = 0;
+					nodes = [];
+					for (let k = 0; k < N_PHASES; k++) nodes.push({ id: k });
+					liveNodes = [];
+					liveLinks = [];
+					seen = new Set();
+
+					pushGraph(0);
+					showPhase(0);
+					fitCamera(0);
+
+					let i = 0;
+					timer = setInterval(() => {
+						i++;
+						if (i >= N_PHASES) {
+							stop();
+							fitCamera(800);
+							return;
+						}
+						cur = i;
+						pushGraph(i);      // one new phase per tick …
+						showPhase(i);      // … and its right-hand panel, in step
+						fitCamera(STEP_MS);
+					}, STEP_MS);
+				}
+
+				return { slideId, run, stop };
+			}
+
+			const stages = [
+				createStage("dimer-slide", "seibergGraph", i => {
+					drawTiling(document.getElementById("tilingCanvas"), T.phases[i].tiling);
+					document.getElementById("phaseLabel").textContent =
+						`phase ${i + 1} / ${T.n_phases}`;
+				}),
+				createStage("toric-slide", "seibergGraph2", i => {
+					drawToric(document.getElementById("toricCanvas"), phaseToric(i));
+					document.getElementById("phaseLabel2").textContent =
+						`phase ${i + 1} / ${T.n_phases}`;
+				})
+			];
+
+			function sync(slide) {
+				const id = slide && slide.id;
+				stages.forEach(s => s.slideId === id ? s.run() : s.stop());
+			}
+
+			Reveal.on("slidechanged", ev => sync(ev.currentSlide));
+			Reveal.on("ready", ev => sync(ev.currentSlide));
+		})();
+	</script>
+</body>
+
+</html>

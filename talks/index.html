@@ -1,16 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talks</title>
+    <title>Talks — Benjamin Suzzoni</title>
+
+    <link href="../main.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" sizes="128x128" href="../favicon.ico">
+    <meta name="theme-color" content="#7a9ecb">
+
+    <style>
+        /* ---------------- page head ---------------- */
+        .talks-head {
+            max-width: 1080px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 46px 20px 0;
+        }
+
+        .talks-head h1 {
+            font-size: 44px;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .talks-rule {
+            width: 120px;
+            height: 4px;
+            border-radius: 4px;
+            margin: 14px 0 16px;
+            background: linear-gradient(90deg, var(--a-hover), #7a9ecb);
+        }
+
+        .talks-lead {
+            margin: 0;
+            font-size: 18px;
+            max-width: 46em;
+            opacity: 0.75;
+        }
+
+        /* ---------------- the list ---------------- */
+        .talks-list {
+            max-width: 1080px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .talk-card {
+            display: flex;
+            align-items: stretch;
+            gap: 26px;
+            padding: 22px 26px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(0, 0, 0, 0.09);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+            color: black;
+            text-decoration: none;
+            transition: transform 0.16s ease, box-shadow 0.16s ease,
+                border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .talk-card:visited { color: black; }
+
+        .talk-card:hover {
+            transform: translateY(-3px);
+            background: #ffffff;
+            border-color: var(--a-hover);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+        }
+
+        /* date rail */
+        .talk-date {
+            flex: 0 0 84px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-right: 24px;
+            border-right: 1px solid rgba(0, 0, 0, 0.12);
+            line-height: 1;
+        }
+
+        .talk-date .mon {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .talk-date .yr {
+            font-size: 17px;
+            margin-top: 6px;
+            opacity: 0.6;
+        }
+
+        /* body */
+        .talk-body { flex: 1; min-width: 0; }
+
+        .talk-title {
+            margin: 0 0 8px;
+            font-size: 25px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-wrap: pretty;
+        }
+
+        .talk-card:hover .talk-title { color: var(--a-hover); }
+
+        .talk-event {
+            margin: 0;
+            font-size: 17px;
+            opacity: 0.8;
+        }
+
+        .talk-meta {
+            margin: 10px 0 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .talk-meta span {
+            font-size: 14px;
+            padding: 3px 12px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* chevron */
+        .talk-go {
+            flex: 0 0 auto;
+            align-self: center;
+            font-size: 30px;
+            opacity: 0.35;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+
+        .talk-card:hover .talk-go {
+            opacity: 1;
+            transform: translateX(4px);
+            color: var(--a-hover);
+        }
+
+        .talks-note {
+            max-width: 1080px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+            font-size: 15px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 700px) {
+            .talk-card { flex-direction: column; gap: 14px; padding: 20px; }
+
+            .talk-date {
+                flex: none;
+                flex-direction: row;
+                gap: 10px;
+                align-items: baseline;
+                justify-content: flex-start;
+                padding: 0 0 12px;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            }
+
+            .talk-go { display: none; }
+            .talk-title { font-size: 22px; }
+            .talks-head h1 { font-size: 34px; }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Talks</h1>
-    <ul>
-        <li><a href="2026-05-APCTP/">Quantum Geometry and Duality 2026-I: Miniworkshop on Physics and AI</a></li>
-        <li><a href="2026-06-Strings/">Strings 2026 - Gong Show</a></li>
-        <!-- <li><a href="coamoeba/">Coamoeba</a></li> -->
-    </ul>
+    <header>
+        <!-- NAVBAR -->
+        <div class="navbar-desktop debug-border">
+            <div class="navbar-div debug-border">
+                <a href="../" class="navbar_item button hide-small debug-border">About</a>
+                <a href="./" class="navbar_item button hide-small debug-border">Talks</a>
+                <a href="../astro" class="navbar_item button hide-small debug-border">Astro</a>
+                <a href="../DimersWeb" class="navbar_item button hide-small debug-border">DimersWeb</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content margin-top-75" style="gap:34px;">
+
+        <div class="talks-head">
+            <h1>Talks</h1>
+            <div class="talks-rule"></div>
+            <p class="talks-lead">
+                Slides from conferences, workshops and seminars. Each one opens as a presentation in the
+                browser — use the arrow keys, or swipe, to move through it.
+            </p>
+        </div>
+
+        <div class="talks-list">
+
+            <a class="talk-card" href="2026-07-AI-for-Maths/">
+                <div class="talk-date"><span class="mon">Jul</span><span class="yr">2026</span></div>
+                <div class="talk-body">
+                    <h2 class="talk-title">Gauge theories, AI for Physics &amp; Mathematics, Physics for AI</h2>
+                    <p class="talk-event">KIAS AI and Maths 2026</p>
+                    <div class="talk-meta">
+                        <span>KIAS, Seoul</span>
+                        <span>dimer models</span>
+                        <span>NN-FT</span>
+                    </div>
+                </div>
+                <div class="talk-go">&rarr;</div>
+            </a>
+
+            <a class="talk-card" href="2026-06-Strings/">
+                <div class="talk-date"><span class="mon">Jun</span><span class="yr">2026</span></div>
+                <div class="talk-body">
+                    <h2 class="talk-title">Neural-Network Field Theory realization of Wess–Zumino–Witten</h2>
+                    <p class="talk-event">Strings 2026 — Gong Show</p>
+                    <div class="talk-meta">
+                        <span>Shanghai</span>
+                        <span>gong show</span>
+                    </div>
+                </div>
+                <div class="talk-go">&rarr;</div>
+            </a>
+
+            <a class="talk-card" href="2026-05-APCTP/">
+                <div class="talk-date"><span class="mon">May</span><span class="yr">2026</span></div>
+                <div class="talk-body">
+                    <h2 class="talk-title">Neural-Network Field Theory Correspondence for Wess–Zumino–Witten
+                        Theories</h2>
+                    <p class="talk-event">Quantum Geometry and Duality 2026-I — Miniworkshop on Physics and AI</p>
+                    <div class="talk-meta">
+                        <span>APCTP, Pohang</span>
+                        <span>seminar</span>
+                    </div>
+                </div>
+                <div class="talk-go">&rarr;</div>
+            </a>
+
+            <!-- <a class="talk-card" href="coamoeba/"> … coamoeba viewer … </a> -->
+
+        </div>
+
+        <p class="talks-note">Slides are built with reveal.js — press <strong>Esc</strong> for an overview,
+            <strong>S</strong> for speaker notes.</p>
+
+        <div class="main-content-div"></div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-div debug-border">
+            <div class="padding-24-48 debug-border" style="text-align:center;">
+                <a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a>
+                <p>
+                    Department of Mathematical Sciences<br>
+                    Ulsan National Institute of Science and Technology (UNIST)
+                </p>
+            </div>
+            <div class="footer-social padding-24-48 debug-border">
+                <a href="https://www.linkedin.com/in/benjamin-suzzoni/"><img src="../media/LinkedIn_icon.svg"
+                        alt="LinkedIn" style="width: 2em;"></a>
+                <a href="https://orcid.org/0000-0002-3941-0256"><img src="../media/ORCID_iD.svg" alt="ORCID"
+                        style="width: 2em;"></a>
+                <a href="https://inspirehep.net/authors/2714489"><img src="../media/inspire_logo.jpg" alt="INSPIRE"
+                        style="width: 2em;"></a>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>
