@@ -1,0 +1,1317 @@
+<title>Plateau — Minimal Surface Between Two Disks</title>
+
+<style>
+:root{
+  color-scheme: dark;
+  --ground:#0E1214; --ground-2:#0A0D0F; --panel:#151A1D; --panel-2:#1B2226;
+  --line:#232C31; --line-soft:#1C2428;
+  --ink:#E8EDEF; --ink-2:#A9B4B8; --ink-dim:#7C878B;
+  --brass:#E8A33D;
+  --film:#4FA3C7; --filmB:#C9772F;
+  --seq-lo:#0B1A24; --seq-hi:#7FCFF2;
+  --warn:#E2683F; --ok:#4BB07A;
+  --gl-bg:#0E1214;
+  --on-brass:#12161A;
+  --shadow: 0 18px 44px rgba(0,0,0,.55);
+  --mono: ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans: system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root:where(:not([data-theme="dark"])){
+    color-scheme: light;
+    --ground:#F4F5F3; --ground-2:#E9EBE8; --panel:#FBFBFA; --panel-2:#F1F2EF;
+    --line:#D8DBD6; --line-soft:#E6E8E4;
+    --ink:#15191B; --ink-2:#4A5255; --ink-dim:#79807F;
+    --brass:#8A5A0C;
+    --film:#2E7FA3; --filmB:#A85614;
+    --seq-lo:#DCE8F1; --seq-hi:#123E63;
+    --warn:#B93E1C; --ok:#2E7D55;
+    --gl-bg:#F4F5F3;
+    --on-brass:#FBFBFA;
+    --shadow: 0 14px 34px rgba(20,26,28,.16);
+  }
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --ground:#F4F5F3; --ground-2:#E9EBE8; --panel:#FBFBFA; --panel-2:#F1F2EF;
+  --line:#D8DBD6; --line-soft:#E6E8E4;
+  --ink:#15191B; --ink-2:#4A5255; --ink-dim:#79807F;
+  --brass:#8A5A0C;
+  --film:#2E7FA3; --filmB:#A85614;
+  --seq-lo:#DCE8F1; --seq-hi:#123E63;
+  --warn:#B93E1C; --ok:#2E7D55;
+  --gl-bg:#F4F5F3;
+  --on-brass:#FBFBFA;
+  --shadow: 0 14px 34px rgba(20,26,28,.16);
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#0E1214; --ground-2:#0A0D0F; --panel:#151A1D; --panel-2:#1B2226;
+  --line:#232C31; --line-soft:#1C2428;
+  --ink:#E8EDEF; --ink-2:#A9B4B8; --ink-dim:#7C878B;
+  --brass:#E8A33D;
+  --film:#4FA3C7; --filmB:#C9772F;
+  --seq-lo:#0B1A24; --seq-hi:#7FCFF2;
+  --warn:#E2683F; --ok:#4BB07A;
+  --gl-bg:#0E1214;
+  --on-brass:#12161A;
+  --shadow: 0 18px 44px rgba(0,0,0,.55);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:13px; line-height:1.45;
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+#stage{position:fixed; inset:0;}
+#gl{width:100%; height:100%; display:block; touch-action:none; cursor:grab;}
+#gl.dragging{cursor:grabbing;}
+#gl.over-handle{cursor:move;}
+
+/* ---------------------------- nameplate ---------------------------- */
+.plate{position:fixed; top:18px; left:18px; z-index:6; pointer-events:none;
+  display:flex; flex-direction:column; gap:2px;}
+.plate h1{margin:0; font-family:var(--mono); font-size:12px; font-weight:600;
+  letter-spacing:.30em; text-transform:uppercase; color:var(--ink);}
+.plate p{margin:0; font-size:11px; color:var(--ink-dim); max-width:32ch;}
+.plate .rule{width:44px; height:1px; background:var(--brass); margin:6px 0 3px;}
+
+/* ------------------------------ left rail --------------------------- */
+.rail{position:fixed; left:18px; top:98px; bottom:84px; width:266px; z-index:5;
+  display:flex; flex-direction:column; gap:10px;
+  overflow-y:auto; overscroll-behavior:contain; padding-right:3px;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
+.rail::-webkit-scrollbar{width:7px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+
+.mod{background:var(--panel); border:1px solid var(--line); border-radius:3px;
+  box-shadow:var(--shadow);}
+.mod > header{display:flex; align-items:center; gap:8px; padding:9px 11px;
+  border-bottom:1px solid var(--line-soft);}
+.swatch{width:9px; height:9px; border-radius:50%; flex:none;}
+.mod h2{margin:0; font-family:var(--mono); font-size:10px; font-weight:600;
+  letter-spacing:.20em; text-transform:uppercase; color:var(--ink-2); flex:1;}
+.mod .body{padding:10px 11px 12px; display:flex; flex-direction:column; gap:9px;}
+
+/* ------------------------------ controls ---------------------------- */
+.ctl{display:grid; grid-template-columns:1fr auto; gap:2px 8px; align-items:center;}
+.ctl label{font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-dim);}
+.ctl output{font-family:var(--mono); font-size:11px; color:var(--ink);
+  font-variant-numeric:tabular-nums;}
+.ctl input[type=range]{grid-column:1/-1;}
+
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:16px;
+  background:transparent; margin:0; cursor:ew-resize;}
+input[type=range]::-webkit-slider-runnable-track{height:2px; background:var(--line); border-radius:2px;}
+input[type=range]::-moz-range-track{height:2px; background:var(--line); border-radius:2px;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:11px; height:11px;
+  margin-top:-4.5px; border-radius:50%; background:var(--ink); border:none;
+  transition:transform .12s ease, background .12s ease;}
+input[type=range]::-moz-range-thumb{width:11px; height:11px; border-radius:50%;
+  background:var(--ink); border:none;}
+input[type=range]:hover::-webkit-slider-thumb{background:var(--brass); transform:scale(1.18);}
+input[type=range]:hover::-moz-range-thumb{background:var(--brass);}
+input[type=range]:focus-visible{outline:none;}
+input[type=range]:focus-visible::-webkit-slider-thumb{background:var(--brass);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--brass) 32%, transparent);}
+
+.row{display:flex; gap:6px; flex-wrap:wrap;}
+button{font-family:var(--sans); font-size:11px; color:var(--ink-2);
+  background:var(--panel-2); border:1px solid var(--line); border-radius:2px;
+  padding:5px 9px; cursor:pointer; transition:color .12s, border-color .12s, background .12s;}
+button:hover{color:var(--ink); border-color:var(--ink-dim);}
+button:focus-visible{outline:2px solid var(--brass); outline-offset:1px;}
+.seg{display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden;}
+.seg button{border:none; border-radius:0; flex:1; border-right:1px solid var(--line);}
+.seg button:last-child{border-right:none;}
+.seg button[aria-pressed="true"]{background:var(--brass); color:var(--on-brass); font-weight:600;}
+
+.check{display:flex; align-items:center; gap:7px; cursor:pointer; font-size:11px; color:var(--ink-2);}
+.check input{accent-color:var(--brass); width:13px; height:13px; cursor:pointer;}
+.note{font-size:10px; color:var(--ink-dim); line-height:1.5; margin:-2px 0 0;}
+
+/* --------------------------- status strip --------------------------- */
+.strip{position:fixed; left:0; right:0; bottom:0; z-index:6; display:flex;
+  background:color-mix(in srgb, var(--panel) 90%, transparent);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line); overflow-x:auto; scrollbar-width:none;}
+.strip::-webkit-scrollbar{display:none;}
+.cell{padding:8px 15px; border-right:1px solid var(--line-soft);
+  display:flex; flex-direction:column; gap:1px; flex:none;}
+.cell .k{font-size:9px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--ink-dim); white-space:nowrap;}
+.cell .v{font-family:var(--mono); font-size:14px; font-variant-numeric:tabular-nums;
+  color:var(--ink); white-space:nowrap; letter-spacing:-.01em;}
+.cell .v small{font-size:10px; color:var(--ink-dim); letter-spacing:.02em;}
+.cell.grow{flex:1; min-width:150px;}
+.pill{align-self:flex-start; font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  padding:1px 7px; border-radius:2px; border:1px solid currentColor; margin-top:3px;
+  white-space:nowrap;}
+.pill.ok{color:var(--ok);} .pill.warn{color:var(--warn);}
+#spark{display:block; width:112px; height:24px; margin-top:2px;}
+
+/* -------------------------------- hint ------------------------------ */
+.hint{position:fixed; right:18px; top:18px; z-index:6; max-width:214px;
+  background:var(--panel); border:1px solid var(--line); border-radius:3px;
+  box-shadow:var(--shadow); padding:9px 26px 9px 11px;
+  font-size:11px; color:var(--ink-dim); line-height:1.6;}
+.hint b{color:var(--ink-2); font-weight:600;}
+.hint kbd{font-family:var(--mono); font-size:10px; color:var(--ink-2);
+  border:1px solid var(--line); border-bottom-width:2px; border-radius:2px; padding:0 3px;}
+.hint .close{position:absolute; top:4px; right:5px; padding:1px 5px; font-size:13px; line-height:1;}
+
+#fatal{position:fixed; inset:0; display:none; place-items:center; padding:32px;
+  background:var(--ground); z-index:20; text-align:center; color:var(--ink-2);}
+#fatal p{max-width:44ch;}
+
+@media (max-width: 900px){
+  .rail{left:0; right:0; width:auto; top:auto; bottom:0; max-height:44vh;
+    flex-direction:row; padding:10px; gap:10px; overflow-x:auto;
+    background:color-mix(in srgb, var(--ground) 94%, transparent);
+    border-top:1px solid var(--line);}
+  .mod{min-width:248px; flex:none; height:max-content;}
+  .strip{bottom:auto; top:0; border-top:none; border-bottom:1px solid var(--line);}
+  .plate{top:auto; bottom:calc(44vh + 14px);}
+  .hint{display:none;}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+</style>
+
+<div id="stage"><canvas id="gl"></canvas></div>
+
+<div class="plate">
+  <h1>Plateau</h1>
+  <div class="rule"></div>
+  <p>Least-area surface spanning two disks, relaxed live.</p>
+</div>
+
+<div class="hint" id="hint">
+  <button class="close" id="hintClose" aria-label="Dismiss hint">×</button>
+  <b>Drag a disk</b> to move it in the view plane.<br>
+  <kbd>Shift</kbd>+drag lifts it vertically.<br>
+  <b>Drag the background</b> to orbit · wheel to zoom · right-drag to pan.
+</div>
+
+<div class="rail" id="rail">
+  <section class="mod">
+    <header><span class="swatch" style="background:var(--film)"></span><h2>Disk A</h2></header>
+    <div class="body" id="bodyA"></div>
+  </section>
+
+  <section class="mod">
+    <header><span class="swatch" style="background:var(--filmB)"></span><h2>Disk B</h2></header>
+    <div class="body" id="bodyB"></div>
+  </section>
+
+  <section class="mod">
+    <header><span class="swatch" style="background:var(--brass)"></span><h2>Film</h2></header>
+    <div class="body">
+      <div class="seg" id="mode" role="group" aria-label="Shading">
+        <button type="button" data-mode="0" aria-pressed="true">Soap</button>
+        <button type="button" data-mode="1" aria-pressed="false">Matte</button>
+        <button type="button" data-mode="2" aria-pressed="false">Curvature</button>
+      </div>
+      <label class="check"><input type="checkbox" id="wire"> Parametrisation lines</label>
+      <label class="check"><input type="checkbox" id="showDisks" checked> Show disks</label>
+    </div>
+  </section>
+
+  <section class="mod">
+    <header><span class="swatch" style="background:var(--ink-dim)"></span><h2>Solver</h2></header>
+    <div class="body">
+      <div class="seg" id="res" role="group" aria-label="Mesh resolution">
+        <button type="button" data-res="0" aria-pressed="false">Fast</button>
+        <button type="button" data-res="1" aria-pressed="true">Balanced</button>
+        <button type="button" data-res="2" aria-pressed="false">Fine</button>
+      </div>
+      <div class="row">
+        <button type="button" id="reset">Re-seed film</button>
+        <button type="button" id="view">Reset view</button>
+      </div>
+      <p class="note">Presets</p>
+      <div class="row">
+        <button type="button" data-preset="catenoid">Catenoid</button>
+        <button type="button" data-preset="tilted">Tilted</button>
+        <button type="button" data-preset="offset">Offset</button>
+        <button type="button" data-preset="pinch">Near pinch-off</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="strip">
+  <div class="cell"><span class="k">Area</span><span class="v" id="oArea">—</span></div>
+  <div class="cell"><span class="k">vs. two flat disks</span><span class="v" id="oRatio">—</span>
+    <span class="pill ok" id="oPill">connected</span></div>
+  <div class="cell"><span class="k">Neck radius</span><span class="v" id="oNeck">—</span></div>
+  <div class="cell"><span class="k">Residual rms |H|</span><span class="v" id="oH">—</span>
+    <canvas id="spark" width="224" height="48" aria-hidden="true"></canvas></div>
+  <div class="cell"><span class="k">Minimality</span><span class="v" id="oMin">—</span>
+    <span class="pill ok" id="oMinPill">H → 0</span></div>
+  <div class="cell grow"><span class="k" id="kExact">Reference</span><span class="v" id="oExact">—</span></div>
+  <div class="cell"><span class="k">Solver</span><span class="v" id="oIter">—</span></div>
+  <div class="cell"><span class="k">FPS</span><span class="v" id="oFps">—</span></div>
+</div>
+
+<div id="fatal"><p><b>WebGL2 is unavailable in this browser.</b><br>
+This viewport needs WebGL2 to render the film.</p></div>
+
+<script>
+"use strict";
+/* ============================================================================
+   Plateau — the least-area surface spanning two circles.
+
+   The surface is found by direct relaxation rather than by a trained model. An
+   annulus mesh has its two boundary rings pinned to the disks; the interior
+   descends the discrete area functional. For one triangle the area gradient with
+   respect to a vertex a is
+
+         dA/da = 1/2 (b - c) x n̂ ,
+
+   and summing that over the incident triangles, then dividing by the vertex's
+   barycentric mass, gives exactly the discrete mean-curvature vector 2*H*n̂. So
+   descending area IS mean-curvature flow, and the converged mesh satisfies H = 0
+   — the Euler–Lagrange equation of the Plateau problem. The readout shows that
+   residual falling, which is the honest convergence certificate.
+
+   Interactivity comes from warm starting: dragging a disk only costs the few
+   iterations needed to track the change. Each frame the solver runs under a
+   wall-clock budget, so the viewport never stalls no matter the mesh size.
+   ============================================================================ */
+
+/* -------------------------------- vector math ------------------------------ */
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const scl=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=a=>Math.hypot(a[0],a[1],a[2]);
+const nrm=a=>{const l=len(a)||1;return[a[0]/l,a[1]/l,a[2]/l];};
+
+function m3mul(A,B){
+  const C=new Array(9);
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++)
+    C[i*3+j]=A[i*3]*B[j]+A[i*3+1]*B[3+j]+A[i*3+2]*B[6+j];
+  return C;
+}
+const Rx=a=>{const c=Math.cos(a),s=Math.sin(a);return[1,0,0, 0,c,-s, 0,s,c];};
+const Ry=a=>{const c=Math.cos(a),s=Math.sin(a);return[c,0,s, 0,1,0, -s,0,c];};
+const col=(M,j)=>[M[j],M[3+j],M[6+j]];
+
+/** Rodrigues: rotate v about the unit axis k by `ang`. */
+function rotAxis(k,ang,v){
+  const ct=Math.cos(ang), st=Math.sin(ang), kv=crs(k,v), kd=dot(k,v);
+  return [v[0]*ct+kv[0]*st+k[0]*kd*(1-ct),
+          v[1]*ct+kv[1]*st+k[1]*kd*(1-ct),
+          v[2]*ct+kv[2]*st+k[2]*kd*(1-ct)];
+}
+/** Axis and angle of the minimal rotation carrying unit a onto unit b. */
+function axisAngle(a,b){
+  const ax=crs(a,b), s=len(ax), c=dot(a,b);
+  if(s<1e-9){
+    let p=Math.abs(a[0])<0.9?[1,0,0]:[0,1,0];
+    return {k:nrm(crs(a,p)), ang:c>0?0:Math.PI};
+  }
+  return {k:scl(ax,1/s), ang:Math.atan2(s,c)};
+}
+/** Rotate v by the minimal rotation carrying unit a onto unit b. */
+function rotBetween(a,b,v){
+  const {k,ang}=axisAngle(a,b);
+  return ang===0?v.slice():rotAxis(k,ang,v);
+}
+
+/* 4x4 matrices, column-major (GL order) */
+function mPerspective(f,ar,n,fa){const t=1/Math.tan(f/2);
+  return new Float32Array([t/ar,0,0,0, 0,t,0,0, 0,0,(fa+n)/(n-fa),-1, 0,0,2*fa*n/(n-fa),0]);}
+function mLookAt(e,c,up){
+  const z=nrm(sub(e,c)), x=nrm(crs(up,z)), y=crs(z,x);
+  return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+    -dot(x,e),-dot(y,e),-dot(z,e),1]);}
+function mMul(a,b){const o=new Float32Array(16);
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;
+    for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k]; o[i*4+j]=s;}
+  return o;}
+
+/* ------------------------------ configuration ------------------------------ */
+const disks={
+  A:{c:[0,-0.5,0], r:1.0, tilt:0, azim:0, spin:0},
+  B:{c:[0, 0.5,0], r:1.0, tilt:0, azim:0, spin:0}
+};
+const RES=[{Ns:24,Nt:36},{Ns:34,Nt:52},{Ns:48,Nt:72}];
+const opts={res:1, mode:0, wire:false, showDisks:true, budgetMs:7};
+
+/** Set by every control that moves a disk. The frame loop re-pins the boundary and kicks the
+ *  step size only when this is set — cheaper than re-pinning every frame, and it is what tells
+ *  the solver that an area increase came from the boundary rather than from its own step. */
+let dirty=true;
+const markDirty=()=>{dirty=true;};
+
+/** Orthonormal frame of a disk. `n` is the normal and is spin-independent;
+ *  (u,v) carry the spin, (u0,v0) are the unspun reference used for phase matching. */
+function frameOf(d){
+  const base=m3mul(Ry(d.azim),Rx(d.tilt));
+  const M=m3mul(base,Ry(d.spin));
+  const n=col(base,1);                       // spin is a rotation about n, so it cannot move n
+  const u=col(M,0), u0=col(base,0);
+  return {n,u,v:crs(n,u),u0,v0:crs(n,u0)};
+}
+
+/* ================================ the solver =============================== */
+class Film{
+  constructor(Ns,Nt){this.alloc(Ns,Nt);}
+
+  alloc(Ns,Nt){
+    this.Ns=Ns; this.Nt=Nt;
+    const V=(Ns+1)*Nt; this.V=V;
+    this.pos=new Float32Array(V*3);
+    this.vel=new Float32Array(V*3);
+    this.grd=new Float32Array(V*3);
+    this.nor=new Float32Array(V*3);
+    this.mas=new Float32Array(V);
+    this.wgt=new Float32Array(V);      // diagonal of the cotangent Laplacian
+    this.cur=new Float32Array(V);
+    this.beta=0.85; this.hRef=0.1; this.minEdge=0.1; this.flat=0;
+    this.area=Infinity; this.prevArea=Infinity; this.maxH=0; this.settled=false;
+
+    const tri=new Uint32Array(Ns*Nt*6); let t=0;
+    for(let i=0;i<Ns;i++)for(let j=0;j<Nt;j++){
+      const j1=(j+1)%Nt, a=i*Nt+j, b=i*Nt+j1, c=(i+1)*Nt+j1, d=(i+1)*Nt+j;
+      tri[t++]=a;tri[t++]=b;tri[t++]=c;  tri[t++]=a;tri[t++]=c;tri[t++]=d;
+    }
+    this.tri=tri;
+    const ln=new Uint32Array(Ns*Nt*4+Nt*2); let l=0;
+    for(let i=0;i<=Ns;i++)for(let j=0;j<Nt;j++){
+      const j1=(j+1)%Nt;
+      if(i<Ns){ln[l++]=i*Nt+j; ln[l++]=(i+1)*Nt+j;}
+      ln[l++]=i*Nt+j; ln[l++]=i*Nt+j1;
+    }
+    this.lin=ln.subarray(0,l);
+  }
+
+  /** Initial estimate of the SMALLEST mesh spacing. Explicit mean-curvature flow is
+   *  stable only for a step of order (min spacing)^2, and an annulus between nearby
+   *  disks is strongly anisotropic — the meridian spacing can be many times finer
+   *  than the circumferential one, so a global average is not safe here. step()
+   *  refines this from the actual mesh on every iteration. */
+  updateScale(){
+    const meridian=len(sub(disks.B.c,disks.A.c))+Math.abs(disks.A.r-disks.B.r);
+    const circum=2*Math.PI*Math.min(disks.A.r,disks.B.r);
+    this.hRef=Math.max(1e-5, Math.min(meridian/this.Ns, circum/this.Nt));
+    this.minEdge=this.hRef;
+  }
+
+  /** Pin ring 0 and ring Ns to the disks, phase-matched for minimal twist.
+   *  The match uses each disk's SPUN frame, so spinning a disk about its own axis
+   *  only relabels which mesh column starts where: the film is left invariant, which
+   *  is what the physics demands (a soap film does not care how its wire is turned). */
+  setBoundary(){
+    const {Ns,Nt,pos}=this;
+    const A=disks.A,B=disks.B,fa=frameOf(A),fb=frameOf(B);
+    const w=rotBetween(fa.n,fb.n,fa.u);
+    const delta=Math.atan2(dot(w,fb.v),dot(w,fb.u));
+    for(let j=0;j<Nt;j++){
+      const t=2*Math.PI*j/Nt, ca=Math.cos(t), sa=Math.sin(t);
+      let o=j*3;
+      pos[o  ]=A.c[0]+A.r*(ca*fa.u[0]+sa*fa.v[0]);
+      pos[o+1]=A.c[1]+A.r*(ca*fa.u[1]+sa*fa.v[1]);
+      pos[o+2]=A.c[2]+A.r*(ca*fa.u[2]+sa*fa.v[2]);
+      const tb=t+delta, cb=Math.cos(tb), sb=Math.sin(tb);
+      o=(Ns*Nt+j)*3;
+      pos[o  ]=B.c[0]+B.r*(cb*fb.u[0]+sb*fb.v[0]);
+      pos[o+1]=B.c[1]+B.r*(cb*fb.u[1]+sb*fb.v[1]);
+      pos[o+2]=B.c[2]+B.r*(cb*fb.u[2]+sb*fb.v[2]);
+    }
+  }
+
+  /** Seed the interior along a frame that rotates geodesically (SLERP) from one disk's
+   *  plane to the other's, with a log-linear radius. Straight rulings between paired
+   *  boundary points look simpler but self-intersect once the disks are strongly tilted,
+   *  and the relaxation then gets trapped in a folded, non-minimal state. Each ring here
+   *  lies in a plane that turns smoothly between the two, so the seed never folds — and
+   *  it reduces to the classical catenoid ansatz when the disks are coaxial. */
+  reseed(){
+    const {Ns,Nt,pos}=this;
+    this.setBoundary();
+    const A=disks.A, B=disks.B, fa=frameOf(A), fb=frameOf(B);
+    const {k,ang}=axisAngle(fa.n,fb.n);
+    const logA=Math.log(A.r), logB=Math.log(B.r);
+    for(let i=1;i<Ns;i++){
+      const s=i/Ns;
+      const E1=rotAxis(k,s*ang,fa.u), E2=rotAxis(k,s*ang,fa.v);
+      const cx=A.c[0]*(1-s)+B.c[0]*s, cy=A.c[1]*(1-s)+B.c[1]*s, cz=A.c[2]*(1-s)+B.c[2]*s;
+      const rho=Math.exp(logA*(1-s)+logB*s);
+      for(let j=0;j<Nt;j++){
+        const t=2*Math.PI*j/Nt, ct=Math.cos(t)*rho, st=Math.sin(t)*rho, o=(i*Nt+j)*3;
+        pos[o  ]=cx+ct*E1[0]+st*E2[0];
+        pos[o+1]=cy+ct*E1[1]+st*E2[1];
+        pos[o+2]=cz+ct*E1[2]+st*E2[2];
+      }
+    }
+    this.vel.fill(0);
+    this.area=Infinity; this.prevArea=Infinity; this.flat=0; this.settled=false;
+    // Remember the configuration this seed was built for, so drift can be measured against it.
+    this.seed={cA:A.c.slice(), cB:B.c.slice(), rA:A.r, rB:B.r, nA:fa.n.slice(), nB:fb.n.slice()};
+  }
+
+  /** How far the disks have travelled from the configuration the current mesh was seeded for,
+   *  as a fraction of the disk separation. Rotations are converted to a length by the same
+   *  scale so positions, radii and orientations are compared on equal terms. */
+  drift(){
+    const s=this.seed; if(!s) return Infinity;
+    const A=disks.A, B=disks.B, fa=frameOf(A), fb=frameOf(B);
+    const L=Math.max(len(sub(B.c,A.c)), 0.25*(A.r+B.r));
+    const ang=(p,q)=>Math.acos(Math.max(-1,Math.min(1,dot(p,q))));
+    return (len(sub(A.c,s.cA))+len(sub(B.c,s.cB))
+          + Math.abs(A.r-s.rA)+Math.abs(B.r-s.rB)
+          + L*(ang(fa.n,s.nA)+ang(fb.n,s.nB)))/L;
+  }
+
+  /** Call whenever the disks move. Keeps the relaxed interior (the warm start is the whole
+   *  point of interactivity) but restores a healthy step size and forgets the previous area,
+   *  so the area rise caused by the moving boundary is not charged to the optimiser. */
+  kick(){
+    this.flat=0;
+    this.prevArea=Infinity;   // the boundary moved: do not judge the next step against a stale area
+    this.settled=false;
+  }
+
+  /** Adopt another mesh's shape (same resolution) and carry on relaxing from it. */
+  adopt(other){
+    this.pos.set(other.pos);
+    this.vel.fill(0);
+    this.area=this.prevArea=other.area;
+    this.flat=0; this.settled=false;
+  }
+
+  /** One descent step over the interior vertices. */
+  step(){
+    const {Ns,Nt,pos,grd,nor,mas,wgt,cur,vel}=this;
+    grd.fill(0); nor.fill(0); mas.fill(0); wgt.fill(0);
+    let area=0, minE2=Infinity;
+
+    for(let i=0;i<Ns;i++){
+      const r0=i*Nt, r1=(i+1)*Nt;
+      for(let j=0;j<Nt;j++){
+        const j1=(j+1)%Nt;
+        const iA=(r0+j)*3, iB=(r0+j1)*3, iC=(r1+j1)*3, iD=(r1+j)*3;
+        for(let k=0;k<2;k++){                       // two triangles per quad
+          const p=iA, q=k===0?iB:iC, r=k===0?iC:iD;
+          const ax=pos[p],ay=pos[p+1],az=pos[p+2];
+          const bx=pos[q],by=pos[q+1],bz=pos[q+2];
+          const cx=pos[r],cy=pos[r+1],cz=pos[r+2];
+          const e1x=bx-ax,e1y=by-ay,e1z=bz-az;
+          const e2x=cx-ax,e2y=cy-ay,e2z=cz-az;
+          const l1=e1x*e1x+e1y*e1y+e1z*e1z, l2=e2x*e2x+e2y*e2y+e2z*e2z;
+          if(l1<minE2) minE2=l1;
+          if(l2<minE2) minE2=l2;
+          const nx=e1y*e2z-e1z*e2y, ny=e1z*e2x-e1x*e2z, nz=e1x*e2y-e1y*e2x;
+          const L=Math.sqrt(nx*nx+ny*ny+nz*nz);
+          if(L<1e-18) continue;
+          area+=0.5*L;
+          const ux=nx/L, uy=ny/L, uz=nz/L;
+          let dx=bx-cx, dy=by-cy, dz=bz-cz;         // dA/da = 1/2 (b-c) x n̂
+          grd[p  ]+=0.5*(dy*uz-dz*uy);
+          grd[p+1]+=0.5*(dz*ux-dx*uz);
+          grd[p+2]+=0.5*(dx*uy-dy*ux);
+          dx=cx-ax; dy=cy-ay; dz=cz-az;             // dA/db = 1/2 (c-a) x n̂
+          grd[q  ]+=0.5*(dy*uz-dz*uy);
+          grd[q+1]+=0.5*(dz*ux-dx*uz);
+          grd[q+2]+=0.5*(dx*uy-dy*ux);
+          dx=ax-bx; dy=ay-by; dz=az-bz;             // dA/dc = 1/2 (a-b) x n̂
+          grd[r  ]+=0.5*(dy*uz-dz*uy);
+          grd[r+1]+=0.5*(dz*ux-dx*uz);
+          grd[r+2]+=0.5*(dx*uy-dy*ux);
+          const m=L/6;                              // = area/3
+          mas[p/3]+=m; mas[q/3]+=m; mas[r/3]+=m;
+          // Diagonal of the cotangent Laplacian. cot at a vertex = (dot of its two edge
+          // vectors)/2*Area, and 2*Area = L. Clamped at 0 so obtuse triangles cannot make the
+          // diagonal vanish or flip sign.
+          const cA=Math.max((e1x*e2x+e1y*e2y+e1z*e2z)/L,0);
+          const e3x=cx-bx, e3y=cy-by, e3z=cz-bz;
+          const cB=Math.max(-(e1x*e3x+e1y*e3y+e1z*e3z)/L,0);
+          const cC=Math.max((e2x*e3x+e2y*e3y+e2z*e3z)/L,0);
+          wgt[p/3]+=0.5*(cB+cC); wgt[q/3]+=0.5*(cA+cC); wgt[r/3]+=0.5*(cA+cB);
+          nor[p]+=nx; nor[p+1]+=ny; nor[p+2]+=nz;   // area-weighted vertex normals
+          nor[q]+=nx; nor[q+1]+=ny; nor[q+2]+=nz;
+          nor[r]+=nx; nor[r+1]+=ny; nor[r+2]+=nz;
+        }
+      }
+    }
+
+    const minEdge=Math.max(Math.sqrt(minE2), 1e-3*this.hRef);
+    this.minEdge=minEdge;
+
+    const dropped=this.prevArea-area;
+    this.prevArea=area; this.area=area;
+    // Converged when the energy stops falling. The threshold sits just above the float32
+    // noise floor of the position buffer (~1e-7 relative); asking for less than that could
+    // never be satisfied, and the solver would spin forever on an already-exact answer.
+    const relDrop=dropped/Math.max(area,1e-12);
+    if(relDrop>=0 && relDrop<1e-9) this.flat++; else this.flat=0;
+
+    // Preconditioned by the cotangent-Laplacian diagonal rather than by vertex mass.
+    //
+    // Dividing the area gradient by the mass gives the mean-curvature vector, and following it
+    // is explicit mean-curvature flow -- a parabolic scheme whose stable step is O(h^2). On the
+    // strongly anisotropic meshes this app produces (a short, wide annulus has meridian spacing
+    // many times finer than circumferential) that is punishingly slow, and it needs a
+    // step-size controller that can itself get stuck.
+    //
+    // Dividing instead by W_i = 1/2 sum_j (cot a + cot b) makes the update
+    //     x_i <- x_i - grad_i / W_i  =  (sum_j w_ij x_j) / (sum_j w_ij),
+    // which is exactly one Jacobi sweep towards the harmonic (H = 0) position of each vertex.
+    // Its natural step is 1 by construction: no learning rate, no stability bound, nothing to
+    // tune, and no way to ratchet the film to a standstill. Heavy-ball momentum on top just
+    // accelerates the low-frequency modes.
+    const beta=this.beta, cap=0.15*minEdge;
+    const first=Nt*3, last=Ns*Nt*3;                 // interior rings only
+    // Where a vertex is surrounded by very obtuse triangles every incident cotangent clamps to
+    // zero and its diagonal vanishes, which would divide the step by nothing. Floor it against
+    // the mesh's own typical diagonal rather than an absolute epsilon.
+    let sumW=0, nW=0;
+    for(let o=first;o<last;o+=3){ sumW+=wgt[o/3]; nW++; }
+    const wFloor=Math.max(0.15*sumW/Math.max(nW,1), 1e-6);
+
+    let maxStep=0, maxH=0, hs=0, hm=0;
+    for(let o=first;o<last;o+=3){
+      const vi=o/3, m=mas[vi], w=wgt[vi];
+      if(m<1e-18) continue;
+      const gx=grd[o], gy=grd[o+1], gz=grd[o+2];
+      const h=0.5*Math.sqrt(gx*gx+gy*gy+gz*gz)/m;   // |H|, from the mean-curvature vector
+      cur[vi]=h; if(h>maxH) maxH=h;
+      hs+=h*h*m; hm+=m;                             // area-weighted, for RMS |H|
+      const s=1/Math.max(w,wFloor);
+      let vx=beta*vel[o]-gx*s, vy=beta*vel[o+1]-gy*s, vz=beta*vel[o+2]-gz*s;
+      const sp=Math.sqrt(vx*vx+vy*vy+vz*vz);
+      if(sp>cap){const f=cap/sp; vx*=f; vy*=f; vz*=f;}
+      vel[o]=vx; vel[o+1]=vy; vel[o+2]=vz;
+      pos[o]+=vx; pos[o+1]+=vy; pos[o+2]+=vz;
+      if(sp>maxStep) maxStep=sp;
+    }
+    // H is not defined on the fixed rings; borrow the neighbouring ring for shading.
+    for(let j=0;j<Nt;j++){cur[j]=cur[Nt+j]; cur[Ns*Nt+j]=cur[(Ns-1)*Nt+j];}
+
+    this.maxH=maxH;
+    this.rmsH=Math.sqrt(hs/Math.max(hm,1e-30));
+    // With a fixed unit step there is no step size left to collapse, so a small displacement
+    // now genuinely means convergence.
+    this.settled = this.flat>12 || maxStep<1e-6*minEdge;
+    if(!Number.isFinite(area)) this.reseed();       // numerical guard
+  }
+
+  normalize(){
+    const {nor,V}=this;
+    for(let v=0;v<V;v++){
+      const o=v*3, l=Math.hypot(nor[o],nor[o+1],nor[o+2]);
+      if(l>1e-20){nor[o]/=l; nor[o+1]/=l; nor[o+2]/=l;}
+      else {nor[o]=0; nor[o+1]=1; nor[o+2]=0;}   // GLSL normalize(vec3(0)) is NaN — never ship a zero normal
+    }
+  }
+
+  /** Smallest mean ring radius — how close the film is to pinching off. */
+  neck(){
+    const {Ns,Nt,pos}=this; let best=Infinity;
+    for(let i=1;i<Ns;i++){
+      let cx=0,cy=0,cz=0;
+      for(let j=0;j<Nt;j++){const o=(i*Nt+j)*3; cx+=pos[o];cy+=pos[o+1];cz+=pos[o+2];}
+      cx/=Nt;cy/=Nt;cz/=Nt;
+      let s=0;
+      for(let j=0;j<Nt;j++){const o=(i*Nt+j)*3;
+        s+=Math.hypot(pos[o]-cx,pos[o+1]-cy,pos[o+2]-cz);}
+      s/=Nt; if(s<best) best=s;
+    }
+    return best;
+  }
+}
+
+/* ----------------- analytic catenoid, for the coaxial equal case ------------ */
+/** Stable (larger-a) root of a*cosh(h/2a)=r, with its area. Null if none exists. */
+function catenoid(h,r){
+  const f=a=>a*Math.cosh(h/(2*a))-r;
+  let lo=1e-5, hi=r;
+  for(let k=0;k<100;k++){                    // ternary search for the single minimum
+    const m1=lo+(hi-lo)/3, m2=hi-(hi-lo)/3;
+    if(f(m1)<f(m2)) hi=m2; else lo=m1;
+  }
+  const am=(lo+hi)/2;
+  if(f(am)>0) return null;                   // the two roots have merged
+  let x0=am, x1=r;
+  for(let k=0;k<100;k++){const m=(x0+x1)/2; if(f(m)<0) x0=m; else x1=m;}
+  const a=(x0+x1)/2;
+  return {a, area:Math.PI*a*h+Math.PI*a*a*Math.sinh(h/a)};
+}
+
+/* ================================ rendering ================================ */
+// Surface any start-up failure (shader compile, missing extension) as readable text
+// rather than a silent black canvas.
+addEventListener("error",ev=>{
+  const box=document.getElementById("fatal");
+  if(!box || box.style.display==="grid") return;
+  box.innerHTML='<p><b>The viewport failed to start.</b><br><br>'+
+    String(ev.message||ev.error||"unknown error").replace(/[<>&]/g,"")+"</p>";
+  box.style.display="grid";
+});
+
+const canvas=document.getElementById("gl");
+const gl=canvas.getContext("webgl2",{antialias:true,alpha:false,powerPreference:"high-performance"});
+if(!gl){document.getElementById("fatal").style.display="grid"; throw new Error("WebGL2 unavailable");}
+
+function sh(type,src){
+  const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+function prog(vs,fs){
+  const p=gl.createProgram();
+  gl.attachShader(p,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+
+const VS_FILM=`#version 300 es
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNrm;
+layout(location=2) in float aCur;
+uniform mat4 uMVP;
+out vec3 vN; out vec3 vP; out float vC;
+void main(){ vN=aNrm; vP=aPos; vC=aCur; gl_Position=uMVP*vec4(aPos,1.0); }`;
+
+const FS_FILM=`#version 300 es
+precision highp float;
+in vec3 vN; in vec3 vP; in float vC;
+uniform vec3 uEye; uniform int uMode; uniform float uCurScale;
+uniform vec3 uFilm; uniform float uAmbient; uniform vec3 uSeqLo; uniform vec3 uSeqHi;
+out vec4 outColor;
+void main(){
+  vec3 N=normalize(vN);
+  vec3 V=normalize(uEye-vP);
+  if(dot(N,V)<0.0) N=-N;                       // a soap film has no back face
+  vec3 L1=normalize(vec3(0.45,0.85,0.55));
+  vec3 L2=normalize(vec3(-0.65,0.15,-0.55));
+  float d1=max(dot(N,L1),0.0), d2=max(dot(N,L2),0.0);
+  float spec=pow(max(dot(N,normalize(L1+V)),0.0),56.0);
+  float fres=pow(1.0-max(dot(N,V),0.0),3.0);
+  vec3 base;
+  if(uMode==2){
+    base=mix(uSeqLo,uSeqHi,clamp(vC*uCurScale,0.0,1.0));   // single-hue sequential ramp
+  } else {
+    base=uFilm;
+    if(uMode==0){                              // thin-film interference
+      float f=pow(1.0-max(dot(N,V),0.0),1.5);
+      vec3 ir=0.5+0.5*cos(6.28318*(vec3(0.0,0.33,0.67)+f*2.1+0.30));
+      base=mix(base,ir,0.40*f+0.08);
+    }
+  }
+  vec3 lit=base*(uAmbient+0.70*d1+0.24*d2)+vec3(1.0)*spec*0.30+base*fres*0.50;
+  outColor=vec4(lit,1.0);
+}`;
+
+const VS_SOLID=`#version 300 es
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNrm;
+uniform mat4 uMVP;
+out vec3 vN; out vec3 vP;
+void main(){ vN=aNrm; vP=aPos; gl_Position=uMVP*vec4(aPos,1.0); }`;
+
+const FS_SOLID=`#version 300 es
+precision highp float;
+in vec3 vN; in vec3 vP;
+uniform vec4 uColor; uniform vec3 uEye; uniform float uShade;
+out vec4 outColor;
+void main(){
+  float k=1.0;
+  if(uShade>0.5){
+    vec3 N=normalize(vN); vec3 V=normalize(uEye-vP);
+    if(dot(N,V)<0.0) N=-N;
+    k=0.45+0.62*max(dot(N,normalize(vec3(0.45,0.85,0.55))),0.0);
+  }
+  outColor=vec4(uColor.rgb*k,uColor.a);
+}`;
+
+const pFilm=prog(VS_FILM,FS_FILM), pSolid=prog(VS_SOLID,FS_SOLID);
+const uF={mvp:gl.getUniformLocation(pFilm,"uMVP"),eye:gl.getUniformLocation(pFilm,"uEye"),
+  mode:gl.getUniformLocation(pFilm,"uMode"),cs:gl.getUniformLocation(pFilm,"uCurScale"),
+  film:gl.getUniformLocation(pFilm,"uFilm"),amb:gl.getUniformLocation(pFilm,"uAmbient"),
+  lo:gl.getUniformLocation(pFilm,"uSeqLo"),hi:gl.getUniformLocation(pFilm,"uSeqHi")};
+const uS={mvp:gl.getUniformLocation(pSolid,"uMVP"),eye:gl.getUniformLocation(pSolid,"uEye"),
+  col:gl.getUniformLocation(pSolid,"uColor"),shade:gl.getUniformLocation(pSolid,"uShade")};
+
+const mkBuf=(target,data,usage)=>{const b=gl.createBuffer();gl.bindBuffer(target,b);
+  gl.bufferData(target,data,usage);return b;};
+
+/* ------------------------------ film buffers ------------------------------- */
+let film=new Film(RES[opts.res].Ns,RES[opts.res].Nt);
+let bPos,bNrm,bCur,bTri,bLin,vaoFilm,vaoLine;
+function buildFilmGL(){
+  if(vaoFilm) gl.deleteVertexArray(vaoFilm);
+  if(vaoLine) gl.deleteVertexArray(vaoLine);
+  for(const b of [bPos,bNrm,bCur,bTri,bLin]) if(b) gl.deleteBuffer(b);
+  bPos=mkBuf(gl.ARRAY_BUFFER,film.pos,gl.DYNAMIC_DRAW);
+  bNrm=mkBuf(gl.ARRAY_BUFFER,film.nor,gl.DYNAMIC_DRAW);
+  bCur=mkBuf(gl.ARRAY_BUFFER,film.cur,gl.DYNAMIC_DRAW);
+  bTri=mkBuf(gl.ELEMENT_ARRAY_BUFFER,film.tri,gl.STATIC_DRAW);
+  bLin=mkBuf(gl.ELEMENT_ARRAY_BUFFER,film.lin,gl.STATIC_DRAW);
+
+  vaoFilm=gl.createVertexArray(); gl.bindVertexArray(vaoFilm);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bPos); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bNrm); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bCur); gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2,1,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bTri);
+
+  vaoLine=gl.createVertexArray(); gl.bindVertexArray(vaoLine);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bPos); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bNrm); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bLin);
+  gl.bindVertexArray(null);
+}
+
+/* --------------- disk geometry: face + rim tube + spin marker --------------- */
+const RING_SEG=96, TUBE_SIDES=8;
+function diskGeometry(d){
+  const f=frameOf(d), P=[], N=[], I=[];
+  const rimR=Math.max(0.012,d.r*0.022);
+  const push=(p,n)=>{P.push(p[0],p[1],p[2]); N.push(n[0],n[1],n[2]); return P.length/3-1;};
+  const c0=push(d.c,f.n);                                    // filled face
+  const faceStart=P.length/3;
+  for(let j=0;j<RING_SEG;j++){
+    const t=2*Math.PI*j/RING_SEG;
+    push(add(d.c,scl(add(scl(f.u,Math.cos(t)),scl(f.v,Math.sin(t))),d.r)),f.n);
+  }
+  for(let j=0;j<RING_SEG;j++) I.push(c0,faceStart+j,faceStart+(j+1)%RING_SEG);
+  const faceCount=I.length;
+  const tubeStart=P.length/3;                                // rim tube
+  for(let j=0;j<RING_SEG;j++){
+    const t=2*Math.PI*j/RING_SEG;
+    const rad=add(scl(f.u,Math.cos(t)),scl(f.v,Math.sin(t)));
+    const ctr=add(d.c,scl(rad,d.r));
+    for(let k=0;k<TUBE_SIDES;k++){
+      const a=2*Math.PI*k/TUBE_SIDES;
+      const nn=nrm(add(scl(rad,Math.cos(a)),scl(f.n,Math.sin(a))));
+      push(add(ctr,scl(nn,rimR)),nn);
+    }
+  }
+  for(let j=0;j<RING_SEG;j++){
+    const j1=(j+1)%RING_SEG;
+    for(let k=0;k<TUBE_SIDES;k++){
+      const k1=(k+1)%TUBE_SIDES;
+      const a=tubeStart+j*TUBE_SIDES+k,  b=tubeStart+j*TUBE_SIDES+k1;
+      const c=tubeStart+j1*TUBE_SIDES+k1,e=tubeStart+j1*TUBE_SIDES+k;
+      I.push(a,b,c, a,c,e);
+    }
+  }
+  return {pos:new Float32Array(P),nrm:new Float32Array(N),idx:new Uint32Array(I),
+          count:I.length, faceCount};
+}
+/** A short radial tick that makes the disk's spin visible. */
+function markerGeometry(d){
+  const f=frameOf(d), P=[], N=[], I=[];
+  const w=Math.max(0.014,d.r*0.030), r0=d.r*0.60, r1=d.r*1.05;
+  const C=[];
+  for(const rr of [r0,r1]) for(const sg of [-1,1]) for(const vg of [-1,1])
+    C.push(add(d.c,add(add(scl(f.u,rr),scl(f.v,sg*w)),scl(f.n,vg*w*0.7))));
+  const quads=[[0,1,3,2],[4,6,7,5],[0,2,6,4],[1,5,7,3],[2,3,7,6],[0,4,5,1]];
+  for(const q of quads){
+    const a=C[q[0]],b=C[q[1]],c=C[q[2]];
+    const nn=nrm(crs(sub(b,a),sub(c,a)));
+    const base=P.length/3;
+    for(const qi of q){const p=C[qi]; P.push(p[0],p[1],p[2]); N.push(nn[0],nn[1],nn[2]);}
+    I.push(base,base+1,base+2, base,base+2,base+3);
+  }
+  return {pos:new Float32Array(P),nrm:new Float32Array(N),idx:new Uint32Array(I),count:I.length};
+}
+function makeVAO(g){
+  const vao=gl.createVertexArray(); gl.bindVertexArray(vao);
+  mkBuf(gl.ARRAY_BUFFER,g.pos,gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+  mkBuf(gl.ARRAY_BUFFER,g.nrm,gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+  mkBuf(gl.ELEMENT_ARRAY_BUFFER,g.idx,gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  return {vao,count:g.count,faceCount:g.faceCount|0};
+}
+const gpuDisk={}, gpuMark={};
+function rebuildDisk(k){
+  if(gpuDisk[k]) gl.deleteVertexArray(gpuDisk[k].vao);
+  if(gpuMark[k]) gl.deleteVertexArray(gpuMark[k].vao);
+  gpuDisk[k]=makeVAO(diskGeometry(disks[k]));
+  gpuMark[k]=makeVAO(markerGeometry(disks[k]));
+}
+
+/* ---------------------------- corner axis gizmo ---------------------------- */
+const gizmoVAO=(()=>{
+  const P=new Float32Array([0,0,0, 1,0,0,  0,0,0, 0,1,0,  0,0,0, 0,0,1]);
+  const vao=gl.createVertexArray(); gl.bindVertexArray(vao);
+  mkBuf(gl.ARRAY_BUFFER,P,gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+  gl.disableVertexAttribArray(1);
+  gl.bindVertexArray(null);
+  return vao;
+})();
+
+/* -------------------------------- the camera ------------------------------- */
+const cam={theta:0.72,phi:1.16,dist:5.2,target:[0,0,0]};
+const FOV=0.62;
+function camEye(){
+  const {theta,phi,dist,target}=cam;
+  return [target[0]+dist*Math.sin(phi)*Math.sin(theta),
+          target[1]+dist*Math.cos(phi),
+          target[2]+dist*Math.sin(phi)*Math.cos(theta)];
+}
+function resetView(){
+  cam.target=scl(add(disks.A.c,disks.B.c),0.5);
+  const span=len(sub(disks.B.c,disks.A.c))+Math.max(disks.A.r,disks.B.r)*2;
+  cam.dist=Math.max(3.0,span*1.9); cam.theta=0.72; cam.phi=1.16;
+}
+
+/* ------------------------------ theme plumbing ----------------------------- */
+const theme={};
+function cssLinear(name){
+  const s=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const m=/^#?([0-9a-fA-F]{6})$/.exec(s);
+  if(!m) return [0.05,0.07,0.08];
+  const v=parseInt(m[1],16);
+  return [(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]
+    .map(c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4));   // sRGB -> linear
+}
+function readTheme(){
+  theme.bg=cssLinear("--gl-bg");
+  theme.film=cssLinear("--film");
+  theme.rimA=cssLinear("--film");
+  theme.rimB=cssLinear("--filmB");
+  theme.brass=cssLinear("--brass");
+  theme.line=cssLinear("--ink-dim");
+  theme.seqLo=cssLinear("--seq-lo");
+  theme.seqHi=cssLinear("--seq-hi");
+  theme.ambient=getComputedStyle(document.documentElement).colorScheme.includes("light")?0.44:0.26;
+}
+readTheme();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readTheme);
+new MutationObserver(readTheme).observe(document.documentElement,
+  {attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------------------------------- resize --------------------------------- */
+let W=1,H=1;
+function resize(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  W=Math.max(1,Math.round(canvas.clientWidth*dpr));
+  H=Math.max(1,Math.round(canvas.clientHeight*dpr));
+  if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}
+}
+addEventListener("resize",resize);
+
+/* ------------------------------- interaction ------------------------------- */
+let drag=null, hoverKey=null;
+function pickRay(ev){
+  const r=canvas.getBoundingClientRect();
+  const nx=(ev.clientX-r.left)/r.width*2-1, ny=1-(ev.clientY-r.top)/r.height*2;
+  const eye=camEye();
+  const fwd=nrm(sub(cam.target,eye));
+  const right=nrm(crs(fwd,[0,1,0]));
+  const up=crs(right,fwd);
+  const t=Math.tan(FOV/2), ar=r.width/r.height;
+  return {eye,dir:nrm(add(fwd,add(scl(right,nx*t*ar),scl(up,ny*t))))};
+}
+function pickDisk(ev){
+  const {eye,dir}=pickRay(ev);
+  let best=null,bt=Infinity;
+  for(const k of ["A","B"]){
+    const d=disks[k], R=Math.max(0.20,d.r*0.22);
+    const oc=sub(eye,d.c), b=dot(oc,dir), c=dot(oc,oc)-R*R, disc=b*b-c;
+    if(disc<0) continue;
+    const t=-b-Math.sqrt(disc);
+    if(t>0&&t<bt){bt=t;best=k;}
+  }
+  return best;
+}
+canvas.addEventListener("pointerdown",ev=>{
+  canvas.setPointerCapture(ev.pointerId);
+  const k=ev.button===0?pickDisk(ev):null;
+  if(k){
+    const {eye,dir}=pickRay(ev);
+    const n=nrm(sub(eye,cam.target));                 // fixed camera-facing plane
+    const t=dot(sub(disks[k].c,eye),n)/dot(dir,n);
+    const hit=add(eye,scl(dir,t));
+    drag={mode:"disk",key:k,n,planePt:hit,grab:sub(hit,disks[k].c),
+          axis:ev.shiftKey,startY:ev.clientY,startC:disks[k].c.slice()};
+  } else if(ev.button===2||ev.button===1){
+    drag={mode:"pan",x:ev.clientX,y:ev.clientY};
+  } else {
+    drag={mode:"orbit",x:ev.clientX,y:ev.clientY};
+  }
+  canvas.classList.add("dragging");
+});
+canvas.addEventListener("pointermove",ev=>{
+  if(!drag){
+    const k=pickDisk(ev);
+    if(k!==hoverKey){hoverKey=k; canvas.classList.toggle("over-handle",!!k);}
+    return;
+  }
+  if(drag.mode==="orbit"){
+    cam.theta-=(ev.clientX-drag.x)*0.0075;
+    cam.phi=Math.min(Math.PI-0.02,Math.max(0.02,cam.phi-(ev.clientY-drag.y)*0.0075));
+    drag.x=ev.clientX; drag.y=ev.clientY;
+  } else if(drag.mode==="pan"){
+    const eye=camEye(), fwd=nrm(sub(cam.target,eye));
+    const right=nrm(crs(fwd,[0,1,0])), up=crs(right,fwd);
+    const s=cam.dist*0.0016;
+    cam.target=add(cam.target,add(scl(right,-(ev.clientX-drag.x)*s),scl(up,(ev.clientY-drag.y)*s)));
+    drag.x=ev.clientX; drag.y=ev.clientY;
+  } else {
+    const d=disks[drag.key];
+    if(drag.axis||ev.shiftKey){
+      d.c=drag.startC.slice();
+      d.c[1]=drag.startC[1]-(ev.clientY-drag.startY)*cam.dist*0.0016;
+    } else {
+      const {eye,dir}=pickRay(ev);
+      const denom=dot(dir,drag.n);
+      if(Math.abs(denom)>1e-6){
+        const t=dot(sub(drag.planePt,eye),drag.n)/denom;   // plane stays put during the drag
+        d.c=sub(add(eye,scl(dir,t)),drag.grab);
+      }
+    }
+    rebuildDisk(drag.key); markDirty();
+  }
+});
+const endDrag=()=>{drag=null; canvas.classList.remove("dragging");};
+canvas.addEventListener("pointerup",endDrag);
+canvas.addEventListener("pointercancel",endDrag);
+canvas.addEventListener("contextmenu",e=>e.preventDefault());
+canvas.addEventListener("wheel",ev=>{
+  ev.preventDefault();
+  cam.dist=Math.min(40,Math.max(0.8,cam.dist*Math.exp(ev.deltaY*0.0011)));
+},{passive:false});
+
+/* ------------------------------------ UI ----------------------------------- */
+const FIELDS=[
+  {k:"r",    label:"Radius",  min:0.15, max:2.2, step:0.01, fmt:v=>v.toFixed(2)},
+  {k:"tilt", label:"Tilt",    min:0,    max:180, step:1, deg:true, fmt:v=>v.toFixed(0)+"°"},
+  {k:"azim", label:"Azimuth", min:-180, max:180, step:1, deg:true, fmt:v=>v.toFixed(0)+"°"},
+  {k:"spin", label:"Spin",    min:-180, max:180, step:1, deg:true, fmt:v=>v.toFixed(0)+"°"},
+];
+const inputs={A:{},B:{}};
+function buildPanel(key,host){
+  for(const f of FIELDS){
+    const wrap=document.createElement("div"); wrap.className="ctl";
+    const lab=document.createElement("label"); lab.textContent=f.label;
+    const out=document.createElement("output");
+    const inp=document.createElement("input");
+    inp.type="range"; inp.min=f.min; inp.max=f.max; inp.step=f.step;
+    inp.id=`${key}-${f.k}`; lab.htmlFor=inp.id;
+    inp.addEventListener("input",()=>{
+      const raw=parseFloat(inp.value);
+      disks[key][f.k]=f.deg?raw*Math.PI/180:raw;
+      out.textContent=f.fmt(raw);
+      rebuildDisk(key); markDirty();
+    });
+    wrap.append(lab,out,inp);
+    host.appendChild(wrap);
+    inputs[key][f.k]={inp,out,f};
+  }
+  const note=document.createElement("p");
+  note.className="note";
+  note.textContent="Spin turns the disk about its own axis — a symmetry of the problem, so the film's shape is unchanged.";
+  host.appendChild(note);
+}
+function syncInputs(){
+  for(const key of ["A","B"]) for(const f of FIELDS){
+    const {inp,out}=inputs[key][f.k];
+    const raw=f.deg?disks[key][f.k]*180/Math.PI:disks[key][f.k];
+    inp.value=raw; out.textContent=f.fmt(raw);
+  }
+}
+buildPanel("A",document.getElementById("bodyA"));
+buildPanel("B",document.getElementById("bodyB"));
+syncInputs();
+
+function segment(id,fn){
+  document.getElementById(id).addEventListener("click",ev=>{
+    const b=ev.target.closest("button"); if(!b) return;
+    for(const x of ev.currentTarget.children) x.setAttribute("aria-pressed",x===b?"true":"false");
+    fn(b);
+  });
+}
+segment("mode",b=>{opts.mode=+b.dataset.mode;});
+segment("res",b=>{
+  opts.res=+b.dataset.res;
+  film.alloc(RES[opts.res].Ns,RES[opts.res].Nt);
+  film.updateScale(); film.reseed(); buildFilmGL(); markDirty();
+});
+document.getElementById("wire").addEventListener("change",e=>{opts.wire=e.target.checked;});
+document.getElementById("showDisks").addEventListener("change",e=>{opts.showDisks=e.target.checked;});
+document.getElementById("reset").addEventListener("click",()=>{
+  film.updateScale(); film.reseed(); markDirty();
+});
+document.getElementById("view").addEventListener("click",resetView);
+document.getElementById("hintClose").addEventListener("click",()=>document.getElementById("hint").remove());
+
+const PRESETS={
+  catenoid:{A:{c:[0,-0.5,0],r:1,tilt:0,azim:0,spin:0},         B:{c:[0,0.5,0],r:1,tilt:0,azim:0,spin:0}},
+  tilted:  {A:{c:[0,-0.45,0],r:1,tilt:0,azim:0,spin:0},        B:{c:[0,0.45,0],r:1,tilt:0.55,azim:0.30,spin:0}},
+  offset:  {A:{c:[-0.35,-0.42,0],r:0.85,tilt:0.18,azim:0,spin:0},B:{c:[0.45,0.44,0.20],r:1.25,tilt:0.40,azim:1.10,spin:0}},
+  pinch:   {A:{c:[0,-0.64,0],r:1,tilt:0,azim:0,spin:0},        B:{c:[0,0.64,0],r:1,tilt:0,azim:0,spin:0}},
+};
+for(const b of document.querySelectorAll("button[data-preset]")){
+  b.addEventListener("click",()=>{
+    const p=PRESETS[b.dataset.preset];
+    for(const k of ["A","B"]){
+      const s=p[k];
+      disks[k].c=s.c.slice(); disks[k].r=s.r;
+      disks[k].tilt=s.tilt; disks[k].azim=s.azim; disks[k].spin=s.spin;
+    }
+    rebuildDisk("A"); rebuildDisk("B"); syncInputs();
+    film.updateScale(); film.reseed(); resetView(); markDirty();
+  });
+}
+
+/* ------------------------------- status strip ------------------------------ */
+const el=id=>document.getElementById(id);
+const oArea=el("oArea"),oRatio=el("oRatio"),oPill=el("oPill"),oNeck=el("oNeck"),
+      oH=el("oH"),oExact=el("oExact"),kExact=el("kExact"),oIter=el("oIter"),oFps=el("oFps"),
+      oMin=el("oMin"),oMinPill=el("oMinPill");
+const spark=el("spark"), sctx=spark.getContext("2d");
+const hist=new Float32Array(90); let histN=0;
+
+function drawSpark(){
+  const w=spark.width,h=spark.height;
+  sctx.clearRect(0,0,w,h);
+  if(histN<2) return;
+  const cs=getComputedStyle(document.documentElement);
+  const line=cs.getPropertyValue("--brass").trim()||"#E8A33D";
+  const soft=cs.getPropertyValue("--line").trim()||"#232C31";
+  let lo=Infinity,hi=-Infinity;
+  for(let i=hist.length-histN;i<hist.length;i++){
+    const v=Math.log10(Math.max(hist[i],1e-7)); if(v<lo)lo=v; if(v>hi)hi=v;
+  }
+  if(hi-lo<0.6){const m=(hi+lo)/2; lo=m-0.3; hi=m+0.3;}
+  sctx.strokeStyle=soft; sctx.lineWidth=2;
+  sctx.beginPath(); sctx.moveTo(0,h-1); sctx.lineTo(w,h-1); sctx.stroke();
+  sctx.strokeStyle=line; sctx.lineWidth=2.4; sctx.lineJoin="round"; sctx.beginPath();
+  let lx=0,ly=0;
+  for(let i=hist.length-histN;i<hist.length;i++){
+    const x=i/(hist.length-1)*w;
+    const y=h-3-((Math.log10(Math.max(hist[i],1e-7))-lo)/(hi-lo))*(h-7);
+    if(i===hist.length-histN) sctx.moveTo(x,y); else sctx.lineTo(x,y);
+    lx=x; ly=y;
+  }
+  sctx.stroke();
+  sctx.fillStyle=line; sctx.beginPath(); sctx.arc(lx,ly,3,0,7); sctx.fill();
+}
+
+function fmtSci(x){
+  if(!isFinite(x)) return "—";
+  if(x===0) return "0";
+  const e=Math.floor(Math.log10(Math.abs(x)));
+  if(e>=-2&&e<3) return x.toFixed(3);
+  return (x/Math.pow(10,e)).toFixed(2)+"e"+e;
+}
+
+let statAcc=0;
+function updateStats(dt){
+  statAcc+=dt; if(statAcc<0.12) return; statAcc=0;
+  const A=film.area, gold=Math.PI*(disks.A.r**2+disks.B.r**2);
+  const ratio=A/gold, neck=film.neck();
+  oArea.textContent=isFinite(A)?A.toFixed(5):"—";
+  oRatio.textContent=isFinite(ratio)?ratio.toFixed(4):"—";
+  const pinched=neck<0.045*Math.max(disks.A.r,disks.B.r);
+  if(ratio>1||pinched){
+    oPill.className="pill warn";
+    oPill.textContent=pinched?"pinching off":"two disks win";
+  } else {oPill.className="pill ok"; oPill.textContent="connected";}
+  oNeck.textContent=neck.toFixed(4);
+  oH.textContent=fmtSci(film.rmsH);
+
+  // Dimensionless minimality defect: rms|H| against the configuration's own length scale.
+  // A true minimal surface has H = 0 everywhere, so this is the solver's own error bar.
+  const scale=(disks.A.r+disks.B.r)*0.5;
+  const defect=film.rmsH*scale;
+  oMin.textContent=fmtSci(defect);
+  if(defect>0.02){
+    oMinPill.className="pill warn";
+    oMinPill.textContent="local min — not minimal";
+  } else {
+    oMinPill.className="pill ok";
+    oMinPill.textContent="H → 0";
+  }
+
+  hist.copyWithin(0,1); hist[hist.length-1]=film.rmsH;
+  histN=Math.min(hist.length,histN+1);
+  drawSpark();
+
+  oIter.innerHTML=`${lastIters}<small> it/frame</small>`+(film.settled?" <small>✓ settled</small>":"");
+
+  const d=sub(disks.B.c,disks.A.c), L=len(d);
+  const fa=frameOf(disks.A), fb=frameOf(disks.B);
+  const coaxial=L>1e-6 && Math.abs(Math.abs(dot(fa.n,fb.n))-1)<2e-3 &&
+                len(crs(fa.n,scl(d,1/L)))<2e-3;
+  if(coaxial && Math.abs(disks.A.r-disks.B.r)<1e-3){
+    kExact.textContent="Exact catenoid";
+    const ex=catenoid(L,disks.A.r);
+    if(ex){
+      const rel=Math.abs(A-ex.area)/ex.area;
+      oExact.innerHTML=`${ex.area.toFixed(5)} <small>&nbsp;Δ ${fmtSci(rel)} rel</small>`;
+    } else {
+      oExact.innerHTML=`none <small>&nbsp;disks too far apart for a catenoid</small>`;
+    }
+  } else {
+    kExact.textContent="Reference";
+    oExact.innerHTML=`<small>closed form only for coaxial, equal radii</small>`;
+  }
+}
+
+/* ------------------------------- second opinion -----------------------------
+   Plateau's problem genuinely has more than one minimal surface for a given pair of circles
+   (the two catenoid branches are the classic example), and a warm-started mesh can converge
+   into a higher-area one. Curvature cannot detect that — those surfaces satisfy H = 0 too —
+   so the only reliable test is to solve the same configuration again from the ansatz and
+   compare AREAS. That runs here in a background mesh whenever the disks have been still for a
+   moment. The candidate is never displayed; it is swapped in only if it is genuinely smaller,
+   so this can only ever improve the answer. Once per configuration, and only while idle, so
+   it costs nothing during interaction. */
+const verify={
+  mesh:null, age:0, done:false,
+  reset(){ this.age=0; this.done=false; },
+  tick(){
+    if(this.done || idle<40) return;
+    if(!this.mesh || this.mesh.Ns!==film.Ns || this.mesh.Nt!==film.Nt)
+      this.mesh=new Film(film.Ns,film.Nt);
+    if(this.age===0){ this.mesh.updateScale(); this.mesh.reseed(); }
+    const t0=performance.now();
+    let n=0;
+    while(!this.mesh.settled && performance.now()-t0<3 && n<300){ this.mesh.step(); n++; }
+    this.age++;
+    if(this.mesh.settled || this.age>240){
+      if(this.mesh.area<film.area*(1-1e-6)) film.adopt(this.mesh);
+      this.done=true;
+    }
+  }
+};
+
+/* --------------------------------- main loop -------------------------------- */
+let lastIters=0, fpsAcc=0, fpsN=0, idle=0, tPrev=performance.now();
+
+function frame(now){
+  const dt=Math.min(0.1,(now-tPrev)/1000); tPrev=now;
+  fpsAcc+=dt; fpsN++;
+  if(fpsAcc>0.5){oFps.textContent=Math.round(fpsN/fpsAcc); fpsAcc=0; fpsN=0;}
+
+  resize();
+
+  /* ---- solve under a wall-clock budget so the frame never stalls ---- */
+  if(dirty){
+    film.updateScale();
+    // A warm start only tracks the minimiser while the configuration stays in the same basin.
+    // Once the disks have travelled far from the shape the mesh was seeded for, the relaxed
+    // mesh can sit in a DIFFERENT, higher-area local minimum, and no amount of further
+    // descent recovers it. Past that distance, re-seed from the SLERP ansatz instead.
+    if(film.drift()>0.30) film.reseed();
+    else { film.setBoundary(); film.kick(); }
+    dirty=false; idle=0; verify.reset();
+  } else idle++;
+  let iters=0;
+  if(!film.settled){
+    const t0=performance.now();
+    do{film.step(); iters++;}
+    while(!film.settled && performance.now()-t0<opts.budgetMs && iters<600);
+  } else {
+    film.step(); iters=1;                     // one probe keeps the readouts live
+  }
+  verify.tick();
+  lastIters=iters;
+  film.normalize();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER,bPos); gl.bufferSubData(gl.ARRAY_BUFFER,0,film.pos);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bNrm); gl.bufferSubData(gl.ARRAY_BUFFER,0,film.nor);
+  gl.bindBuffer(gl.ARRAY_BUFFER,bCur); gl.bufferSubData(gl.ARRAY_BUFFER,0,film.cur);
+
+  /* ---- draw ---- */
+  const eye=camEye();
+  const mvp=mMul(mPerspective(FOV,W/H,0.05,200),mLookAt(eye,cam.target,[0,1,0]));
+
+  gl.viewport(0,0,W,H);
+  gl.clearColor(theme.bg[0],theme.bg[1],theme.bg[2],1);
+  gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.disable(gl.BLEND);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+  gl.useProgram(pFilm);
+  gl.uniformMatrix4fv(uF.mvp,false,mvp);
+  gl.uniform3fv(uF.eye,eye);
+  gl.uniform1i(uF.mode,opts.mode);
+  gl.uniform1f(uF.cs,1/Math.max(film.rmsH*3,1e-3));   // rms, not max: one bad vertex must not flatten the ramp
+  gl.uniform3fv(uF.film,theme.film);
+  gl.uniform1f(uF.amb,theme.ambient);
+  gl.uniform3fv(uF.lo,theme.seqLo);
+  gl.uniform3fv(uF.hi,theme.seqHi);
+  if(opts.wire){gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.0,1.0);}
+  gl.bindVertexArray(vaoFilm);
+  gl.drawElements(gl.TRIANGLES,film.tri.length,gl.UNSIGNED_INT,0);
+  if(opts.wire) gl.disable(gl.POLYGON_OFFSET_FILL);
+
+  gl.useProgram(pSolid);
+  gl.uniformMatrix4fv(uS.mvp,false,mvp);
+  gl.uniform3fv(uS.eye,eye);
+
+  if(opts.wire){
+    gl.uniform1f(uS.shade,0);
+    gl.uniform4f(uS.col,theme.line[0],theme.line[1],theme.line[2],1);
+    gl.bindVertexArray(vaoLine);
+    gl.drawElements(gl.LINES,film.lin.length,gl.UNSIGNED_INT,0);
+  }
+
+  gl.uniform1f(uS.shade,1);
+  for(const [k,rim] of [["A",theme.rimA],["B",theme.rimB]]){
+    const g=gpuDisk[k];
+    gl.uniform4f(uS.col,rim[0],rim[1],rim[2],1);
+    gl.bindVertexArray(g.vao);
+    gl.drawElements(gl.TRIANGLES,g.count-g.faceCount,gl.UNSIGNED_INT,g.faceCount*4);
+    if(opts.showDisks){
+      const m=gpuMark[k];
+      gl.uniform4f(uS.col,theme.brass[0],theme.brass[1],theme.brass[2],1);
+      gl.bindVertexArray(m.vao);
+      gl.drawElements(gl.TRIANGLES,m.count,gl.UNSIGNED_INT,0);
+    }
+  }
+  if(opts.showDisks){
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(false);
+    for(const [k,rim] of [["A",theme.rimA],["B",theme.rimB]]){
+      const g=gpuDisk[k];
+      gl.uniform4f(uS.col,rim[0],rim[1],rim[2],0.16);
+      gl.bindVertexArray(g.vao);
+      gl.drawElements(gl.TRIANGLES,g.faceCount,gl.UNSIGNED_INT,0);
+    }
+    gl.depthMask(true); gl.disable(gl.BLEND);
+  }
+
+  // corner axis gizmo, using the camera's rotation only
+  const gs=Math.round(72*Math.min(devicePixelRatio||1,2));
+  gl.viewport(10,10,gs,gs);
+  gl.disable(gl.DEPTH_TEST);
+  const gmvp=mMul(mPerspective(FOV,1,0.05,20),
+                  mLookAt(scl(nrm(sub(eye,cam.target)),3.1),[0,0,0],[0,1,0]));
+  gl.uniformMatrix4fv(uS.mvp,false,gmvp);
+  gl.uniform1f(uS.shade,0);
+  gl.bindVertexArray(gizmoVAO);
+  gl.vertexAttrib3f(1,0,1,0);                 // generic normal: gizmo is unshaded
+  const AX=[[0.85,0.32,0.30],[0.46,0.78,0.50],[0.36,0.56,0.95]];
+  for(let a=0;a<3;a++){
+    gl.uniform4f(uS.col,AX[a][0],AX[a][1],AX[a][2],1);
+    gl.drawArrays(gl.LINES,a*2,2);
+  }
+  gl.enable(gl.DEPTH_TEST);
+  gl.bindVertexArray(null);
+
+  updateStats(dt);
+  requestAnimationFrame(frame);
+}
+
+/* ----------------------------------- start ---------------------------------- */
+resize();
+buildFilmGL();
+rebuildDisk("A"); rebuildDisk("B");
+film.updateScale(); film.reseed();
+resetView();
+requestAnimationFrame(frame);
+</script>
