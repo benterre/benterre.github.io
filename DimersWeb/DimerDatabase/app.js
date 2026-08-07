@@ -362,6 +362,13 @@ function namesFamilyFirst(names, famId) {
     return match.length ? [...match, ...rest] : names;
 }
 
+// Phase-count caveat.  `phases_computed === false` marks a record imported
+// with a single known phase and no Seiberg-duality enumeration at all (quiver
+// catalogs); `phases_truncated` marks an enumeration that was cut short.  In
+// both cases the stored count is a lower bound, not the number of phases.
+function phasesComputed(t) { return t.phases_computed !== false && !t.phases_truncated; }
+function phasesNote(t) { return phasesComputed(t) ? "" : "  (not computed)"; }
+
 // toric point classification (index carries precomputed counts; fall back to
 // hull/points for any older index that predates them)
 function vertexPoints(e) { return e.n_vertices != null ? e.n_vertices : e.hull.length; }
@@ -643,13 +650,38 @@ function miniToric(canvas, entry, size = 86) {
     }
 }
 
+/* results are paged: the database has tens of thousands of theories, so a
+   broad query can match thousands — show a page at a time with a pager */
+const RESULTS_PER_PAGE = 60;
+let resultState = { entries: [], msg: "", fam: null, page: 0 };
+
 function showResults(entries, msg, highlightFamily = null) {
+    resultState = { entries, msg: msg || "", fam: highlightFamily, page: 0 };
+    renderResultsPage();
+}
+
+function gotoResultsPage(p) {
+    const pages = Math.max(1, Math.ceil(resultState.entries.length / RESULTS_PER_PAGE));
+    resultState.page = Math.min(Math.max(0, p), pages - 1);
+    renderResultsPage();
+    const box = document.getElementById("results");
+    if (box.scrollIntoView) box.scrollIntoView({ block: "start" });
+}
+
+function renderResultsPage() {
+    const { entries, msg, fam, page } = resultState;
     const box = document.getElementById("results");
     const m = document.getElementById("resultsMsg");
-    m.textContent = msg || "";
+    const pages = Math.max(1, Math.ceil(entries.length / RESULTS_PER_PAGE));
+    const from = page * RESULTS_PER_PAGE;
+    const shown = entries.slice(from, from + RESULTS_PER_PAGE);
+    m.textContent = (msg || "") + (entries.length > RESULTS_PER_PAGE
+        ? `  —  showing ${from + 1}–${from + shown.length} of ${entries.length}`
+        : "");
     m.className = entries.length ? "" : "error";
     box.innerHTML = "";
-    for (const e of entries.slice(0, 120)) {
+    const highlightFamily = fam;
+    for (const e of shown) {
         const card = document.createElement("div");
         card.className = "card rcard";
         const info = document.createElement("div");
@@ -674,7 +706,8 @@ function showResults(entries, msg, highlightFamily = null) {
         const stats = document.createElement("div");
         stats.className = "stats";
         stats.innerHTML =
-            `${e.n_gauge} gauge groups · ${e.n_phases} phase${e.n_phases > 1 ? "s" : ""}<br>` +
+            `${e.n_gauge} gauge groups · ${e.n_phases} phase${e.n_phases > 1 ? "s" : ""}` +
+            (e.phases_computed === false ? " (not computed)" : "") + "<br>" +
             (e.a_charge != null ? `a = ${(+e.a_charge).toFixed(5)}<br>` : "") +
             `${e.n_internal} internal · ${edgePoints(e)} edge · ${vertexPoints(e)} external`;
         info.append(chips, h, stats);
@@ -685,6 +718,43 @@ function showResults(entries, msg, highlightFamily = null) {
         card.addEventListener("click", () => openTheory(e.id));
         box.appendChild(card);
     }
+    renderResultsPager(pages);
+}
+
+function renderResultsPager(pages) {
+    const pg = document.getElementById("resultsPager");
+    if (!pg) return;
+    pg.innerHTML = "";
+    if (pages <= 1) { pg.style.display = "none"; return; }
+    pg.style.display = "flex";
+    const page = resultState.page;
+    const btn = (label, target, disabled) => {
+        const b = document.createElement("button");
+        b.className = "btn secondary page-btn" + (target === page ? " active" : "");
+        b.textContent = label;
+        if (disabled) b.disabled = true;
+        else b.addEventListener("click", () => gotoResultsPage(target));
+        return b;
+    };
+    pg.appendChild(btn("‹ prev", page - 1, page === 0));
+    // a compact window of page numbers around the current one
+    const nums = new Set([0, pages - 1]);
+    for (let d = -2; d <= 2; d++) {
+        const p = page + d;
+        if (p >= 0 && p < pages) nums.add(p);
+    }
+    let prev = -1;
+    for (const p of [...nums].sort((a, b) => a - b)) {
+        if (prev >= 0 && p > prev + 1) {
+            const gap = document.createElement("span");
+            gap.className = "page-gap";
+            gap.textContent = "…";
+            pg.appendChild(gap);
+        }
+        pg.appendChild(btn(String(p + 1), p, false));
+        prev = p;
+    }
+    pg.appendChild(btn("next ›", page + 1, page === pages - 1));
 }
 
 /* ====================== theory page: loading ============================ */
@@ -747,7 +817,7 @@ function renderTheory(t) {
             text: familiesOf(t).map(famText).join(", ")
         } : "—"],
         ["gauge groups", t.n_gauge],
-        ["toric phases", t.n_phases + (t.phases_truncated ? "  (truncated)" : "")],
+        ["toric phases", t.n_phases + phasesNote(t)],
         ["a-central charge", t.a_charge != null ? (+t.a_charge).toFixed(8) : "—"],
         ["toric points", toricPointBreakdown(t)],
         ["chirals (phase 1)", t.phases[0].n_chirals, "kvChirals"],
@@ -892,15 +962,46 @@ function drawToricDiagram(canvas, toric, glsmLabels = null) {
 
 /* -------------------- Seiberg duality 3D graph -------------------------- */
 
+// three.js + 3d-force-graph are fetched only when a theory page actually wants
+// the 3D graph, so a slow CDN can never delay the first paint of the site.
+// Resolves to true once ForceGraph3D is usable, false if the fetch failed.
+let _fg3dPromise = null;
+function ensureForceGraph() {
+    if (typeof ForceGraph3D !== "undefined") return Promise.resolve(true);
+    if (_fg3dPromise) return _fg3dPromise;
+    const load = src => new Promise((res, rej) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = () => res(true);
+        s.onerror = () => rej(new Error("failed: " + src));
+        document.head.appendChild(s);
+    });
+    _fg3dPromise = load(window.THREE_SRC)          // three first: FG3D uses it
+        .then(() => load(window.FORCEGRAPH_SRC))
+        .then(() => typeof ForceGraph3D !== "undefined")
+        .catch(() => false);
+    return _fg3dPromise;
+}
+
 function buildSeibergGraph(t) {
     const el = document.getElementById("seibergGraph");
     el.innerHTML = "";
     document.getElementById("seibergHint").textContent =
-        t.n_phases === 1 ? "single toric phase" :
-            `${t.n_phases} toric phases — edge label = dualized gauge node`;
+        t.phases_computed === false
+            ? "toric phases not computed — one known phase stored" :
+            t.n_phases === 1 ? "single toric phase" :
+                `${t.n_phases} toric phases${t.phases_truncated ? " (not computed in full)" : ""}`
+                + " — edge label = dualized gauge node";
     if (typeof ForceGraph3D === "undefined") {
-        el.innerHTML = '<div style="padding:20px;color:var(--muted)">3d-force-graph unavailable (offline?) — use the phase pills below.</div>';
+        // first theory page of the session: pull the 3D libraries in now
+        el.innerHTML = '<div style="padding:20px;color:var(--muted)">loading the 3D graph…</div>';
         seibergGraph = null;
+        const want = t.id;
+        ensureForceGraph().then(ok => {
+            if (currentTheory && currentTheory.id !== want) return;  // moved on
+            if (ok) buildSeibergGraph(t);
+            else el.innerHTML = '<div style="padding:20px;color:var(--muted)">3d-force-graph unavailable (offline?) — use the phase pills below.</div>';
+        });
         return;
     }
     const nodes = t.seiberg.nodes.map(i => ({ id: i }));
