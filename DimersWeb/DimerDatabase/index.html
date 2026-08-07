@@ -13,8 +13,14 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
-    <script src="https://unpkg.com/three@0.160.1/build/three.min.js"></script>
-    <script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
+    <!-- three.js and 3d-force-graph are ~1.6 MB and are ONLY needed for the 3D
+         Seiberg-duality graph on a theory page.  Loading them here blocks the
+         first paint of every page (a slow or unreachable CDN stalls the whole
+         site), so app.js pulls them in on demand instead - see ensureForceGraph. -->
+    <script>
+        window.THREE_SRC = "https://unpkg.com/three@0.160.1/build/three.min.js";
+        window.FORCEGRAPH_SRC = "https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js";
+    </script>
     <style>
         :root {
             --bg0: #0b0e17;
@@ -270,6 +276,33 @@
 
         #resultsMsg.error { color: var(--danger); }
 
+        /* results pager */
+        #resultsPager {
+            display: none;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 22px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 8px;
+            min-width: 38px;
+        }
+
+        .page-btn.active {
+            background: var(--accent);
+            color: var(--bg0);
+            font-weight: 700;
+        }
+
+        .page-btn:disabled { opacity: 0.35; cursor: default; }
+
+        .page-gap { color: var(--muted); padding: 0 2px; }
+
         .rcard { cursor: pointer; transition: transform 0.12s ease, border-color 0.12s; display: flex; gap: 14px; align-items: center; overflow: hidden; }
 
         .rcard:hover { transform: translateY(-2px); border-color: var(--accent); }
@@ -462,6 +495,7 @@
 
             <div id="resultsMsg"></div>
             <div id="results"></div>
+            <div id="resultsPager"></div>
         </div>
 
         <!-- ==================== theory page ==================== -->
