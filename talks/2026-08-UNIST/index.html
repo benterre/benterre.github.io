@@ -1,0 +1,3265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<title>Suzzoni — UNIST Workshop 2026</title>
+
+	<link rel="stylesheet" href="../dist/reset.css" />
+	<link rel="stylesheet" href="../dist/reveal.css" />
+	<link rel="stylesheet" href="../dist/theme/white.css" />
+	<link rel="stylesheet" href="../dist/plugin/highlight/monokai.css" />
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+		rel="stylesheet">
+
+	<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+	<!-- Seiberg duality graph + brane tiling data (model PdP5c = H^{1,1,1,2}) -->
+	<script src="https://unpkg.com/three@0.160.1/build/three.min.js"></script>
+	<script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
+	<script>window.__DIMER_DB_LOAD__ = function (d) { window.H1112 = d; };</script>
+	<script src="H1112.js"></script>
+
+	<style>
+		:root {
+			--ink: #0f172a;
+			--muted: #64748b;
+			--line: #e2e8f0;
+			--gauge: #6366f1;
+			--ml: #f59e0b;
+			--nnft: #14b8a6;
+			--accent: #4f46e5;
+			--rose: #e11d48;
+			--violet: #8b5cf6;
+		}
+
+		html,
+		body {
+			background: #ffffff;
+		}
+
+		.reveal-viewport {
+			background:
+				radial-gradient(900px 620px at 88% -12%, rgba(99, 102, 241, 0.10), transparent 62%),
+				radial-gradient(760px 560px at -8% 108%, rgba(20, 184, 166, 0.10), transparent 60%),
+				#ffffff;
+		}
+
+		.reveal {
+			font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+			font-size: 30px;
+			font-weight: 400;
+			color: var(--ink);
+			letter-spacing: -0.005em;
+		}
+
+		.reveal section {
+			text-align: left;
+		}
+
+		.reveal h1,
+		.reveal h2,
+		.reveal h3,
+		.reveal h4 {
+			font-family: Inter, "Segoe UI", system-ui, sans-serif;
+			text-transform: none;
+			color: var(--ink);
+			font-weight: 600;
+			letter-spacing: -0.025em;
+			text-shadow: none;
+			margin: 0 0 0.35em;
+			line-height: 1.15;
+		}
+
+		.reveal h1 { font-size: 1.95em; }
+		.reveal h2 { font-size: 1.28em; }
+		.reveal h3 { font-size: 1.05em; }
+
+		.reveal p,
+		.reveal li,
+		.reveal table {
+			font-size: 0.8em;
+			line-height: 1.5;
+		}
+
+		.reveal strong { font-weight: 600; }
+
+		/* a list that sets its own size should not have reveal's 0.8em applied a
+		   second time to every item — otherwise bullets read smaller than the
+		   prose they sit next to */
+		.reveal ul[style*="font-size"] > li,
+		.reveal ol[style*="font-size"] > li { font-size: inherit; }
+
+		/* section heading with a gradient rule underneath */
+		.slide-title {
+			position: relative;
+			padding-bottom: 0.32em;
+			margin-bottom: 0.7em;
+		}
+
+		.slide-title::after {
+			content: "";
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			width: 108px;
+			height: 3px;
+			border-radius: 3px;
+			background: linear-gradient(90deg, var(--gauge), var(--nnft));
+		}
+
+		.muted { color: var(--muted); }
+
+		.kicker {
+			font-size: 0.52em;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		.hl {
+			background: linear-gradient(90deg, rgba(99, 102, 241, 0.16), rgba(20, 184, 166, 0.13));
+			border-left: 3px solid var(--accent);
+			border-radius: 0 10px 10px 0;
+			padding: 0.5em 0.85em;
+			display: block;
+		}
+
+		.reveal a { color: var(--accent); }
+
+		.footer {
+			position: absolute;
+			color: var(--muted);
+			bottom: 0.9em;
+			left: 1.1em;
+			font-size: 0.42em;
+			z-index: 20;
+			width: 92%;
+			display: flex;
+			justify-content: space-between;
+			font-weight: 400;
+		}
+
+		.reveal .slide-number {
+			background: transparent;
+			color: var(--muted);
+			font-size: 15px;
+			font-family: Inter, sans-serif;
+		}
+
+		.reveal .progress { color: var(--accent); height: 3px; }
+
+		/* ---------------- title slide ---------------- */
+		#title-slide { text-align: left; }
+
+		.title-main {
+			font-size: 1.72em;
+			font-weight: 700;
+			letter-spacing: -0.035em;
+			line-height: 1.1;
+			margin: 0;
+		}
+
+		.title-sub {
+			font-size: 1.05em;
+			font-weight: 500;
+			letter-spacing: -0.02em;
+			margin: 0.34em 0 0;
+			background: linear-gradient(90deg, var(--gauge) 0%, #8b5cf6 45%, var(--nnft) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		.title-rule {
+			width: 140px;
+			height: 4px;
+			border-radius: 4px;
+			margin: 0.75em 0 0.7em;
+			background: linear-gradient(90deg, var(--gauge), var(--ml), var(--nnft));
+		}
+
+		.title-meta { font-size: 0.72em; line-height: 1.6; }
+		.title-meta .name { font-weight: 600; font-size: 1.15em; color: var(--ink); }
+
+		.orbs { position: absolute; inset: 0; overflow: visible; pointer-events: none; z-index: -1; }
+
+		.orb {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(26px);
+			mix-blend-mode: multiply;
+			opacity: 0.34;
+		}
+
+		/* ---------------- collaborator pills ---------------- */
+		.people { display: flex; gap: 9px; flex-wrap: wrap; }
+
+		.reveal .person {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+			padding: 3px 15px 3px 3px;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+			font-size: 0.55em;
+			font-weight: 500;
+			color: var(--ink);
+			text-decoration: none;
+			white-space: nowrap;
+		}
+
+		.reveal .person:hover { border-color: var(--accent); color: var(--accent); }
+
+		/* monogram disc, in place of the photo used elsewhere in the deck family */
+		.person .mono {
+			width: 38px;
+			height: 38px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 600;
+			font-size: 0.85em;
+			color: #fff;
+			border: 1px solid var(--line);
+			flex: 0 0 38px;
+		}
+
+		.credits { margin-top: 1.05em; }
+
+		.credits-label {
+			display: block;
+			font: 500 14px Inter, sans-serif;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 9px;
+		}
+
+		/* -------- chapter divider -------- */
+		.chapter-num {
+			font-size: 0.52em;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 600;
+		}
+
+		.chapter-title {
+			font-size: 1.85em;
+			font-weight: 700;
+			letter-spacing: -0.035em;
+			line-height: 1.1;
+			margin: 0.1em 0 0;
+		}
+
+		.chapter-sub {
+			font-size: 1.02em;
+			font-weight: 500;
+			letter-spacing: -0.02em;
+			margin: 0.3em 0 0;
+			background: linear-gradient(90deg, var(--gauge) 0%, #8b5cf6 45%, var(--nnft) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		/* -------- table of contents -------- */
+		.toc { display: flex; flex-direction: column; gap: 13px; margin-top: 0.2em; }
+
+		.toc-row {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			padding: 0.42em 0.95em;
+			background: rgba(255, 255, 255, 0.72);
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+		}
+
+		.toc-n {
+			flex: 0 0 44px;
+			height: 44px;
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			font-size: 0.66em;
+			color: #fff;
+		}
+
+		.toc-t { font-size: 0.7em; font-weight: 600; }
+		.toc-d { font-size: 0.56em; color: var(--muted); margin-top: 1px; }
+
+		/* -------- topic-change wash (see data-wash) -------- */
+		.topic-wash {
+			position: absolute;
+			inset: 0;
+			z-index: 30;
+			overflow: hidden;
+			pointer-events: none;
+		}
+
+		.wash-disk {
+			position: absolute;
+			left: var(--wash-x, 50%);
+			top: var(--wash-y, 50%);
+			width: 900px;
+			height: 900px;
+			margin: -450px 0 0 -450px;
+			border-radius: 50%;
+			background: var(--wash-colour, #f59e0b);
+			mix-blend-mode: multiply;
+			opacity: 0;
+			transform: scale(0.02);
+		}
+
+		.wash-disk.run {
+			animation: topic-wash 1000ms cubic-bezier(0.5, 0.05, 0.8, 0.5);
+			will-change: transform, opacity;
+		}
+
+		@keyframes topic-wash {
+			0% { transform: scale(0.02); opacity: 0; }
+			15% { opacity: 0.34; }
+			62% { opacity: 0.34; }
+			100% { transform: scale(4.5); opacity: 0; }
+		}
+
+		/* ---------------- dimer / graph stage ---------------- */
+		#dimer-stage { display: flex; gap: 22px; align-items: stretch; }
+
+		.graphbox {
+			flex: 1 1 58%;
+			position: relative;
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: linear-gradient(180deg, #fbfcff, #f5f7fc);
+			overflow: hidden;
+			height: 380px;
+		}
+
+		.graphholder { width: 100%; height: 100%; }
+
+		.sidebox {
+			flex: 0 0 38%;
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: #fbfcff;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+			height: 380px;
+		}
+
+		#tilingCanvas { width: 300px; height: 300px; }
+
+		.boxcap {
+			font: 500 15px Inter, sans-serif;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			color: var(--muted);
+			position: absolute;
+			top: 12px;
+			left: 16px;
+			z-index: 5;
+		}
+
+		.tcap {
+			font: 500 15px Inter, sans-serif;
+			color: var(--muted);
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			margin-bottom: 4px;
+		}
+
+		.tphase { font: 600 17px Inter, sans-serif; color: var(--accent); margin-top: 4px; }
+
+		.flowline {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			font-size: 0.72em;
+			margin-top: 16px;
+			color: var(--ink);
+		}
+
+		.flowline .chip {
+			border: 1px solid var(--line);
+			border-radius: 999px;
+			padding: 0.25em 0.85em;
+			background: #fff;
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+			white-space: nowrap;
+		}
+
+		.flowline .arrow { color: var(--accent); font-weight: 600; }
+
+		.pillrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 0.5em; }
+
+		.pillrow > span {
+			font-size: 0.62em;
+			padding: 0.28em 0.9em;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		/* ---------------- two-column ---------------- */
+		/* min-width:0 everywhere a flex child can hold a display equation:
+		   MathJax blocks do not shrink, and an over-wide one would otherwise
+		   push its neighbour off the slide */
+		.cols { display: flex; gap: 30px; align-items: stretch; }
+		.cols > div { flex: 1; min-width: 0; }
+		.row { display: flex; align-items: stretch; }
+		.row > * { min-width: 0; }
+
+		.card {
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			padding: 0.7em 1em;
+			background: rgba(255, 255, 255, 0.7);
+		}
+
+		.card > p { margin: 0; }
+
+		.eq { font-size: 0.72em; }
+		.eq-sm { font-size: 0.62em; }
+		.eq-xs { font-size: 0.52em; }
+		.eq-xxs { font-size: 0.44em; }
+
+		/* MathJax leaves a full em above and below every display equation */
+		.reveal mjx-container[display="true"] { margin: 0.3em 0 !important; }
+
+		/* ---------------- data tables ---------------- */
+		.reveal table.dict {
+			border-collapse: collapse;
+			width: 100%;
+			font-size: 0.62em;
+		}
+
+		.reveal table.dict th {
+			text-align: left;
+			font-weight: 600;
+			color: var(--muted);
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			font-size: 0.82em;
+			border-bottom: 1px solid var(--line);
+			padding: 3px 9px;
+		}
+
+		.reveal table.dict td {
+			padding: 3px 9px;
+			border-bottom: 1px solid var(--line);
+			vertical-align: middle;
+		}
+
+		.reveal table.dict tr:last-child td { border-bottom: none; }
+		.reveal table.dict td.c { text-align: center; }
+		.reveal table.dict .to { color: var(--accent); font-weight: 600; }
+
+		table.dict tr.gone { opacity: 0; }
+		table.dict tr { transition: opacity 0.35s ease; }
+
+		/* brane-direction table */
+		.reveal table.branes { font-size: 0.56em; border-collapse: collapse; }
+		.reveal table.branes th,
+		.reveal table.branes td {
+			border: 1px solid var(--line);
+			padding: 1px 8px;
+			text-align: center;
+			font-variant-numeric: tabular-nums;
+		}
+		.reveal table.branes th { color: var(--muted); font-weight: 600; }
+		.reveal table.branes td.x { color: var(--gauge); font-weight: 700; }
+		.reveal table.branes td.s { color: var(--nnft); font-weight: 700; }
+
+		/* ---------------- diagram frames ---------------- */
+		.frame {
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: linear-gradient(180deg, #fbfcff, #f6f8fd);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.frame .boxcap { position: absolute; }
+
+		.stepcap {
+			font-size: 0.6em;
+			color: var(--ink);
+			margin: 0.35em 0 0;
+			min-height: 2.5em;
+		}
+
+		.num {
+			display: inline-block;
+			background: var(--accent);
+			color: #fff;
+			border-radius: 999px;
+			padding: 0.02em 0.66em;
+			margin-right: 0.55em;
+			font-weight: 600;
+			font-size: 0.86em;
+			line-height: 1.5;
+		}
+
+		.qv-anchor { position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; }
+
+		svg.diagram { display: block; width: 100%; height: 100%; }
+
+		.nlabel { font: 600 21px Inter, sans-serif; fill: var(--accent); }
+		.elabel { font: 500 13px Inter, sans-serif; fill: var(--muted); }
+		.elabel.hot { fill: #b45309; font-weight: 700; }
+		.elabel.meson { fill: #0f766e; font-weight: 700; }
+		.elabel.dead { fill: var(--rose); font-weight: 700; }
+		.elabel.swap { fill: #6d28d9; font-weight: 700; }
+		.glab { font: 600 15px Inter, sans-serif; fill: var(--muted); }
+
+		.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.5em; color: var(--muted); margin-top: 4px; }
+		.legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+		/* ---------------- sliding panels ----------------
+		   The "defining an index" slide carries a third panel off to the right:
+		   advancing the fragment slides the naive-count panel out of frame and
+		   brings the spectrum animation in beside the Witten index. */
+		.carousel { overflow: hidden; }
+
+		.carousel-track {
+			display: flex;
+			width: 150%;
+			transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.carousel-track.shift { transform: translateX(-33.3333%); }
+
+		.carousel-panel { flex: 0 0 33.3333%; min-width: 0; padding-right: 30px; }
+
+		.carousel-panel.faded { opacity: 0; }
+		.carousel-panel { transition: opacity 0.5s ease; }
+
+		/* spectrum of a supersymmetric theory under a deformation */
+		.blabel { font: 500 13px Inter, sans-serif; fill: var(--muted); }
+		.bcount { font: 600 15px Inter, sans-serif; }
+
+		/* the connector between the two tilings */
+		.mutation {
+			flex: 0 0 auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			color: var(--violet);
+		}
+
+		.mutation .arrow2 { font-size: 0.9em; font-weight: 600; line-height: 1; }
+
+		.mutation .tag {
+			writing-mode: vertical-rl;
+			font: 600 14px Inter, sans-serif;
+			letter-spacing: 0.13em;
+			text-transform: uppercase;
+			color: var(--violet);
+		}
+
+		.present .mutation .arrow2 { animation: nudge 2.4s ease-in-out infinite; }
+
+		@keyframes nudge {
+			0%, 100% { transform: translateX(0); opacity: 0.75; }
+			25% { transform: translateX(-4px); opacity: 1; }
+			75% { transform: translateX(4px); opacity: 1; }
+		}
+	</style>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="footer"><span>Benjamin Suzzoni</span><span>UNIST — Summer Workshop, August 2026</span><span><a
+					href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span></div>
+
+		<!-- topic-change wash: see data-wash on the chapter dividers -->
+		<div class="topic-wash" aria-hidden="true">
+			<div class="wash-disk"></div>
+		</div>
+
+		<div class="slides">
+
+			<!-- ===================== title ===================== -->
+			<section id="title-slide">
+				<div class="orbs">
+					<div class="orb" style="width:420px;height:420px;right:-90px;top:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:300px;height:300px;right:120px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+					<div class="orb" style="width:190px;height:190px;right:330px;top:170px;background:radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);opacity:0.26;"></div>
+				</div>
+
+				<p class="kicker">UNIST — summer workshop 2026</p>
+				<h1 class="title-main">4d \(\mathcal{N}=1\) superconformal index identity<br />from quiver-invariant
+					duality</h1>
+				<p class="title-sub">dimer models &nbsp;·&nbsp; elliptic gamma functions</p>
+				<div class="title-rule"></div>
+				<p class="title-meta">
+					<span class="name"><a href="https://inspirehep.net/authors/2714489"
+							target="_blank">Benjamin Suzzoni</a></span><br />
+					<span class="muted">Department of Mathematical Sciences, UNIST</span>
+				</p>
+
+				<div class="credits">
+					<span class="credits-label">with</span>
+					<div class="people">
+						<a class="person" href="https://inspirehep.net/authors/3167046" target="_blank">
+							<span class="mono" style="background:linear-gradient(140deg,#818cf8,#4f46e5);">SL</span>
+							Seong-Jin Lee <span class="muted" style="margin-left:6px;">IBS-CGP</span></a>
+						<a class="person" href="https://inspirehep.net/authors/1069262" target="_blank">
+							<span class="mono" style="background:linear-gradient(140deg,#5eead4,#0f766e);">RS</span>
+							Rak-Kyeong Seong (성락경) <span class="muted" style="margin-left:6px;">UNIST</span></a>
+					</div>
+				</div>
+			</section>
+
+			<!-- ===================== table of contents ===================== -->
+			<section id="toc-slide">
+				<h2 class="slide-title">Outline</h2>
+
+				<div class="toc">
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#fbbf24,#d97706);">1</div>
+						<div>
+							<div class="toc-t">A superconformal index primer</div>
+							<div class="toc-d">superconformal algebra · superconformal index · Römelsberger's
+								prescription</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#818cf8,#4338ca);">2</div>
+						<div>
+							<div class="toc-t">Quiver gauge theories and brane tilings</div>
+							<div class="toc-d">quiver + superpotential · D3-branes on a toric CY\(_3\) · bipartite graphs
+								on \(T^2\)</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#5eead4,#0f766e);">3</div>
+						<div>
+							<div class="toc-t">Seiberg duality</div>
+							<div class="toc-d">spider moves on the tiling · Spiridonov's / Rains's theorem
+							</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#c4b5fd,#7c3aed);">4</div>
+						<div>
+							<div class="toc-t">Quiver-invariant duality</div>
+							<div class="toc-d">phases with a common quiver · an R-charge involution of the index
+							</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#94a3b8,#475569);">5</div>
+						<div>
+							<div class="toc-t">Conclusion and outlook</div>
+							<div class="toc-d">constraining the functional form of the index</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- ================================================================ -->
+			<!-- CHAPTER 1                                                        -->
+			<!-- ================================================================ -->
+			<section id="ch1-divider" data-wash="#f59e0b" data-wash-pos="24% 40%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-60px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);"></div>
+				</div>
+				<p class="chapter-num">Chapter 1</p>
+				<h1 class="chapter-title">A superconformal index primer</h1>
+				<p class="chapter-sub">from the conformal algebra to elliptic gamma integrals</p>
+			</section>
+
+			<!-- ---------- 1.1 the conformal algebra ---------- -->
+			<section id="ch1-conformal">
+				<h2 class="slide-title">The conformal algebra</h2>
+
+				<div class="cols">
+					<div style="flex:0 0 40%;">
+						<p style="font-size:0.7em;margin-top:0;">The conformal group of \(\mathbb{R}^{1,3}\) is
+							<strong>\(SO(2,4)\)</strong>.
+						</p>
+						<table class="dict" style="margin-top:0.3em;">
+							<tr>
+								<td>translations \(P_\mu\)</td>
+								<td class="c">\(4\)</td>
+							</tr>
+							<tr>
+								<td>Lorentz \(M_{\mu\nu}\)</td>
+								<td class="c">\(6\)</td>
+							</tr>
+							<tr>
+								<td>dilatation \(D\)</td>
+								<td class="c">\(1\)</td>
+							</tr>
+							<tr>
+								<td>special conformal \(K_\mu\)</td>
+								<td class="c">\(4\)</td>
+							</tr>
+							<tr>
+								<td><strong>Total</strong></td>
+								<td class="c"><strong>15</strong></td>
+							</tr>
+						</table>
+					</div>
+
+					<div>
+						<p class="eq-xs" style="margin-top:0;">
+							\[
+							\begin{aligned}\\
+							[D,P_\mu] &= P_\mu\\
+							[D,K_\mu] &= -K_\mu\\
+							[M_{\mu\nu},P_\rho] &= \eta_{\nu\rho}P_\mu-\eta_{\mu\rho}P_\nu\\
+							[M_{\mu\nu},K_\rho] &= \eta_{\nu\rho}K_\mu-\eta_{\mu\rho}K_\nu\\
+							[K_\mu,P_\nu] &= 2\eta_{\mu\nu}D-2M_{\mu\nu}\\
+							\end{aligned}
+							\]
+						</p>
+					</div>
+				</div>
+				<p class="hl" style="font-size:0.64em;margin-top:0.45em;">
+					In \(d=4\), \(\;\mathfrak{so}(2,4)\cong\mathfrak{su}(2,2)\). <span class="muted">Radially quantizing on \(\mathbb{R}\times S^3\) turns \(D\) into the Hamiltonian \(E\); the maximal compact subalgebra \(\mathfrak{u}(1)_E\oplus\mathfrak{su}(2)_1\oplus\mathfrak{su}(2)_2\) supplies the labels \((E;j_1,j_2)\), with \(\mathrm{Spin}(4)=SU(2)_1\times SU(2)_2\) the isometry of \(S^3\).</span>
+				</p>
+			</section>
+
+			<!-- ---------- 1.2 the superconformal algebra ---------- -->
+			<section id="ch1-superconformal">
+				<h2 class="slide-title">The superconformal algebra</h2>
+
+				<div class="cols">
+					<div style="flex:0 0 40%;">
+						<p style="font-size:0.7em;margin-top:0;">Adding fermionic generators to \(\mathfrak{so}(2,4)\) and an abelian \(\mathfrak{u}(1)_R\) gives <strong>\(\mathfrak{su}(2,2|1)\)</strong>, of superdimension \((16|8)\):
+						</p>
+						<table class="dict" style="margin-top:0.3em;">
+							<tr>
+								<td>conformal \(\;\mathfrak{so}(2,4)\)</td>
+								<td class="c">15</td>
+							</tr>
+							<tr>
+								<td>R-symmetry \(\;R\)</td>
+								<td class="c">1</td>
+							</tr>
+							<tr>
+								<td>Poincaré \(\;Q_\alpha,\ \bar Q_{\dot\alpha}\) (Q-susy)</td>
+								<td class="c">4</td>
+							</tr>
+							<tr>
+								<td>conformal \(\;S^\alpha,\ \bar S^{\dot\alpha}\) (S-susy)</td>
+								<td class="c">4</td>
+							</tr>
+							<tr>
+								<td><strong>Total</strong></td>
+								<td class="c">16</td>
+							</tr>
+						</table>
+						<p style="font-size:0.62em;" class="muted">\( Q^\dagger{}^\alpha=S^\alpha\) and \(\bar Q^\dagger{}^{\dot\alpha} =\bar S^{\dot\alpha}\): four real supercharges of each type.
+						</p>
+						<p style="font-size:0.62em;" class="muted">Note: \(\alpha\in\{+,-\}\) and \(\dot\alpha\in\{\dot{+},\dot{-}\}\)</p>
+					</div>
+
+					<div>
+						<p style="font-size:0.66em;margin-top:0;">Introduce new (anti)commutators to close the conformal algebra:</p>
+						<p class="eq-xs">
+							\[
+							\begin{aligned}
+							\{Q_\alpha,\bar Q_{\dot\alpha}\} &= 2\sigma^\mu_{\alpha\dot\alpha}P_\mu\,, &\qquad
+							\{\bar S^{\dot\alpha},S^{\alpha}\} &= 2\bar\sigma_\mu^{\dot\alpha\alpha}K^\mu\,,\\
+							[D,Q_\alpha] &= \tfrac12 Q_\alpha\,, & [D,S^\alpha] &= -\tfrac12 S^\alpha\,,\\
+							[R,Q_\alpha] &= -Q_\alpha\,, & [R,\bar Q_{\dot\alpha}] &= \bar Q_{\dot\alpha}\,,
+							\end{aligned}
+							\]
+						</p>
+						<p class="eq-xs">
+							\[ \{Q_\alpha,S^{\beta}\}\;=\;4M_\alpha{}^{\beta}
+							+2\delta_\alpha^\beta\big(D+\tfrac32 R\big)\,. \]
+						</p>
+						<p style="font-size:0.66em;">Pick a Poincaré supercharge
+							\(\mathcal{Q}\equiv\bar{Q}_{\dot -}\) and set \(\bar M_{\dot -}{}^{\dot -}=-j_2\),</p>
+						<p class="hl eq-sm" style="margin-top:0.3em;">
+							\[ \delta \;:=\; \tfrac12 \{\mathcal{Q},\mathcal{Q}^\dagger\}\;=\;E-2j_2-\tfrac32 R\;\ge\;0\,. \]
+						</p>
+						<p style="font-size:0.62em;margin-top:0.35em;">So-called short multiplets are annihilated by \(\mathcal{Q}\).</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 1.3 defining an index ---------- -->
+			<!-- three panels on a track twice the width of the frame: the first
+			     fragment slides the naive-count panel out to the left and brings
+			     the spectrum animation in on the right -->
+			<section id="ch1-witten">
+				<aside class="notes">The Witten index computes a topological quantity.</aside>
+				<h2 class="slide-title">Defining an index</h2>
+
+				<div class="carousel">
+					<div class="carousel-track" id="witten-track">
+
+						<div class="carousel-panel" id="wi-naive">
+							<h3 style="font-size:0.88em;color:var(--ml);">A naive count is not instructive</h3>
+							<p style="font-size:0.68em;">Summing over <em>all</em> operators,
+								\(\ \mathrm{Tr}_{\mathcal{H}}\,e^{-\beta \delta}\), gives a partition function that</p>
+							<ul style="font-size:0.66em;">
+								<li>depends on the coupling, and on every continuous deformation;</li>
+								<li>is only computable where the theory is free;</li>
+								<li>tells us nothing that survives the flow to the IR fixed point.</li>
+							</ul>
+							<p style="font-size:0.68em;">We want instead a <strong>rigid</strong> count — one that
+								cannot change under a deformation preserving the supercharge.</p>
+						</div>
+
+						<div class="carousel-panel">
+							<h3 style="font-size:0.88em;color:var(--nnft);">The Witten index</h3>
+							<p class="eq-sm">\[ \mathcal{I}_W \;=\; \mathrm{Tr}_{\mathcal{H}}\Big[(-1)^F e^{-\beta \delta}\Big]\,. \]</p>
+							<p style="font-size:0.66em;">With \(\tfrac12\{\mathcal{Q},\mathcal{Q}^\dagger\}=\delta\), every state of \(\delta>0\) sits in a two-dimensional multiplet \(\{|\psi\rangle, \mathcal{Q}|\psi\rangle\}\) of opposite fermion number: the pair cancels in the trace. Only \(\delta=0\) states survive, so \(\mathcal{I}_W\) is \(\beta\)-independent and deformation-invariant.</p>
+							<p class="hl" style="font-size:0.64em;margin-top:0.45em;">
+								For an SCFT we refine this: grade the trace by <em>every</em> charge that commutes
+								with the chosen supercharge, not just by \((-1)^F\). The result still only counts
+								\(\delta=0\) states — but now it resolves them.
+							</p>
+							<p style="font-size:0.62em;" class="muted">Note: \(F\;\text{Boson}=\text{Boson}\) and \(F\;\text{Fermion}=-\text{Fermion}\)</p>
+						</div>
+
+						<div class="carousel-panel" style="padding-right:0;">
+							<div class="frame" style="height:466px;position:relative;">
+								<div class="boxcap">tuning a deformation</div>
+								<svg id="spec-svg" class="diagram" viewBox="0 0 440 468" preserveAspectRatio="xMidYMid meet">
+									<defs>
+										<marker id="mk-ax" markerWidth="9" markerHeight="7" refX="8" refY="3.5"
+											orient="auto" markerUnits="userSpaceOnUse">
+											<path d="M0,0 L9,3.5 L0,7 Z" fill="#64748b" /></marker>
+									</defs>
+									<g id="spec-static"></g>
+									<g id="spec-levels"></g>
+									<g id="spec-read"></g>
+								</svg>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+				<span class="fragment wi-anchor" style="position:absolute;width:0;height:0;overflow:hidden;opacity:0;"></span>
+			</section>
+
+			<!-- ---------- 1.4 the superconformal index ---------- -->
+			<section id="ch1-sci">
+				<h2 class="slide-title">Defining the superconformal index</h2>
+
+				<p style="font-size:0.68em;margin-top:0;">Radially quantizing on \(\mathbb{R}\times S^3\), states carry
+					\(\big(E;j_1,j_2;R\big)\) and, with \(\mathcal{Q}=\bar Q_{\dot -}\),
+					\(\ \delta=\tfrac12\{\mathcal{Q},\mathcal{Q}^\dagger\}=E-2j_2-\tfrac32 R\ge 0\). The
+					<strong>superconformal index</strong> is the graded trace
+				</p>
+
+				<p class="hl eq-sm">
+					\[ \mathcal{I}(p,q;\vec{v}) \;=\; \mathrm{Tr}_{\mathcal{H}(S^3)}\Big[(-1)^F\,p^{\,j_1+j_2+R/2}\,
+					q^{\,j_2-j_1+R/2}\prod_a v_a^{\,Q_a}\Big]\,, \]
+				</p>
+
+				<div class="cols" style="margin-top:0.55em;">
+					<div>
+						<p style="font-size:0.66em;margin-top:0;">where \(v_a\) are
+							fugacities for the global (flavour) charges \(Q_a\) commuting with \(\mathcal{Q}\).</p>
+						<p style="font-size:0.66em;">\(p,q\) are conjugate to combinations that commute with \(\mathcal{Q}\) since \(\mathcal{Q}\) carries \((j_1,j_2,R)=(0,-\tfrac12,1)\)</p>
+					</div>
+					<div>
+						<p style="font-size:0.66em;margin-top:0;">Every \(\delta>0\) state pairs with a partner of opposite \((-1)^F\) and identical \((p,q,\vec v)\) charges, obtained by acting with \(\mathcal{Q}\) or \(\mathcal{Q}^\dagger\). Those pairs cancel identically.</p>
+						<p class="hl" style="font-size:0.64em;">
+							\(\mathcal{I}\) is <strong>protected</strong>: independent of exactly marginal couplings,
+							computable at weak coupling, invariant along the RG flow.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 1.5 Römelsberger ---------- -->
+			<section id="ch1-romelsberger">
+				<h2 class="slide-title">The Römelsberger prescription</h2>
+
+				<p style="font-size:0.64em;margin-top:0;">Restrict the trace to the \(\mathcal{Q}\)-closed
+					<em>letters</em> of one free multiplet, then plethystically exponentiate and project onto gauge
+					invariants:
+				</p>
+				<p class="eq-xs" style="margin:0.1em 0 0.2em;">
+					\[ i_\chi(p,q;R_\chi)=\frac{(pq)^{R_\chi/2}-(pq)^{1-R_\chi/2}}{(1-p)(1-q)}\,,\qquad
+					i_V(p,q)=-\frac{p}{1-p}-\frac{q}{1-q}+\frac{2pq}{(1-p)(1-q)}\,, \]
+					\[ \mathcal{I}=\int_G[dU]\ \mathrm{PE}\Big[i_V\,\chi_{\rm adj}(U)+\textstyle\sum_i
+					i_\chi(p,q;R_i)\,\chi_{\mathcal{R}_i}(U,\vec v)\Big]\,,\qquad
+					\Gamma(z;p,q)=\prod_{j,k\ge0}\frac{1-z^{-1}p^{j+1}q^{k+1}}{1-z\,p^{j}q^{k}}\,. \]
+				</p>
+				<!-- <p class="muted" style="font-size:0.56em;margin:0 0 0.1em;">Resumming the plethystic exponential of one
+					chiral multiplet is exactly the <strong>elliptic gamma function</strong> \(\Gamma\) on the right,
+					which recasts the index as an elliptic hypergeometric integral over the gauge group.</p> -->
+
+				<br>
+
+				<div class="cols" style="margin-top:0.3em;">
+					<div>
+						<h3 style="font-size:0.86em;color:var(--gauge);">Chiral multiplet</h3>
+						<p style="font-size:0.62em;margin:0;">Bifundamental \(\square\bar\square\) of \(SU(N)^2\) with R-charge \(r\) — a product of elliptic gamma functions:</p>
+						<p class="eq-xs">\[ \prod_{i,j=1}^{N}\Gamma\big(t^{3r}z_i/w_j;p,q\big) \]</p>
+						<p style="font-size:0.58em;margin:0;" class="muted">\(t=(pq)^{1/6}\) and \(\{z_i\},\{w_j\}\) unimodular with \(\prod_k z_k=\prod_k w_k=1\) parametrize the two Cartan subalgebras.</p>
+					</div>
+					<div>
+						<h3 style="font-size:0.86em;color:var(--nnft);">Vector multiplet</h3>
+						<p style="font-size:0.62em;margin:0;">Adjoint of \(SU(N)\) — a Haar measure times elliptic
+							gamma functions:</p>
+						<p class="eq-xs">
+							\[ \begin{aligned} \oint\!\mu(z;p,q) &:= \frac{\kappa^{N-1}}{N!}
+							\oint_{\mathbb{T}_{N-1}}\prod_{i=1}^{N-1}\frac{dz_i}{2\pi i z_i}\\
+							&\quad\times\prod_{1\le k&lt;l\le N}\frac{1}{\Gamma(z_k/z_l,z_l/z_k;p,q)}
+							\end{aligned} \]
+						</p>
+						<p style="font-size:0.58em;margin:0;" class="muted">\(\mathbb{T}_{N-1}\) is \(N-1\) unit circles
+							taken counterclockwise, and \(\kappa=(p;p)_\infty(q;q)_\infty\) with
+							\((a;b)_\infty=\prod_{k\ge0}(1-ab^k)\).</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 1.6 transition ---------- -->
+			<section id="ch1-apply">
+				<h2 class="slide-title">Now let's apply this to familiar theories</h2>
+
+				<p style="font-size:0.68em;margin-top:0;">Assembling one measure per gauge node and one elliptic gamma
+					per chiral field, the index of a toric quiver gauge theory is the elliptic hypergeometric integral
+				</p>
+
+				<p class="hl eq-xs">
+					\[
+					\begin{aligned}
+					\mathcal{I}(p,q\,|\,r_{ij}) &= \prod_{k=1}^{G}\left(\frac{\kappa^{N-1}}{N!}
+					\oint_{\mathbb{T}_{N-1}}\prod_{i=1}^{N-1}\frac{dz^{(k)}_i}{2\pi i z^{(k)}_i}
+					\prod_{1\le l&lt;m\le N}\frac{1}{\Gamma(z^{(k)}_l/z^{(k)}_m,z^{(k)}_m/z^{(k)}_l;p,q)}\right)\\
+					&\quad\times\prod_{X_{ij}}\prod_{l,m=1}^{N}\Gamma\big(t^{3r_{ij}}z^{(i)}_l/z^{(j)}_m;p,q\big)
+					\end{aligned}
+					\]
+				</p>
+
+				<div class="flowline" style="margin-top:0.85em;">
+					<span class="chip">a quiver \(Q\)</span>
+					<span class="arrow">+</span>
+					<span class="chip">a superpotential \(W\)</span>
+					<span class="arrow">⟶</span>
+					<span class="chip">R-charges \(r_{ij}\)</span>
+					<span class="arrow">⟶</span>
+					<span class="chip">the index</span>
+				</div>
+
+				<p style="font-size:0.66em;margin-top:0.7em;">Everything on the right-hand side is fixed by two pieces of
+					combinatorial data. <strong>That is the whole point:</strong> two theories with the same quiver
+					have indices of the <em>same functional form</em>, and can only differ through their
+					\(r_{ij}\).</p>
+			</section>
+
+			<!-- ================================================================ -->
+			<!-- CHAPTER 2                                                        -->
+			<!-- ================================================================ -->
+			<section id="ch2-divider" data-wash="#6366f1" data-wash-pos="72% 34%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-60px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+				</div>
+				<p class="chapter-num">Chapter 2</p>
+				<h1 class="chapter-title">Quiver gauge theories and brane tilings</h1>
+				<p class="chapter-sub">D3-branes probing a toric Calabi–Yau, drawn on a torus</p>
+			</section>
+
+			<!-- ---------- 2.1a quiver: reading the diagram (animated) ---------- -->
+			<section id="ch2-quiver-a">
+				<h2 class="slide-title">Quiver gauge theory — reading the diagram</h2>
+
+				<div class="row" style="gap:22px;">
+					<div class="frame" style="flex:0 0 47%;height:392px;">
+						<div class="boxcap">building up \(F_0=\mathbb{P}^1\!\times\!\mathbb{P}^1\), phase I</div>
+						<svg id="grow-svg" class="diagram" viewBox="0 0 660 430"
+							<defs>
+								<marker id="ah-g" markerWidth="9" markerHeight="7" refX="8.4" refY="3.5"
+									orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="#6366f1" /></marker>
+							</defs>
+							<g id="grow-edges"></g>
+							<g id="grow-nodes"></g>
+						</svg>
+					</div>
+
+					<div style="flex:1;min-width:0;">
+						<p style="font-size:0.63em;margin:0 0 0.35em;">A quiver \(Q\) is a directed graph. Each
+							<strong>node</strong> \(i\) carries a gauge group \(SU(N)_i\), and each
+							<strong>arrow</strong> \(i\to j\) is a chiral multiplet \(X_{ij}\) in the bifundamental
+							\((\square_i,\bar\square_j)\).
+						</p>
+						<table class="dict" id="grow-table">
+							<thead>
+								<tr>
+									<th>field</th>
+									<th class="c">\(SU(N)_1\)</th>
+									<th class="c">\(SU(N)_2\)</th>
+									<th class="c">\(SU(N)_3\)</th>
+									<th class="c">\(SU(N)_4\)</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="gone" data-row="1">
+									<td>\(A_i\ (i=1,2)\)</td>
+									<td class="c">\(\square\)</td>
+									<td class="c">\(\bar\square\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\cdot\)</td>
+								</tr>
+								<tr class="gone" data-row="2">
+									<td>\(B_p\ (p=1,2)\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\square\)</td>
+									<td class="c">\(\bar\square\)</td>
+									<td class="c">\(\cdot\)</td>
+								</tr>
+								<tr class="gone" data-row="3">
+									<td>\(C_j\ (j=1,2)\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\square\)</td>
+									<td class="c">\(\bar\square\)</td>
+								</tr>
+								<tr class="gone" data-row="4">
+									<td>\(D_q\ (q=1,2)\)</td>
+									<td class="c">\(\bar\square\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\cdot\)</td>
+									<td class="c">\(\square\)</td>
+								</tr>
+							</tbody>
+						</table>
+						<p class="muted" style="font-size:0.56em;margin:0.3em 0 0;">Anomaly cancellation forces
+							\(\#\{\text{in}\}=\#\{\text{out}\}\) at every node.</p>
+						<p class="hl" id="grow-w"
+							style="font-size:0.6em;margin-top:0.5em;opacity:0;transition:opacity 0.5s ease;">
+							Closing the loop: \(\;W_{F_0}=\epsilon^{ij}\epsilon^{pq}\,A_i B_p C_j D_q\).
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 2.1b quiver: superpotential + conditions ---------- -->
+			<section id="ch2-quiver-b">
+				<aside class="notes">Quiver can't encode superpotential -> solution?</aside>
+				<h2 class="slide-title">Quiver gauge theory — superpotential and fixed point</h2>
+
+				<div class="cols">
+					<div>
+						<p style="font-size:0.64em;margin-top:0;">The full \(4d\ \mathcal{N}=1\) Lagrangian is fixed by
+							the quiver plus one holomorphic function:</p>
+						<p class="eq-xxs">
+							\[ \begin{aligned}
+							\mathcal{L} \;=\;& \int\! d^4\theta\sum_{X_{ij}}\bar X_{ij}\,e^{V_i}X_{ij}e^{-V_j}\\
+							&+\Big(\int\! d^2\theta\Big[\tfrac{1}{4g^2}\sum_k\mathrm{Tr}(\,\mathcal{W}^{\alpha}_k\mathcal{W}_{\alpha k})
+							+W(X)\Big]+\mathrm{c.c.}\Big)
+							\end{aligned} \]
+						</p>
+						<p style="font-size:0.64em;">Each monomial of \(W\) is an oriented closed loop of the quiver,
+							its gauge indices contracted around the loop,</p>
+						<p class="eq-sm">\[ X_{i_1i_2}X_{i_2i_3}\cdots X_{i_ki_1}\,. \]</p>
+						<p class="hl" style="font-size:0.6em;margin-top:0.4em;">
+							<strong>Toric condition.</strong> Every chiral multiplet appears in <em>exactly two</em>
+							monomials — once with \(+\), once with \(-\).
+						</p>
+					</div>
+
+					<div>
+						<p style="font-size:0.64em;margin-top:0;">The vacuum moduli space solves the \(F\)-terms \(\partial W/\partial X_{ij}=0\) together with the \(D\)-terms; for special abelian theories this <strong>mesonic moduli space</strong> \(\mathcal{M}_{\rm mes}\) is a toric Calabi–Yau 3-fold.</p>
+
+						<p style="font-size:0.64em;margin-bottom:0.2em;"><strong>At the superconformal fixed point</strong> the R-charges obey, for every node \(k\) and every superpotential term \(W_a\),</p>
+						<p class="eq-xs">
+							\[ \sum_{X\,\in\,\partial k}\big(1-r_X\big)=2\,, \qquad \sum_{X\in W_a}r_X=2\,, \]
+						</p>
+						<p style="font-size:0.6em;margin:0.15em 0 0;" class="muted">the first being the vanishing NSVZ
+							beta function at node \(k\), the second exact marginality of \(W\). The residual family of
+							solutions is fixed by <em>a-maximization</em>,</p>
+						<p class="eq-xs">\[ a(R)=\tfrac{3}{32}\big(3\,\mathrm{Tr}R^3-\mathrm{Tr}R\big)\,, \]</p>
+						<p style="font-size:0.6em;margin:0.15em 0 0;" class="muted">after which chiral primaries have
+							\(\Delta=\tfrac32 R\).</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 2.2 brane tilings ---------- -->
+			<section id="ch2-tiling">
+				<aside class="notes">We can now encode quiver and superpotential. But there is still some redundancy -> SD</aside>
+				<h2 class="slide-title">Brane tilings</h2>
+
+				<div class="row" style="gap:22px;">
+					<div style="flex:1;min-width:0;">
+						<!-- <p style="font-size:0.62em;margin:0 0 0.35em;">Type IIB, with an NS5-brane wrapping a holomorphic curve \(\Sigma\subset(4567)\) and D5-branes suspended in its holes:</p>
+
+						<table class="branes">
+							<tr>
+								<th></th>
+								<th>0</th>
+								<th>1</th>
+								<th>2</th>
+								<th>3</th>
+								<th>4</th>
+								<th>5</th>
+								<th>6</th>
+								<th>7</th>
+								<th>8</th>
+								<th>9</th>
+							</tr>
+							<tr>
+								<td><strong>NS5</strong></td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="s">Σ</td>
+								<td class="s">Σ</td>
+								<td class="s">Σ</td>
+								<td class="s">Σ</td>
+								<td>·</td>
+								<td>·</td>
+							</tr>
+							<tr>
+								<td><strong>D5</strong></td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td class="x">×</td>
+								<td>·</td>
+								<td class="x">×</td>
+								<td>·</td>
+								<td>·</td>
+								<td>·</td>
+							</tr>
+						</table>
+
+						<p style="font-size:0.62em;margin:0.45em 0 0;">The directions \((x^4,x^6)\) are compact: they are
+							the \(T^2\) on which the D5 boundaries draw a <strong>bipartite graph</strong>.
+							T-dualizing along both cycles turns the D5s into <strong>D3-branes</strong> and dissolves
+							the NS5 into the <strong>toric Calabi–Yau 3-fold</strong> they probe.</p> -->
+						<br>
+						<br>
+
+						<table class="dict" style="margin-top:0.5em;">
+							<thead>
+								<tr>
+									<th>gauge theory</th>
+									<th></th>
+									<th>brane tiling on \(T^2\)</th>
+								</tr>
+							</thead>
+							<tr>
+								<td>node — \(SU(N)_i\)</td>
+								<td class="c to">⟷</td>
+								<td>face (a \(2n\)-gon = \(n\) flavours)</td>
+							</tr>
+							<tr>
+								<td>arrow — \(X_{ij}\)</td>
+								<td class="c to">⟷</td>
+								<td>edge</td>
+							</tr>
+							<tr>
+								<td>term of \(W\), sign \(+\,/\,-\)</td>
+								<td class="c to">⟷</td>
+								<td>white / black vertex</td>
+							</tr>
+							<tr>
+								<td>toric condition</td>
+								<td class="c to">⟷</td>
+								<td>graph is bipartite</td>
+							</tr>
+						</table>
+						<p class="muted" style="font-size:0.55em;margin:0.35em 0 0;">Arrows circulate clockwise around
+							white nodes, anticlockwise around black ones; on \(T^2\), \(\;F-E+V=0\).</p>
+					</div>
+
+					<div class="frame" style="flex:0 0 40%;height:454px;position:relative;">
+						<div class="boxcap" id="f0-cap">quiver of \(F_0\)</div>
+						<svg id="f0-svg" class="diagram" viewBox="0 0 420 452"
+							preserveAspectRatio="xMidYMid meet">
+							<defs>
+								<marker id="mk-q" markerWidth="9" markerHeight="7" refX="8.2" refY="3.5"
+									orient="auto" markerUnits="userSpaceOnUse">
+									<path d="M0,0 L9,3.5 L0,7 Z" fill="#6366f1" /></marker>
+								<marker id="mk-qf" markerWidth="9" markerHeight="7" refX="8.2" refY="3.5"
+									orient="auto" markerUnits="userSpaceOnUse">
+									<path d="M0,0 L9,3.5 L0,7 Z" fill="#c7d2fe" /></marker>
+								<marker id="mk-qh" markerWidth="9" markerHeight="7" refX="8.2" refY="3.5"
+									orient="auto" markerUnits="userSpaceOnUse">
+									<path d="M0,0 L9,3.5 L0,7 Z" fill="#f59e0b" /></marker>
+							</defs>
+							<g id="f0-tiling"></g>
+							<g id="f0-arrows"></g>
+							<g id="f0-nodes"></g>
+							<g id="f0-verts"></g>
+							<g id="f0-cell"></g>
+							<g id="f0-tag"></g>
+						</svg>
+					</div>
+				</div>
+			</section>
+
+			<!-- ================================================================ -->
+			<!-- CHAPTER 3                                                        -->
+			<!-- ================================================================ -->
+			<section id="ch3-divider" data-wash="#14b8a6" data-wash-pos="50% 66%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-60px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+				</div>
+				<p class="chapter-num">Chapter 3</p>
+				<h1 class="chapter-title">Seiberg duality</h1>
+				<p class="chapter-sub">spider moves on the tiling, identities on the index</p>
+			</section>
+
+			<!-- ---------- 3.0 what Seiberg duality is, and the spider move ---------- -->
+			<section id="ch3-spider">
+				<h2 class="slide-title">Seiberg duality and the spider move</h2>
+
+				<div class="row" style="gap:24px;">
+					<div style="flex:0 0 47%;">
+						<br>
+						<p style="font-size:0.6em;margin:0 0 0.3em;">\(SU(N_c)\) with \(N_f\) flavours flows to the same IR fixed point as \(SU(N_f-N_c)\) with \(N_f\) flavours, a meson \(M\sim Q\widetilde Q\) and
+							a coupling \(M\widetilde q q\).</p>
+						<br>
+
+						<table class="dict" style="margin-bottom:0.4em;">
+							<thead>
+								<tr>
+									<th>on the quiver</th>
+									<th></th>
+									<th>on the brane tiling</th>
+								</tr>
+							</thead>
+							<tr>
+								<td>node \(k\) with \(N_f=2N_c\)</td>
+								<td class="c to">⟷</td>
+								<td>quadrilateral face</td>
+							</tr>
+							<tr>
+								<td>reverse the arrows at \(k\)</td>
+								<td class="c to">⟷</td>
+								<td>square's corners change colour</td>
+							</tr>
+							<tr>
+								<td>mesons \(M_{ab}\sim X_{ak}X_{kb}\)</td>
+								<td class="c to">⟷</td>
+								<td>one new edge per corner</td>
+							</tr>
+							<tr>
+								<td>mass terms integrated out</td>
+								<td class="c to">⟷</td>
+								<td>2-valent nodes contracted</td>
+							</tr>
+						</table>
+
+						<!-- <p style="font-size:0.58em;margin:0 0 0.2em;"><strong>The spider move</strong>, step by step:</p>
+						<ol style="font-size:0.58em;margin:0;line-height:1.4;">
+							<li>four new nodes appear inside the face, each the <em>opposite</em> colour of the corner
+								it sits by;</li>
+							<li>the four edges of the square detach from the old corners and re-attach to them — a new,
+								colour-reversed square;</li>
+							<li>the short edge left at each corner is a <strong>meson</strong>;</li>
+							<li>a corner that was trivalent is now 2-valent — a mass term — and is contracted away.
+							</li>
+						</ol> -->
+						<br>
+						<p class="muted" style="font-size:0.54em;margin:0.35em 0 0;">The dualized face is a
+							quadrilateral again, as it must be: the dual node still has \(N_f=2N_c\).</p>
+					</div>
+
+					<div class="frame" style="flex:1;height:470px;position:relative;">
+						<div class="boxcap" id="sp-cap">urban renewal on a square face</div>
+						<svg id="sp-svg" class="diagram" viewBox="0 0 460 456"
+							preserveAspectRatio="xMidYMid meet">
+							<g id="sp-face"></g>
+							<g id="sp-edges"></g>
+							<g id="sp-verts"></g>
+							<g id="sp-tag"></g>
+						</svg>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 3.0b the model ---------- -->
+			<section id="ch3-model">
+				<aside class="notes">So what happens when we Seiberg dualize on every square face?</aside>
+				<h2 class="slide-title">The model — \(H_{1,1,2,1}\)</h2>
+
+				<div class="row" style="gap:20px;">
+					<div class="frame"
+						style="flex:0 0 34%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;height:420px;">
+						<div class="tcap" style="margin-bottom:8px;">brane tiling</div>
+						<canvas id="modelTile" width="660" height="660"
+							style="width:300px;height:300px;transition:opacity 0.18s ease;"></canvas>
+						<div class="tphase" id="modelPhase" style="margin-top:8px;">phase 2a</div>
+					</div>
+
+					<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
+						<p style="font-size:0.62em;margin:0 0 0.35em;">\(H_{1,1,2,1}=H_{1,1,1,2}=\mathrm{PdP}_{5c}\)
+						</p>
+						<p style="font-size:0.62em;margin:0 0 0.35em;">
+							Gauge group \(SU(N)^9\), and <strong>42 toric phases</strong> in its duality
+							tree.</p>
+						<p style="font-size:0.62em;margin:0 0 0.35em;">Dualizing gauge node <strong>9</strong> — the
+							highlighted quadrilateral face — takes phase \(2a\) to phase \(2b\) and back.</p>
+						<div class="flowline" style="margin-top:0.2em;font-size:0.58em;flex-wrap:wrap;row-gap:8px;">
+							<span class="chip" id="modelChip">phase 2a</span>
+							<span class="arrow">⟷</span>
+							<span class="chip">Seiberg duality, node 9</span>
+						</div>
+						<!-- <p class="hl" style="font-size:0.6em;margin-top:0.7em;">
+							Every phase has the same mesonic moduli space, the same toric diagram and the same
+							perfect-matching multiplicities — only the quiver and superpotential move.
+						</p> -->
+					</div>
+
+					<div class="frame"
+						style="flex:0 0 30%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;height:420px;">
+						<div class="tcap" style="margin-bottom:8px;">toric diagram</div>
+						<canvas id="modelToric" width="620" height="480"
+							style="width:280px;height:217px;"></canvas>
+						<div class="tphase muted" style="margin-top:10px;font-weight:500;">two internal points
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 3.1 Seiberg duality on the quiver ---------- -->
+			<section id="ch3-seiberg-quiver">
+				<aside class="notes">What about the index?</aside>
+				<h2 class="slide-title">Seiberg duality on the quiver gauge theory</h2>
+
+				<div class="pillrow">
+					<span>dualize a node with \(N_f=2N_c\)</span><span>quadrilateral face</span><span>spider move /
+						urban renewal</span><span>toric duality</span>
+				</div>
+
+				<div id="dimer-stage">
+					<div class="graphbox">
+						<div class="boxcap">(toric) Seiberg duality graph — H<sub>1,1,2,1</sub></div>
+						<div id="seibergGraph" class="graphholder"></div>
+					</div>
+					<div class="sidebox">
+						<div class="tcap">brane tiling</div>
+						<canvas id="tilingCanvas" width="600" height="600"></canvas>
+						<div class="tphase" id="phaseLabel">phase 1 / 42</div>
+					</div>
+				</div>
+
+				<p style="font-size:0.6em;margin-top:0.5em;">\(\mathcal{M}_{\rm mes}\) is unchanged: one geometry, many <strong>toric phases</strong>, organized into a duality tree.</p>
+				<!-- Dualizing node \(k\) reverses every arrow incident on it and adds a meson \(M_{ab}\sim X_{ak}X_{kb}\) for each path through it; in \(W\), each \(X_{ak}X_{kb}\) becomes \(M_{ab}\), the couplings \(M_{ab}\widetilde X_{bk}\widetilde X_{ka}\) are added, and the resulting mass terms are integrated out.  -->
+			</section>
+
+			<!-- ---------- 3.2 Seiberg duality on the index ---------- -->
+			<section id="ch3-seiberg-index">
+				<h2 class="slide-title">Seiberg duality on the superconformal index</h2>
+
+				<p style="font-size:0.62em;margin:0 0 0.3em;">Since \(\mathcal{I}\) is invariant along the flow, an IR duality becomes an <strong>identity between elliptic hypergeometric integrals</strong> (Dolan–Osborn).</p>
+				<!-- The seed is <strong>Spiridonov's elliptic beta integral</strong>, with
+					\(\kappa=\tfrac{(p;p)_\infty(q;q)_\infty}{2}\) and balancing condition
+					\(\prod_{j}t_j=pq\): -->
+
+				<!-- <p class="eq-xs" style="margin:0.1em 0;">
+					\[ \kappa\oint_{\mathbb{T}}\frac{\prod_{j=1}^{6}\Gamma(t_jz^{\pm1};p,q)}{\Gamma(z^{\pm2};p,q)}
+					\frac{dz}{2\pi i z}\;=\;\prod_{1\le j&lt;k\le 6}\Gamma(t_jt_k;p,q)\,, \]
+				</p>
+				<p class="muted" style="font-size:0.56em;margin:0 0 0.45em;">— exactly the statement that \(SU(2)\) with
+					\(N_f=3\) s-confines: 6 fundamentals on the left, their 15 mesons on the right.</p> -->
+
+				<p style="font-size:0.62em;margin:0 0 0.2em;"><strong>Rains's theorem</strong> is the \(SU(N)\) identity. For the part of the index attached to one \(SU(N)\) node \(n\),</p>
+
+				<p class="eq-xxs" style="margin:0.05em 0;">
+					\[ I_n\big(\left\{\tfrac{t^{3r_{na}}}{z^{(a)}}\right\}_{a\leftarrow n},\{t^{3r_{bn}}z^{(b)}\}_{b\rightarrow n}\big)
+					=\oint\!\mu(z^{(n)})\prod_{l,m=1}^{N}\Big(\prod_{a\leftarrow n}\Gamma\big(t^{3r_{na}}
+					z^{(n)}_l/z^{(a)}_m\big)\prod_{b\rightarrow n}\Gamma\big(t^{3r_{bn}}z^{(b)}_l/z^{(n)}_m\big)\Big)\,, \]
+				</p>
+				<p class="hl eq-xxs" style="margin-top:0.25em;">
+					\[ I_n\big(\left\{\tfrac{t^{3r_{na}}}{z^{(a)}}\right\}_{a\leftarrow n},\{t^{3r_{bn}}z^{(b)}\}_{b\rightarrow n}\big)
+					=\prod_{l,m=1}^{N}\prod_{\substack{a\leftarrow n\\ b\rightarrow
+					n}}\Gamma\big(t^{3(r_{na}+r_{bn})}z^{(b)}_l/z^{(a)}_m\big)\ \times\
+					I_n\big(\left\{\tfrac{t^{3(U-r_{bn})}}{z^{(b)}}\right\}_{b\rightarrow n},\{t^{3(T-r_{na})}z^{(a)}\}_{a\leftarrow
+					n}\big) \]
+				</p>
+
+				<div class="flowline" style="margin-top:0.55em;font-size:0.62em;">
+					<span class="chip">prefactor \(\Gamma(t^{3(r_{na}+r_{bn})}\,\cdot)\)</span>
+					<span class="arrow">=</span>
+					<span class="chip">the mesons \(M_{ba}\)</span>
+					<span class="arrow">·</span>
+					<span class="chip">swapped arguments</span>
+					<span class="arrow">=</span>
+					<span class="chip">reversed arrows at \(n\)</span>
+				</div>
+				<p style="font-size:0.6em;margin-top:0.4em;">with \(T=\sum_{a\leftarrow n}r_{na}\) and
+					\(U=\sum_{b\rightarrow n}r_{bn}\). Integrating out a mass term is the inversion formula
+					\(\Gamma(z;p,q)=1/\Gamma(pq/z;p,q)\).</p>
+			</section>
+
+			<!-- ================================================================ -->
+			<!-- CHAPTER 4                                                        -->
+			<!-- ================================================================ -->
+			<section id="ch4-divider" data-wash="#8b5cf6" data-wash-pos="30% 62%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-60px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #c4b5fd, #8b5cf6);"></div>
+				</div>
+				<p class="chapter-num">Chapter 4</p>
+				<h1 class="chapter-title">Quiver-invariant duality</h1>
+				<p class="chapter-sub">same quiver, different superpotential</p>
+			</section>
+
+			<!-- ---------- 4.1 the two tilings, with their quivers ---------- -->
+			<section id="ch4-tilting">
+				<h2 class="slide-title">Brane tilings with a common quiver</h2>
+
+				<div class="row" style="gap:22px;">
+					<div style="flex:0 0 37%;">
+						<!-- <p style="font-size:0.62em;margin:0 0 0.35em;">A spider move generically changes the quiver. But
+							for large enough toric Calabi–Yau 3-folds the duality tree contains <em>chains</em> of
+							Seiberg dualities whose endpoints have <strong>identical quivers</strong> — up to a
+							relabelling of the nodes — and different superpotentials.</p> -->
+						<p style="font-size:0.62em;margin:0 0 0.35em;">Phases \(2a\) and \(2b\) are related by Seiberg duality on node <strong>9</strong>. Overlaid on each tiling — one gauge node at the centre of every face — the two quivers are the <em>same</em> up to arrow reversal.</p>
+						<p class="hl" style="font-size:0.6em;margin:0.45em 0 0.4em;">
+							<strong>\(H_{1,1,2,1}\)</strong><span class="muted"> — 9 gauge nodes, 42
+								toric phases, falling into <strong>five doublets</strong> and
+								<strong>one triplet</strong> that share a common quiver.</span>
+						</p>
+						<p style="font-size:0.6em;margin:0;">Both have 9 faces, 19 edges and 10 vertices. Only the superpotential is different.</p>
+						<div class="legend" style="margin-top:12px;flex-direction:column;gap:5px;">
+							<span><i style="background:#f43f5e;"></i>fundamental domain of \(T^2\)</span>
+							<span><i style="background:#6366f1;"></i>the quiver, one node per face</span>
+							<span><i style="background:#f59e0b;"></i>node 9 — the dualized face</span>
+						</div>
+					</div>
+
+					<div class="row" style="flex:1;gap:18px;">
+						<div class="frame"
+							style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 8px;">
+							<div class="tcap" style="margin:0 0 10px;">\(H_{1,1,2,1}\) — phase 2a</div>
+							<canvas id="tiltA" width="680" height="680" style="width:330px;height:330px;"></canvas>
+						</div>
+
+						<div class="mutation" aria-label="Seiberg duality">
+							<span class="arrow2">⟷</span>
+							<span class="tag">Seiberg duality</span>
+						</div>
+
+						<div class="frame"
+							style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 8px;">
+							<div class="tcap" style="margin:0 0 10px;">\(H_{1,1,2,1}\) — phase 2b</div>
+							<canvas id="tiltB" width="680" height="680" style="width:330px;height:330px;"></canvas>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 4.2 the index identity ---------- -->
+			<section id="ch4-identity">
+				<h2 class="slide-title">The superconformal index identity</h2>
+
+				<p style="font-size:0.62em;margin:0 0 0.35em;">Two quiver-invariant duals have the same gauge group and
+					the same matter, so their indices have <strong>identical functional form</strong> — the same
+					measures, the same number of elliptic gammas. All that differs is the R-charge assignment. Equating
+					them is a non-trivial identity:</p>
+
+				<p class="hl eq-sm" style="margin-bottom:0.45em;">
+					\[ \mathcal{I}\big(p,q\,\big|\,\{r_{ij}\}\big)\;=\;\mathcal{I}\big(p,q\,\big|\,\{r'_{ij}\}\big)
+					\]
+				</p>
+
+				<div class="cols">
+					<div style="flex:0 0 56%;">
+						<p style="font-size:0.6em;margin:0 0 0.2em;">For the doublet \(2a\)/\(2b\) of
+							\(H_{1,1,2,1}\), the R-charges of ten fields are exchanged in pairs and the other nine
+							are untouched:</p>
+						<table class="dict" style="font-size:0.56em;">
+							<thead>
+								<tr>
+									<th>field</th>
+									<th>phase 2a</th>
+									<th></th>
+									<th>field</th>
+									<th>phase 2b</th>
+								</tr>
+							</thead>
+							<tr>
+								<td>\(r_{15}\)</td>
+								<td>\(R_3+R_6\)</td>
+								<td class="c to">⟷</td>
+								<td>\(r_{83}\)</td>
+								<td>\(R_1+R_3\)</td>
+							</tr>
+							<tr>
+								<td>\(r_{18}\)</td>
+								<td>\(R_2\)</td>
+								<td class="c to">⟷</td>
+								<td>\(r_{53}\)</td>
+								<td>\(R_5\)</td>
+							</tr>
+							<tr>
+								<td>\(r_{21}\)</td>
+								<td>\(R_1\)</td>
+								<td class="c to">⟷</td>
+								<td>\(r_{34}\)</td>
+								<td>\(R_6\)</td>
+							</tr>
+							<tr>
+								<td>\(r_{28}\)</td>
+								<td>\(R_5+R_6\)</td>
+								<td class="c to">⟷</td>
+								<td>\(r_{54}\)</td>
+								<td>\(R_1+R_2\)</td>
+							</tr>
+							<tr>
+								<td>\(r_{32}\)</td>
+								<td>\(R_2+R_4\)</td>
+								<td class="c to">⟷</td>
+								<td>\(r_{41}\)</td>
+								<td>\(R_4+R_5\)</td>
+							</tr>
+						</table>
+						<p class="muted" style="font-size:0.55em;margin:0.3em 0 0;">\(R_1,\dots,R_6\) are the R-charges
+							of the six extremal GLSM fields (the corners of the toric diagram), with
+							\(\sum_a R_a = 2\).</p>
+					</div>
+
+					<div>
+						<br>
+						<br>
+						<p style="font-size:0.6em;margin:0 0 0.25em;"><strong>The set of R-charges is the same</strong> on both sides. This is not true in general. It is not a local move: it is tied to the global structure of the quiver, so it cannot be written as a local elliptic gamma identity.</p>
+						<!-- <p style="font-size:0.6em;margin:0.35em 0 0.15em;"><strong>Large \(N\).</strong> The index becomes
+							a determinant that factorizes over zig-zag paths,</p>
+						<p class="eq-xxs">
+							\[ \mathcal{I}_\infty=\prod_{k\ge1}\frac{(1-p^k)^F(1-q^k)^F}{\det M(p^k,q^k)}\,, \]
+							\[ \det M(t)=\prod_{a=1}^{Z}\Big(1-t^{\,3\sum_{X\in zz_a}(1-r_X)}\Big)\,. \]
+						</p>
+						<p style="font-size:0.6em;margin:0.1em 0 0;">The involution permutes the seven zig-zag paths of
+							the model but leaves the multiset of their total R-charges fixed — so
+							\(\det M(t)\), and the large-\(N\) index, are trivially invariant.</p> -->
+					</div>
+				</div>
+			</section>
+
+			<!-- ---------- 4.3 THE ANIMATION ---------- -->
+			<section id="ch4-anim">
+				<h2 class="slide-title" style="margin-bottom:0.3em;">Seiberg duality on node 9, step by step</h2>
+
+				<div class="row" style="gap:18px;">
+					<div class="frame" style="flex:1;height:472px;">
+						<svg id="qv-svg" class="diagram" viewBox="0 0 800 590"
+							preserveAspectRatio="xMidYMid meet">
+							<defs>
+								<marker id="mk-norm" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8" /></marker>
+								<marker id="mk-dim" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#dbe1e9" /></marker>
+								<marker id="mk-hot" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#f59e0b" /></marker>
+								<marker id="mk-meson" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#14b8a6" /></marker>
+								<marker id="mk-dead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#e11d48" /></marker>
+								<marker id="mk-swap" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"
+									markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#7c3aed" /></marker>
+							</defs>
+							<g id="qv-edges"></g>
+							<g id="qv-elabels"></g>
+							<g id="qv-nodes"></g>
+						</svg>
+					</div>
+
+					<div style="flex:0 0 31%;display:flex;flex-direction:column;">
+						<div id="qv-title"
+							style="font-size:0.62em;font-weight:600;color:var(--accent);margin-bottom:0.35em;">
+						</div>
+						<div id="qv-body" style="font-size:0.54em;line-height:1.5;"></div>
+						<div id="qv-eq" class="eq-xxs" style="margin-top:0.5em;"></div>
+						<div class="legend" style="margin-top:auto;flex-direction:column;gap:5px;">
+							<span><i style="background:#f59e0b;"></i>node 9 and its arrows</span>
+							<span><i style="background:#14b8a6;"></i>mesons from Rains's identity</span>
+							<span><i style="background:#e11d48;"></i>massive — integrated out</span>
+							<span><i style="background:#7c3aed;"></i>R-charge changed</span>
+						</div>
+					</div>
+				</div>
+
+				<span class="fragment qv-anchor" data-f="1"></span>
+				<span class="fragment qv-anchor" data-f="2"></span>
+				<span class="fragment qv-anchor" data-f="3"></span>
+				<span class="fragment qv-anchor" data-f="4"></span>
+				<span class="fragment qv-anchor" data-f="5"></span>
+			</section>
+
+			<!-- ================================================================ -->
+			<!-- CONCLUSION                                                       -->
+			<!-- ================================================================ -->
+			<section id="ch5-conclusion" data-wash="#64748b" data-wash-pos="50% 50%">
+				<h2 class="slide-title">Conclusion and outlook</h2>
+
+				<div class="cols">
+					<div>
+						<h3 style="font-size:0.86em;color:var(--gauge);">What we have</h3>
+						<ul style="font-size:0.64em;">
+							<li>Toric phases of a brane tiling that share a <strong>common quiver</strong> but differ in \(W\) — five doublets and one triplet for \(H_{1,1,2,1}\).</li>
+							<li>Their superconformal indices coincide as elliptic hypergeometric integrals, giving an <strong>exact involution on the R-charges</strong>.</li>
+							<li>Unlike Rains's theorem, these identities are <strong>not local</strong>: they are tied to the global structure of the quiver.</li>
+							<li>A recipe for genereting infinitely many global constraints. Look at larger brane-tiling for further identities (eg. \(PdP_{6c}\), \(H^{1,3,1,2}\), \(H^{1,1,2,2}\), etc).</li>
+						</ul>
+					</div>
+					<div>
+						<h3 style="font-size:0.86em;color:var(--nnft);">Where it points</h3>
+						<ul style="font-size:0.64em;">
+							<li>A new way of <strong>constraining the functional form</strong> of the index: any
+								candidate closed form, written as a combination of special functions, must reproduce
+								these identities.</li>
+							<li>Compute the <strong>residue sum</strong> explicitly — following van Leuven–Mathieson–Roy
+								and Pan–Peelaers — and extend the identities to that representation.</li>
+							<li>The triplet points to quiver-invariant dualities beyond the doublet pattern.</li>
+						</ul>
+					</div>
+				</div>
+
+				<p class="hl" style="font-size:0.62em;margin-top:0.55em;">
+					A closed-form superconformal index for a non-trivial quiver gauge theory is still out of reach —
+					but every exact identity we can write down is another constraint the answer has to satisfy.
+				</p>
+			</section>
+
+			<!-- ===================== thanks ===================== -->
+			<section id="thanks-slide">
+				<div class="orbs">
+					<div class="orb" style="width:380px;height:380px;right:-70px;bottom:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:260px;height:260px;right:250px;top:-90px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+				</div>
+				<h1 class="title-main">Thank you</h1>
+				<div class="title-rule"></div>
+				<p class="title-meta muted">Questions are always welcome — <a
+						href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></p>
+			</section>
+
+		</div>
+	</div>
+
+	<script src="../dist/reveal.js"></script>
+	<script src="../dist/plugin/notes.js"></script>
+	<script src="../dist/plugin/markdown.js"></script>
+	<script src="../dist/plugin/highlight.js"></script>
+	<script src="../dist/plugin/zoom.js"></script>
+	<script src="../dist/plugin/search.js"></script>
+
+	<script>
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+			width: 1280,
+			height: 720,
+			margin: 0.05,
+			transition: "slide",
+			transitionSpeed: "default",
+			backgroundTransition: "fade",
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+		});
+
+		/* reveal measures each slide to centre it, but MathJax only replaces the
+		   raw \[ … \] source afterwards — every slide carrying an equation ends
+		   up laid out against the wrong height.  Re-run the layout once the
+		   typesetting has settled. */
+		(function () {
+			function relayout() { if (window.Reveal && Reveal.layout) Reveal.layout(); }
+			if (window.MathJax && MathJax.startup && MathJax.startup.promise)
+				MathJax.startup.promise.then(relayout).then(() => setTimeout(relayout, 120));
+			else window.addEventListener("load", () => setTimeout(relayout, 400));
+			document.fonts && document.fonts.ready.then(() => setTimeout(relayout, 60));
+		})();
+
+		/* A display equation that is wider than its column does not wrap — it
+		   simply runs over whatever sits next to it.  Measure each one the first
+		   time its slide is shown and shrink the few that need it.  (Slides that
+		   are not current have zero width, so this has to happen per slide.) */
+		function fitEquations(slide) {
+			if (!slide) return;
+			const scale = (Reveal.getScale && Reveal.getScale()) || 1;
+			slide.querySelectorAll('mjx-container[display="true"]').forEach(box => {
+				if (box.dataset.fitted) return;
+				const host = box.parentElement;
+				const avail = host && host.clientWidth;
+				const math = box.querySelector("mjx-math");
+				if (!avail || !math) return;
+				const w = math.getBoundingClientRect().width / scale;
+				if (w > avail - 2) {
+					const cur = parseFloat(getComputedStyle(box).fontSize) || 16;
+					box.style.fontSize = Math.max(7, cur * (avail - 6) / w) + "px";
+				}
+				box.dataset.fitted = "1";
+			});
+		}
+
+		/* =====================================================================
+		   Topic-change wash — arriving at a slide tagged `data-wash` zooms a
+		   coloured disk in over the deck: amber for the index primer, indigo
+		   for the quiver chapter, teal for Seiberg duality, violet for the
+		   quiver-invariant one.
+		   ===================================================================== */
+		(function () {
+			const disk = document.querySelector(".wash-disk");
+			if (!disk) return;
+
+			Reveal.on("beforeslidechange", ev => {
+				const target = document.querySelectorAll(".reveal .slides > section")[ev.indexh];
+				const colour = target && target.dataset.wash;
+				const cur = Reveal.getCurrentSlide();
+				if (!colour || !cur || cur === target) return;
+
+				const pos = (target.dataset.washPos || "50% 50%").split(/\s+/);
+				disk.style.setProperty("--wash-colour", colour);
+				disk.style.setProperty("--wash-x", pos[0]);
+				disk.style.setProperty("--wash-y", pos[1] || pos[0]);
+
+				disk.classList.remove("run");
+				void disk.offsetWidth;          // reflow, so the animation replays
+				disk.classList.add("run");
+			});
+
+			disk.addEventListener("animationend", () => disk.classList.remove("run"));
+		})();
+
+		/* =====================================================================
+		   Brane-tiling renderer.  Data + rendering mirror
+		   benterre.com/DimersWeb/DimerDatabase, as in the AI-for-Maths deck;
+		   `opts.labels` relabels the faces (database index -> quiver node of
+		   the paper) and `opts.flip` exchanges the two vertex colours, which
+		   is how the database stores the reversed orientation of model B.
+		   ===================================================================== */
+		function drawTiling(canvas, tiling, opts) {
+			opts = opts || {};
+			const ctx = canvas.getContext("2d");
+			const S = canvas.width / 320;          // hi-dpi scale factor
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			if (!tiling) return;
+
+			let L = tiling.lattice;
+			let nodes = tiling.nodes;
+
+			// de-squash strip-like fundamental domains so edges stay isotropic
+			let mxx = 0, myy = 0;
+			for (const [b, w, w1, w2] of tiling.edges) {
+				const vx = nodes[w][0] + w1 * L[0][0] + w2 * L[1][0] - nodes[b][0];
+				const vy = nodes[w][1] + w1 * L[0][1] + w2 * L[1][1] - nodes[b][1];
+				mxx += vx * vx; myy += vy * vy;
+			}
+			if (mxx > 1e-12 && myy > 1e-12) {
+				const q = Math.sqrt(myy / mxx);
+				let sx = 1, sy = 1;
+				if (q > 2) sx = Math.min(q, 24); else if (q < 0.5) sy = Math.min(1 / q, 24);
+				if (sx !== 1 || sy !== 1) {
+					nodes = nodes.map(n => [n[0] * sx, n[1] * sy, n[2]]);
+					L = [[L[0][0] * sx, L[0][1] * sy], [L[1][0] * sx, L[1][1] * sy]];
+				}
+			}
+
+			const m = 0.06;
+			const frac2xy = (u, v) => [u * L[0][0] + v * L[1][0], u * L[0][1] + v * L[1][1]];
+			const cell = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => frac2xy(u, v));
+			const view = [[-m, -m], [1 + m, -m], [1 + m, 1 + m], [-m, 1 + m]].map(([u, v]) => frac2xy(u, v));
+
+			let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+			for (const c of view) {
+				minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]);
+				minY = Math.min(minY, c[1]); maxY = Math.max(maxY, c[1]);
+			}
+			const pad = 16 * S;
+			const sc = Math.min((canvas.width - 2 * pad) / (maxX - minX),
+				(canvas.height - 2 * pad) / (maxY - minY));
+			const ox = (canvas.width - sc * (maxX - minX)) / 2 - sc * minX;
+			const oy = (canvas.height + sc * (maxY - minY)) / 2 + sc * minY;
+			const P = (x, y) => [ox + sc * x, oy - sc * y];
+
+			const segs = tiling.edges.map(([b, w, w1, w2]) => ({
+				b,
+				vx: nodes[w][0] + w1 * L[0][0] + w2 * L[1][0] - nodes[b][0],
+				vy: nodes[w][1] + w1 * L[0][1] + w2 * L[1][1] - nodes[b][1]
+			}));
+			let reach = 1;
+			for (const [b, w, w1, w2] of tiling.edges)
+				reach = Math.max(reach, Math.abs(w1) + 1, Math.abs(w2) + 1);
+
+			ctx.save();
+			ctx.beginPath();
+			view.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+			ctx.closePath();
+			ctx.clip();
+
+			// with the quiver drawn on top, drop the tiling back a step so the
+			// two graphs stay separable
+			const quiverOn = (opts.quiver || 0) > 0;
+			ctx.strokeStyle = quiverOn ? "#94a3b8" : "#334155";
+			ctx.lineWidth = (quiverOn ? 1.4 : 1.7) * S;
+			ctx.lineCap = "round";
+			for (let si = -reach; si <= reach; si++)
+				for (let sj = -reach; sj <= reach; sj++) {
+					const D = frac2xy(si, sj);
+					for (const s of segs) {
+						const x1 = nodes[s.b][0] + D[0], y1 = nodes[s.b][1] + D[1];
+						const [X1, Y1] = P(x1, y1), [X2, Y2] = P(x1 + s.vx, y1 + s.vy);
+						if (Math.max(X1, X2) < 0 || Math.min(X1, X2) > canvas.width ||
+							Math.max(Y1, Y2) < 0 || Math.min(Y1, Y2) > canvas.height) continue;
+						ctx.beginPath();
+						ctx.moveTo(X1, Y1);
+						ctx.lineTo(X2, Y2);
+						ctx.stroke();
+					}
+				}
+
+			const dark = opts.flip ? 0 : 1;
+			for (let si = -reach; si <= reach; si++)
+				for (let sj = -reach; sj <= reach; sj++) {
+					const D = frac2xy(si, sj);
+					for (const n of nodes) {
+						const [X, Y] = P(n[0] + D[0], n[1] + D[1]);
+						if (X < -12 * S || X > canvas.width + 12 * S ||
+							Y < -12 * S || Y > canvas.height + 12 * S) continue;
+						ctx.beginPath();
+						ctx.arc(X, Y, (quiverOn ? 4.4 : 5.5) * S, 0, 7);
+						ctx.fillStyle = n[2] === dark ? (quiverOn ? "#475569" : "#0f172a") : "#ffffff";
+						ctx.fill();
+						ctx.strokeStyle = quiverOn ? "#475569" : "#0f172a";
+						ctx.lineWidth = (quiverOn ? 1.3 : 1.6) * S;
+						ctx.stroke();
+					}
+				}
+			ctx.restore();
+
+			// fundamental domain
+			ctx.strokeStyle = "#f43f5e";
+			ctx.setLineDash([7 * S, 6 * S]);
+			ctx.lineWidth = 1.4 * S;
+			ctx.beginPath();
+			cell.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+			ctx.closePath();
+			ctx.stroke();
+			ctx.setLineDash([]);
+
+			// face (gauge group) labels
+			const faceEdges = new Map();
+			tiling.edges.forEach(([b, w, w1, w2, f1, f2], ei) => {
+				for (const f of new Set([f1, f2])) {
+					if (!faceEdges.has(f)) faceEdges.set(f, []);
+					faceEdges.get(f).push(ei);
+				}
+			});
+			function faceCentroid(f) {
+				const eids = faceEdges.get(f);
+				if (!eids || !eids.length) return null;
+				const lift = new Map();
+				const b0 = tiling.edges[eids[0]][0];
+				lift.set(b0, [nodes[b0][0], nodes[b0][1]]);
+				let changed = true;
+				while (changed) {
+					changed = false;
+					for (const ei of eids) {
+						const [b, w] = tiling.edges[ei];
+						const s = segs[ei];
+						if (lift.has(b) && !lift.has(w)) {
+							lift.set(w, [lift.get(b)[0] + s.vx, lift.get(b)[1] + s.vy]);
+							changed = true;
+						} else if (lift.has(w) && !lift.has(b)) {
+							lift.set(b, [lift.get(w)[0] - s.vx, lift.get(w)[1] - s.vy]);
+							changed = true;
+						}
+					}
+				}
+				let cx = 0, cy = 0, n = 0;
+				for (const ei of eids) {
+					const pb = lift.get(tiling.edges[ei][0]);
+					if (!pb) continue;
+					cx += pb[0] + segs[ei].vx / 2;
+					cy += pb[1] + segs[ei].vy / 2;
+					n++;
+				}
+				return n ? [cx / n, cy / n] : null;
+			}
+			// face centroids, reduced to the fundamental domain
+			const det = L[0][0] * L[1][1] - L[0][1] * L[1][0];
+			const cen = new Map();
+			for (const [f, fx, fy] of tiling.faces) {
+				const c = faceCentroid(f) || [fx, fy];
+				let u = (c[0] * L[1][1] - c[1] * L[1][0]) / det;
+				let v = (-c[0] * L[0][1] + c[1] * L[0][0]) / det;
+				cen.set(f, [u - Math.floor(u), v - Math.floor(v)]);
+			}
+			const labelOf = f => (opts.labels ? opts.labels[f] : (f + 1));
+			const NRAD = 10.5 * S;
+
+			/* ---- the quiver, drawn on top of the tiling ----
+			   One gauge node at the centre of every face; the arrow dual to a
+			   tiling edge runs from face f2 to face f1 (verified against the
+			   quiver of every phase in the database).  For each drawn copy of an
+			   edge we pick the periodic copies of the two face centres nearest
+			   to that edge, so the arrows really do cross their own edge. */
+			const qa = opts.quiver || 0;
+			if (qa > 0) {
+				ctx.save();
+				ctx.beginPath();
+				view.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+				ctx.closePath();
+				ctx.clip();
+
+				function nearestCentre(f, mx, my) {
+					const c = cen.get(f);
+					let best = null, bd = Infinity;
+					for (let a = -2; a <= 2; a++)
+						for (let b = -2; b <= 2; b++) {
+							const [x, y] = frac2xy(c[0] + a, c[1] + b);
+							const d = (x - mx) * (x - mx) + (y - my) * (y - my);
+							if (d < bd) { bd = d; best = [x, y]; }
+						}
+					return best;
+				}
+
+				ctx.globalAlpha = Math.min(1, qa * 1.4);
+				ctx.strokeStyle = "#6366f1";
+				ctx.lineWidth = 1.9 * S;
+				ctx.fillStyle = "#6366f1";
+				for (let si = -reach; si <= reach; si++)
+					for (let sj = -reach; sj <= reach; sj++) {
+						const D = frac2xy(si, sj);
+						tiling.edges.forEach((e, ei) => {
+							const s = segs[ei];
+							const mx = nodes[s.b][0] + D[0] + s.vx / 2;
+							const my = nodes[s.b][1] + D[1] + s.vy / 2;
+							const [MX, MY] = P(mx, my);
+							if (MX < -60 * S || MX > canvas.width + 60 * S ||
+								MY < -60 * S || MY > canvas.height + 60 * S) return;
+							const A = nearestCentre(e[5], mx, my);   // source face
+							const B = nearestCentre(e[4], mx, my);   // target face
+							let [X1, Y1] = P(A[0], A[1]);
+							let [X2, Y2] = P(B[0], B[1]);
+							const dx = X2 - X1, dy = Y2 - Y1, len = Math.hypot(dx, dy) || 1;
+							const ux = dx / len, uy = dy / len;
+							const g = Math.min(1, qa);            // arrows grow out of their source
+							X1 += ux * NRAD; Y1 += uy * NRAD;
+							const ex = X1 + ux * (len - 2 * NRAD) * g;
+							const ey = Y1 + uy * (len - 2 * NRAD) * g;
+							ctx.beginPath();
+							ctx.moveTo(X1, Y1);
+							ctx.lineTo(ex, ey);
+							ctx.stroke();
+							if (g > 0.55) {                        // arrowhead
+								const h = 5.2 * S;
+								ctx.beginPath();
+								ctx.moveTo(ex, ey);
+								ctx.lineTo(ex - ux * h - uy * h * 0.55, ey - uy * h + ux * h * 0.55);
+								ctx.lineTo(ex - ux * h + uy * h * 0.55, ey - uy * h - ux * h * 0.55);
+								ctx.closePath();
+								ctx.fill();
+							}
+						});
+					}
+				ctx.restore();
+				ctx.globalAlpha = 1;
+			}
+
+			// face (gauge group) labels — clipped to the same window as the
+			// tiling itself, so the periodic copies stop at the frame edge
+			if (qa > 0) {
+				ctx.save();
+				ctx.beginPath();
+				view.forEach((c, i) => { const [X, Y] = P(c[0], c[1]); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+				ctx.closePath();
+				ctx.clip();
+			}
+			ctx.font = `600 ${13 * S}px Inter, sans-serif`;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			for (const [f] of tiling.faces) {
+				const [u, v] = cen.get(f);
+				const spread = qa > 0 ? [[0, 0], [1, 0], [0, 1], [1, 1], [-1, 0], [0, -1], [-1, -1], [1, -1], [-1, 1]] : [[0, 0]];
+				for (const [a, b] of spread) {
+					const [wx, wy] = frac2xy(u + a, v + b);
+					const [X, Y] = P(wx, wy);
+					if (X < -14 * S || X > canvas.width + 14 * S ||
+						Y < -14 * S || Y > canvas.height + 14 * S) continue;
+					const label = labelOf(f);
+					const hot = opts.highlight != null && label === opts.highlight;
+					if (qa > 0) {
+						ctx.beginPath();
+						ctx.arc(X, Y, NRAD, 0, 7);
+						ctx.fillStyle = hot ? "#fef3c7" : "#eef2ff";
+						ctx.fill();
+						ctx.strokeStyle = hot ? "#f59e0b" : "#6366f1";
+						ctx.lineWidth = (hot ? 2.2 : 1.5) * S;
+						ctx.stroke();
+					} else if (hot) {
+						ctx.beginPath();
+						ctx.arc(X, Y, 11 * S, 0, 7);
+						ctx.fillStyle = "rgba(245,158,11,0.22)";
+						ctx.fill();
+						ctx.strokeStyle = "#f59e0b";
+						ctx.lineWidth = 1.6 * S;
+						ctx.stroke();
+					}
+					ctx.fillStyle = hot ? "#b45309" : "#4f46e5";
+					ctx.fillText(String(label), X, Y);
+				}
+			}
+			if (qa > 0) ctx.restore();
+		}
+
+		/* -------- toric diagram with perfect-matching multiplicities --------
+		   Same renderer as the AI-for-Maths deck: hull and lattice points are
+		   theory data, the multiplicities belong to the selected phase. */
+		function drawToric(canvas, toric) {
+			const ctx = canvas.getContext("2d");
+			const S = canvas.width / 360;
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			const pts = toric.points;
+			const maxX = Math.max(...pts.map(p => p[0]), 1);
+			const maxY = Math.max(...pts.map(p => p[1]), 1);
+			const pad = 46 * S;
+			const cell = Math.min((canvas.width - 2 * pad) / maxX,
+				(canvas.height - 2 * pad) / maxY, 110 * S);
+			const ox = (canvas.width - cell * maxX) / 2;
+			const oy = (canvas.height + cell * maxY) / 2;
+			const P = p => [ox + p[0] * cell, oy - p[1] * cell];
+
+			ctx.fillStyle = "#cbd5e1";
+			for (let x = 0; x <= maxX; x++)
+				for (let y = 0; y <= maxY; y++) {
+					const [X, Y] = P([x, y]);
+					ctx.beginPath(); ctx.arc(X, Y, 2.2 * S, 0, 7); ctx.fill();
+				}
+
+			ctx.beginPath();
+			toric.hull.forEach((p, i) => { const [X, Y] = P(p); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+			ctx.closePath();
+			ctx.fillStyle = "rgba(99,102,241,0.10)";
+			ctx.strokeStyle = "#6366f1";
+			ctx.lineWidth = 1.9 * S;
+			ctx.lineJoin = "round";
+			ctx.fill();
+			ctx.stroke();
+
+			ctx.textAlign = "left";
+			ctx.textBaseline = "alphabetic";
+			for (const p of pts) {
+				const [X, Y] = P(p);
+				ctx.beginPath();
+				ctx.arc(X, Y, 5.2 * S, 0, 7);
+				ctx.fillStyle = "#1e293b";
+				ctx.fill();
+				if (p[2] != null && p[2] !== 1) {
+					ctx.fillStyle = "#e11d48";
+					ctx.font = `700 ${14 * S}px Inter, sans-serif`;
+					ctx.fillText(String(p[2]), X + 8 * S, Y - 8 * S);
+				}
+			}
+		}
+
+		/* =====================================================================
+		   Static tilings: model A on the brane-tiling slide, and the
+		   A / B pair on the tilting-mutation slide.  Face labels are the
+		   quiver nodes of the paper (the database orders its faces
+		   differently), and model B is stored with the two vertex colours
+		   exchanged.
+		   ===================================================================== */
+		const MODEL = {
+			A: { idx: 18, labels: { 0: 6, 1: 2, 2: 7, 3: 1, 4: 5, 5: 3, 6: 4, 7: 9, 8: 8 }, flip: false },
+			B: { idx: 2, labels: { 0: 7, 1: 4, 2: 6, 3: 3, 4: 8, 5: 1, 6: 2, 7: 9, 8: 5 }, flip: true }
+		};
+
+		function phaseToric(idx) {
+			const T = window.H1112;
+			const mult = T.phases[idx] && T.phases[idx].glsm_mult;
+			return {
+				hull: T.toric.hull,
+				points: T.toric.points.map(([x, y]) => {
+					const m = mult ? mult[`${x},${y}`] : null;
+					return [x, y, m != null ? m : null];
+				})
+			};
+		}
+
+		/* the doublet slide: both tilings, with their quivers fading in on top */
+		const tiltStage = (function () {
+			let anim = null;
+			function paint(q) {
+				const T = window.H1112;
+				if (!T) return;
+				const ta = document.getElementById("tiltA");
+				if (ta) drawTiling(ta, T.phases[MODEL.A.idx].tiling,
+					{ labels: MODEL.A.labels, highlight: 9, quiver: q });
+				const tb = document.getElementById("tiltB");
+				if (tb) drawTiling(tb, T.phases[MODEL.B.idx].tiling,
+					{ labels: MODEL.B.labels, flip: MODEL.B.flip, highlight: 9, quiver: q });
+			}
+			return {
+				run() {
+					if (anim) cancelAnimationFrame(anim);
+					paint(0);
+					const t0 = performance.now(), WAIT = 700, DUR = 1100;
+					const tick = now => {
+						const u = Math.max(0, Math.min(1, (now - t0 - WAIT) / DUR));
+						paint(u < 0.001 ? 0 : u);
+						if (u < 1) anim = requestAnimationFrame(tick); else anim = null;
+					};
+					anim = requestAnimationFrame(tick);
+				},
+				stop() { if (anim) { cancelAnimationFrame(anim); anim = null; } }
+			};
+		})();
+
+		/* the model slide: one Seiberg duality, back and forth */
+		const modelStage = (function () {
+			let timer = null, on = 0;
+			function show(k) {
+				const T = window.H1112;
+				const c = document.getElementById("modelTile");
+				if (!T || !c) return;
+				const M = k ? MODEL.B : MODEL.A;
+				c.style.opacity = "0";
+				setTimeout(() => {
+					drawTiling(c, T.phases[M.idx].tiling,
+						{ labels: M.labels, flip: M.flip, highlight: 9 });
+					c.style.opacity = "1";
+				}, 170);
+				const name = k ? "phase 2b" : "phase 2a";
+				const lbl = document.getElementById("modelPhase");
+				const chip = document.getElementById("modelChip");
+				if (lbl) lbl.textContent = name;
+				if (chip) chip.textContent = name;
+			}
+			return {
+				run() {
+					if (timer) clearInterval(timer);
+					const T = window.H1112;
+					const tc = document.getElementById("modelToric");
+					if (T && tc) drawToric(tc, phaseToric(MODEL.A.idx));
+					on = 0;
+					show(0);
+					timer = setInterval(() => { on ^= 1; show(on); }, 2400);
+				},
+				stop() { if (timer) { clearInterval(timer); timer = null; } }
+			};
+		})();
+
+		/* =====================================================================
+		   Spectrum of a supersymmetric theory under a deformation.
+
+		   Every state with E > 0 sits in a boson/fermion pair, so levels can
+		   only move — or reach E = 0 — two at a time, one of each statistic.
+		   The unsigned count of zero-energy states changes; the signed one
+		   cannot.  Runs while the second panel of the "defining an index"
+		   slide is on screen.
+		   ===================================================================== */
+		(function () {
+			const NS = "http://www.w3.org/2000/svg";
+			const mk = (t, a) => {
+				const e = document.createElementNS(NS, t);
+				for (const k in a) e.setAttribute(k, a[k]);
+				return e;
+			};
+
+			const AX = 74, BASE = 322, TOP = 128, SCALE = 132;
+			const L0 = 88, L1 = 412;
+			// one column per pair, so two levels crossing never collide on screen
+			const PAIRS = [
+				{ x: 196, base: 0.34, amp: 0.50, ph: 0.0 },
+				{ x: 278, base: 0.82, amp: 0.28, ph: 2.3 },
+				{ x: 360, base: 0.30, amp: 0.46, ph: 3.9 }
+			];
+			const GB = 3, GF = 1;              // zero-energy states before any pair lands
+			const PERIOD = 10000;
+			let raf = null, t0 = 0;
+
+			const boson = (x, y) => mk("circle", { cx: x, cy: y, r: 7, fill: "#6366f1" });
+			const fermion = (x, y) => mk("path", {
+				d: `M${x},${y - 8} L${x + 8},${y} L${x},${y + 8} L${x - 8},${y} Z`, fill: "#f59e0b"
+			});
+
+			function statics() {
+				const g = document.getElementById("spec-static");
+				if (!g || g.childElementCount) return;
+				g.appendChild(mk("line", {
+					x1: AX, y1: BASE, x2: AX, y2: TOP - 12, stroke: "#64748b",
+					"stroke-width": 1.6, "marker-end": "url(#mk-ax)"
+				}));
+				const e = mk("text", { x: AX - 10, y: TOP - 4, class: "blabel", "text-anchor": "end" });
+				e.textContent = "E";
+				g.appendChild(e);
+				g.appendChild(mk("line", {
+					x1: AX, y1: BASE, x2: L1, y2: BASE, stroke: "#94a3b8",
+					"stroke-width": 1.4, "stroke-dasharray": "6 5"
+				}));
+				const z = mk("text", { x: AX - 10, y: BASE + 4, class: "blabel", "text-anchor": "end" });
+				z.textContent = "0";
+				g.appendChild(z);
+				// legend, clear of the plot
+				g.appendChild(boson(214, TOP - 30));
+				const lb = mk("text", { x: 226, y: TOP - 26, class: "blabel" });
+				lb.textContent = "boson";
+				g.appendChild(lb);
+				g.appendChild(fermion(310, TOP - 30));
+				const lf = mk("text", { x: 322, y: TOP - 26, class: "blabel" });
+				lf.textContent = "fermion";
+				g.appendChild(lf);
+			}
+
+			let last = 0;
+			function frame(now) {
+				const g = document.getElementById("spec-levels");
+				const r = document.getElementById("spec-read");
+				if (!g) { raf = null; return; }
+				// a full rebuild every frame is wasted work: 30fps is plenty
+				if (now - last < 32) { raf = requestAnimationFrame(frame); return; }
+				last = now;
+				g.innerHTML = ""; r.innerHTML = "";
+				const lam = ((now - t0) % PERIOD) / PERIOD;
+				let landed = 0;
+
+				PAIRS.forEach(p => {
+					const E = p.base + p.amp * Math.sin(2 * Math.PI * lam + p.ph);
+					const y = E <= 0 ? BASE : BASE - Math.min(E, 1.45) * SCALE;
+					if (E <= 0) landed++;
+					if (E > 0) g.appendChild(mk("line", {
+						x1: p.x - 18, y1: y, x2: p.x + 44, y2: y, stroke: "#cbd5e1", "stroke-width": 1.3
+					}));
+					g.appendChild(boson(p.x, y));
+					g.appendChild(fermion(p.x + 26, y));
+				});
+
+				// the zero-energy states, unsigned count growing as pairs arrive
+				const nB = GB + landed, nF = GF + landed;
+				let x = L0 + 14;
+				for (let i = 0; i < GB; i++, x += 26) g.appendChild(boson(x, BASE));
+				for (let i = 0; i < GF; i++, x += 26) g.appendChild(fermion(x, BASE));
+
+				const t0b = mk("text", { x: AX, y: BASE + 40, class: "blabel" });
+				t0b.textContent = "states at E = 0";
+				r.appendChild(t0b);
+				const t1 = mk("text", { x: AX, y: BASE + 66, class: "bcount", fill: "#0f172a" });
+				t1.textContent = `nB = ${nB},  nF = ${nF}`;
+				r.appendChild(t1);
+				const t2 = mk("text", { x: AX, y: BASE + 94, class: "bcount", fill: "#4f46e5" });
+				t2.textContent = `nB − nF = ${nB - nF}   —   invariant`;
+				r.appendChild(t2);
+
+				// the deformation dial
+				r.appendChild(mk("line", {
+					x1: AX, y1: BASE + 122, x2: L1 - 26, y2: BASE + 122, stroke: "#e2e8f0", "stroke-width": 3,
+					"stroke-linecap": "round"
+				}));
+				r.appendChild(mk("circle", {
+					cx: AX + (L1 - 26 - AX) * (0.5 - 0.5 * Math.cos(2 * Math.PI * lam)),
+					cy: BASE + 122, r: 6, fill: "#14b8a6"
+				}));
+				const t3 = mk("text", { x: L1 - 16, y: BASE + 126, class: "blabel" });
+				t3.textContent = "λ";
+				r.appendChild(t3);
+
+				raf = requestAnimationFrame(frame);
+			}
+
+			window.__spectrum = {
+				run() {
+					if (raf) return;
+					statics();
+					t0 = performance.now();
+					raf = requestAnimationFrame(frame);
+				},
+				stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+			};
+		})();
+
+		/* =====================================================================
+		   From the quiver of F_0 to its brane tiling.
+
+		   The compact quiver unwraps onto the periodic quiver on T^2 (gauge
+		   nodes on a square lattice, arrows clockwise around what will become
+		   the white nodes), the dual graph is drawn on top of it, and finally
+		   each superpotential term is traced out around its own node: white
+		   nodes carry the plus terms, black nodes the minus terms.
+		   ===================================================================== */
+		(function () {
+			const NS = "http://www.w3.org/2000/svg";
+			const mk = (t, a) => {
+				const e = document.createElementNS(NS, t);
+				for (const k in a) e.setAttribute(k, a[k]);
+				return e;
+			};
+			const C = 80, OX = 120, OY = 300;
+			const pt = (i, j) => [OX + i * C, OY - j * C];             // tiling vertex
+			const fc = (i, j) => [OX + (i + 0.5) * C, OY - (j + 0.5) * C];  // face centre
+			const HOME = { 1: [125, 300], 2: [125, 140], 3: [295, 140], 4: [295, 300] };
+			const CELL = [[0, 0], [2, 0], [2, 2], [0, 2]];
+			const RANGE = [-1, 0, 1, 2];
+			const mod2 = n => ((n % 2) + 2) % 2;
+			const type = (i, j) => mod2(i) === 0 ? (mod2(j) === 0 ? 1 : 2) : (mod2(j) === 0 ? 4 : 3);
+			const ARROWS = new Set(["1>2", "2>3", "3>4", "4>1"]);
+			const FUND = { 1: [0, 0], 2: [0, 1], 3: [1, 1], 4: [1, 0] };   // face of each node
+
+			// every adjacent pair of faces in view, oriented
+			const PAIRS = [];
+			for (const i of RANGE) for (const j of RANGE) {
+				for (const [di, dj] of [[1, 0], [0, 1]]) {
+					const a = [i, j], b = [i + di, j + dj];
+					if (RANGE.indexOf(b[0]) < 0 || RANGE.indexOf(b[1]) < 0) continue;
+					const ta = type(a[0], a[1]), tb = type(b[0], b[1]);
+					PAIRS.push(ARROWS.has(ta + ">" + tb) ? [a, b] : [b, a]);
+				}
+			}
+
+			const CAPS = ["quiver of \\(F_0\\)", "quiver of \\(F_0\\)",
+				"unwrapped on \\(T^2\\) — the periodic quiver",
+				"dual graph — the brane tiling",
+				"superpotential terms, one per node"];
+			const WVERTS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+			let raf = null, t0 = 0, capNow = -1, last = 0;
+
+			function arrow(g, A, B, cls, shrink) {
+				const dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy) || 1;
+				const ux = dx / len, uy = dy / len, s = shrink == null ? 17 : shrink;
+				g.appendChild(mk("line", {
+					x1: A[0] + ux * s, y1: A[1] + uy * s,
+					x2: B[0] - ux * s, y2: B[1] - uy * s,
+					stroke: cls === "hot" ? "#f59e0b" : (cls === "faint" ? "#c7d2fe" : "#6366f1"),
+					"stroke-width": cls === "hot" ? 3.2 : 2,
+					"marker-end": cls === "hot" ? "url(#mk-qh)" : (cls === "faint" ? "url(#mk-qf)" : "url(#mk-q)")
+				}));
+			}
+
+			function node(g, p, label, faint, hot) {
+				g.appendChild(mk("circle", {
+					cx: p[0], cy: p[1], r: 15,
+					fill: hot ? "#fffbeb" : "#eef2ff",
+					stroke: hot ? "#f59e0b" : (faint ? "#c7d2fe" : "#6366f1"),
+					"stroke-width": hot ? 2.8 : 2
+				}));
+				const t = mk("text", {
+					x: p[0], y: p[1], "text-anchor": "middle", "dominant-baseline": "central",
+					class: "nlabel", "font-size": 15, fill: hot ? "#b45309" : (faint ? "#a5b4fc" : "#4f46e5")
+				});
+				t.textContent = label;
+				g.appendChild(t);
+			}
+
+			function render(now) {
+				const gA = document.getElementById("f0-arrows");
+				const gN = document.getElementById("f0-nodes");
+				const gT = document.getElementById("f0-tiling");
+				const gV = document.getElementById("f0-verts");
+				const gC = document.getElementById("f0-cell");
+				const gG = document.getElementById("f0-tag");
+				if (!gA) { raf = null; return; }
+				if (now - last < 32) { raf = requestAnimationFrame(render); return; }
+				last = now;
+				[gA, gN, gT, gV, gC, gG].forEach(g => g.innerHTML = "");
+
+				const e = now - t0;
+				let stage, u = 1, wIdx = -1;
+				if (e < 1500) { stage = 1; }
+				else if (e < 2400) { stage = 2; u = (e - 1500) / 900; }
+				else if (e < 3600) { stage = 2; }
+				else if (e < 4500) { stage = 3; u = (e - 3600) / 900; }
+				else if (e < 5600) { stage = 3; }
+				else { stage = 4; wIdx = Math.floor((e - 5600) / 1500) % 4; }
+
+				const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+				const capIdx = stage === 1 ? 1 : stage;
+				if (capIdx !== capNow) {
+					capNow = capIdx;
+					const cap = document.getElementById("f0-cap");
+					if (cap) {
+						cap.innerHTML = CAPS[capIdx];
+						if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([cap]).catch(() => { });
+					}
+				}
+
+				if (stage === 1) {                       // compact quiver
+					for (const [a, b] of [[1, 2], [2, 3], [3, 4], [4, 1]]) {
+						const A = HOME[a], B = HOME[b];
+						const dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy) || 1;
+						const nx = -dy / len * 11, ny = dx / len * 11;
+						for (const s of [-1, 1])
+							arrow(gA, [A[0] + nx * s, A[1] + ny * s], [B[0] + nx * s, B[1] + ny * s], "");
+					}
+					for (const k of [1, 2, 3, 4]) node(gN, HOME[k], String(k), false, false);
+					raf = requestAnimationFrame(render);
+					return;
+				}
+
+				// fundamental domain
+				const cellPts = CELL.map(([i, j]) => pt(i, j));
+				gC.appendChild(mk("polygon", {
+					points: cellPts.map(p => p.join(",")).join(" "),
+					fill: "none", stroke: "#f43f5e", "stroke-width": 2, "stroke-dasharray": "8 6",
+					opacity: stage === 2 ? ease(u) : 1
+				}));
+
+				// morph the four fundamental nodes out of the compact layout
+				const k = stage === 2 ? ease(u) : 1;
+				const posOf = (i, j) => {
+					const t = type(i, j);
+					const home = FUND[t];
+					const target = fc(i, j);
+					if (stage === 2 && home[0] === i && home[1] === j) {
+						const h = HOME[t];
+						return [h[0] + (target[0] - h[0]) * k, h[1] + (target[1] - h[1]) * k];
+					}
+					return target;
+				};
+				const inFund = (i, j) => { const f = FUND[type(i, j)]; return f[0] === i && f[1] === j; };
+				const alpha = stage === 2 ? k : 1;
+
+				// the tiling (dual graph)
+				if (stage >= 3) {
+					const a3 = stage === 3 ? ease(u) : 1;
+					for (const i of [-1, 0, 1, 2, 3]) for (const j of [-1, 0, 1, 2, 3]) {
+						for (const [di, dj] of [[1, 0], [0, 1]]) {
+							const b = [i + di, j + dj];
+							if (b[0] > 3 || b[1] > 3) continue;
+							const A = pt(i, j), B = pt(b[0], b[1]);
+							gT.appendChild(mk("line", {
+								x1: A[0], y1: A[1], x2: B[0], y2: B[1],
+								stroke: "#334155", "stroke-width": 1.9, opacity: a3, "stroke-linecap": "round"
+							}));
+						}
+					}
+					for (const i of [-1, 0, 1, 2, 3]) for (const j of [-1, 0, 1, 2, 3]) {
+						const p = pt(i, j), white = mod2(i + j) === 0;
+						const hot = stage === 4 && WVERTS[wIdx][0] === i && WVERTS[wIdx][1] === j;
+						gV.appendChild(mk("circle", {
+							cx: p[0], cy: p[1], r: hot ? 8.5 : 6.5,
+							fill: white ? "#ffffff" : "#0f172a",
+							stroke: hot ? "#f59e0b" : "#0f172a",
+							"stroke-width": hot ? 3 : 1.8, opacity: a3
+						}));
+					}
+				}
+
+				// the arrows
+				for (const [a, b] of PAIRS) {
+					const A = posOf(a[0], a[1]), B = posOf(b[0], b[1]);
+					const vis = stage === 2 ? (inFund(a[0], a[1]) && inFund(b[0], b[1]) ? 1 : alpha) : 1;
+					let cls = stage >= 3 ? "faint" : "";
+					if (stage === 4) {
+						const [vi, vj] = WVERTS[wIdx];
+						const around = ([i, j]) => (i === vi || i === vi - 1) && (j === vj || j === vj - 1);
+						if (around(a) && around(b)) cls = "hot";
+					}
+					const gg = mk("g", { opacity: vis });
+					gA.appendChild(gg);
+					arrow(gg, A, B, cls);
+				}
+
+				// the gauge nodes
+				for (const i of RANGE) for (const j of RANGE) {
+					const p = posOf(i, j);
+					const t = type(i, j);
+					const faint = stage >= 3;
+					let hot = false;
+					if (stage === 4) {
+						const [vi, vj] = WVERTS[wIdx];
+						hot = (i === vi || i === vi - 1) && (j === vj || j === vj - 1);
+					}
+					const gg = mk("g", { opacity: stage === 2 && !inFund(i, j) ? alpha : 1 });
+					gN.appendChild(gg);
+					node(gg, p, String(t), faint && !hot, hot);
+				}
+
+				// the superpotential term at the highlighted node
+				if (stage === 4) {
+					const [vi, vj] = WVERTS[wIdx];
+					const p = pt(vi, vj), white = mod2(vi + vj) === 0;
+					const badge = mk("g", {});
+					badge.appendChild(mk("circle", {
+						cx: p[0] + 26, cy: p[1] - 24, r: 14,
+						fill: "#ffffff", stroke: white ? "#6366f1" : "#0f172a", "stroke-width": 2
+					}));
+					const s = mk("text", {
+						x: p[0] + 26, y: p[1] - 24, "text-anchor": "middle", "dominant-baseline": "central",
+						"font-size": 19, "font-weight": 700, fill: white ? "#4f46e5" : "#0f172a",
+						"font-family": "Inter, sans-serif"
+					});
+					s.textContent = white ? "+" : "−";
+					badge.appendChild(s);
+					gG.appendChild(badge);
+					gG.appendChild(mk("rect", {
+						x: 118, y: 418, width: 184, height: 26, rx: 8, fill: "#ffffff", opacity: 0.92
+					}));
+					const w = mk("text", {
+						x: 210, y: 432, "text-anchor": "middle", "dominant-baseline": "central", class: "glab",
+						fill: white ? "#4f46e5" : "#0f172a", "font-size": 15
+					});
+					w.textContent = (white ? "+ " : "− ") + "X₁₂ X₂₃ X₃₄ X₄₁";
+					gG.appendChild(w);
+				}
+
+				raf = requestAnimationFrame(render);
+			}
+
+			window.__f0 = {
+				run() {
+					if (raf) cancelAnimationFrame(raf);
+					t0 = performance.now();
+					capNow = -1;
+					raf = requestAnimationFrame(render);
+				},
+				stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+			};
+		})();
+
+		/* =====================================================================
+		   The spider move (urban renewal) on a quadrilateral face.
+
+		   Four new nodes appear inside the face, each the opposite colour of
+		   the corner it sits beside; the four edges of the square slide onto
+		   them, giving a colour-reversed square; and the short edge left
+		   behind at every corner is a Seiberg meson.  A corner that was
+		   trivalent is left 2-valent — a mass term — and is contracted away.
+		   ===================================================================== */
+		(function () {
+			const NS = "http://www.w3.org/2000/svg";
+			const mk = (t, a) => {
+				const e = document.createElementNS(NS, t);
+				for (const k in a) e.setAttribute(k, a[k]);
+				return e;
+			};
+			const C = 118, OX = 172, OY = 272;
+			const P = (i, j) => [OX + i * C, OY - j * C];
+			// square face corners, and the two legs leaving each of them
+			const CORNERS = [
+				{ at: [0, 0], white: true, inner: [0.26, 0.26], legs: [[-1, 0], [0, -1]] },
+				{ at: [1, 0], white: false, inner: [0.74, 0.26], legs: [[2, 0], [1, -1]] },
+				{ at: [1, 1], white: true, inner: [0.74, 0.74], legs: [[2, 1], [1, 2]] },
+				{ at: [0, 1], white: false, inner: [0.26, 0.74], legs: [[-1, 1], [0, 2]] }
+			];
+			const CAPS = [
+				"a quadrilateral face — \\(N_f=2N_c\\)",
+				"four new nodes, of the opposite colour",
+				"the square slides onto them",
+				"the leftover corner edges are the mesons",
+				"the dual face — a quadrilateral again"
+			];
+			let raf = null, t0 = 0, capNow = -1, last = 0;
+
+			function dot(g, p, white, r) {
+				g.appendChild(mk("circle", {
+					cx: p[0], cy: p[1], r: r || 8,
+					fill: white ? "#ffffff" : "#0f172a", stroke: "#0f172a", "stroke-width": 2
+				}));
+			}
+
+			function render(now) {
+				const gF = document.getElementById("sp-face");
+				const gE = document.getElementById("sp-edges");
+				const gV = document.getElementById("sp-verts");
+				const gG = document.getElementById("sp-tag");
+				if (!gE) { raf = null; return; }
+				if (now - last < 32) { raf = requestAnimationFrame(render); return; }
+				last = now;
+				[gF, gE, gV, gG].forEach(g => g.innerHTML = "");
+
+				const e = (now - t0) % 9000;
+				let step, u = 1;
+				if (e < 1700) step = 0;
+				else if (e < 2600) { step = 1; u = (e - 1700) / 900; }
+				else if (e < 3400) step = 1;
+				else if (e < 4400) { step = 2; u = (e - 3400) / 1000; }
+				else if (e < 5100) step = 2;
+				else if (e < 6000) { step = 3; u = (e - 5100) / 900; }
+				else step = 4;
+				const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+
+				if (step !== capNow) {
+					capNow = step;
+					const cap = document.getElementById("sp-cap");
+					if (cap) {
+						cap.innerHTML = CAPS[step];
+						if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([cap]).catch(() => { });
+					}
+				}
+
+				// where each square-edge endpoint currently sits
+				const k = step < 2 ? 0 : (step === 2 ? ease(u) : 1);
+				const endOf = c => {
+					const a = P(c.at[0], c.at[1]), b = P(c.inner[0], c.inner[1]);
+					return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+				};
+
+				// the face
+				const poly = CORNERS.map(endOf);
+				gF.appendChild(mk("polygon", {
+					points: poly.map(p => p.join(",")).join(" "),
+					fill: step === 0 ? "rgba(244,63,94,0.13)" : "rgba(99,102,241,0.12)",
+					stroke: "none"
+				}));
+
+				// legs
+				CORNERS.forEach(c => {
+					const a = P(c.at[0], c.at[1]);
+					c.legs.forEach(l => {
+						const b = P(l[0], l[1]);
+						gE.appendChild(mk("line", {
+							x1: a[0], y1: a[1], x2: b[0], y2: b[1],
+							stroke: "#334155", "stroke-width": 2.1, "stroke-linecap": "round"
+						}));
+						dot(gV, b, (l[0] + l[1]) % 2 === 0, 7);
+					});
+				});
+
+				// the four edges of the square
+				for (let i = 0; i < 4; i++) {
+					const a = endOf(CORNERS[i]), b = endOf(CORNERS[(i + 1) % 4]);
+					gE.appendChild(mk("line", {
+						x1: a[0], y1: a[1], x2: b[0], y2: b[1],
+						stroke: "#334155", "stroke-width": 2.6, "stroke-linecap": "round"
+					}));
+				}
+
+				// the mesons
+				if (step >= 3) {
+					const m = step === 3 ? ease(u) : 1;
+					CORNERS.forEach(c => {
+						const a = P(c.at[0], c.at[1]), b = P(c.inner[0], c.inner[1]);
+						gE.appendChild(mk("line", {
+							x1: a[0], y1: a[1],
+							x2: a[0] + (b[0] - a[0]) * m, y2: a[1] + (b[1] - a[1]) * m,
+							stroke: "#14b8a6", "stroke-width": 3.2, "stroke-linecap": "round"
+						}));
+					});
+				}
+
+				// vertices: old corners, then the new interior nodes
+				CORNERS.forEach(c => dot(gV, P(c.at[0], c.at[1]), c.white, 8));
+				if (step >= 1) {
+					const a = step === 1 ? ease(u) : 1;
+					CORNERS.forEach(c => {
+						const p = P(c.inner[0], c.inner[1]);
+						const g = mk("g", { opacity: a });
+						gV.appendChild(g);
+						g.appendChild(mk("circle", {
+							cx: p[0], cy: p[1], r: 8 * (0.5 + 0.5 * a),
+							fill: c.white ? "#0f172a" : "#ffffff", stroke: "#0f172a", "stroke-width": 2
+						}));
+					});
+				}
+
+				if (step === 0) {
+					const t = mk("text", {
+						x: (P(0, 0)[0] + P(1, 1)[0]) / 2, y: (P(0, 0)[1] + P(1, 1)[1]) / 2 + 5,
+						"text-anchor": "middle", class: "glab", fill: "#e11d48", "font-size": 16
+					});
+					t.textContent = "N_f = 2N_c";
+					gG.appendChild(t);
+				}
+				if (step === 4) {
+					const t = mk("text", { x: 230, y: 440, "text-anchor": "middle", class: "glab", "font-size": 15 });
+					t.textContent = "+4 nodes,  +4 edges  —  the face is still a square";
+					gG.appendChild(t);
+				}
+				raf = requestAnimationFrame(render);
+			}
+
+			window.__spider = {
+				run() {
+					if (raf) cancelAnimationFrame(raf);
+					t0 = performance.now();
+					capNow = -1;
+					raf = requestAnimationFrame(render);
+				},
+				stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+			};
+		})();
+
+		/* =====================================================================
+		   Growing quiver — F_0 phase I is built one node (and one pair of
+		   bifundamentals) at a time, with the representation table growing in
+		   step.  Restarts every time the slide is entered.
+		   ===================================================================== */
+		(function () {
+			const NODES = { 1: [170, 105], 2: [490, 105], 3: [490, 315], 4: [170, 315] };
+			const ARROWS = [
+				{ from: 1, to: 2, name: "A", row: 1 },
+				{ from: 2, to: 3, name: "B", row: 2 },
+				{ from: 3, to: 4, name: "C", row: 3 },
+				{ from: 4, to: 1, name: "D", row: 4 }
+			];
+			const NS = "http://www.w3.org/2000/svg";
+			const el = (tag, a) => {
+				const e = document.createElementNS(NS, tag);
+				for (const k in a) e.setAttribute(k, a[k]);
+				return e;
+			};
+			let timer = null;
+
+			function render(step) {
+				const gE = document.getElementById("grow-edges");
+				const gN = document.getElementById("grow-nodes");
+				if (!gE || !gN) return;
+				gE.innerHTML = "";
+				gN.innerHTML = "";
+
+				const nNodes = Math.min(4, step + 1);
+				const nArrows = Math.max(0, Math.min(4, step));
+
+				for (let k = 0; k < nArrows; k++) {
+					const a = ARROWS[k];
+					const p = NODES[a.from], q = NODES[a.to];
+					const dx = q[0] - p[0], dy = q[1] - p[1];
+					const len = Math.hypot(dx, dy);
+					const ux = dx / len, uy = dy / len;
+					const nx = -uy, ny = ux;
+					const r = 27;
+					for (const off of [-11, 11]) {
+						const x1 = p[0] + ux * r + nx * off, y1 = p[1] + uy * r + ny * off;
+						const x2 = q[0] - ux * r + nx * off, y2 = q[1] - uy * r + ny * off;
+						gE.appendChild(el("line", {
+							x1: x1, y1: y1, x2: x2, y2: y2, stroke: "#6366f1",
+							"stroke-width": 2.4, "marker-end": "url(#ah-g)", opacity: 0.9
+						}));
+					}
+					const lx = (p[0] + q[0]) / 2 + nx * 34, ly = (p[1] + q[1]) / 2 + ny * 34;
+					const t = el("text", { x: lx, y: ly, class: "glab", "text-anchor": "middle" });
+					t.textContent = a.name + "₁, " + a.name + "₂";
+					gE.appendChild(t);
+				}
+
+				for (let i = 1; i <= nNodes; i++) {
+					const p = NODES[i];
+					gN.appendChild(el("circle", {
+						cx: p[0], cy: p[1], r: 27, fill: "#eef2ff",
+						stroke: "#6366f1", "stroke-width": 2.6
+					}));
+					const t = el("text", {
+						x: p[0], y: p[1], class: "nlabel", "text-anchor": "middle",
+						"dominant-baseline": "central"
+					});
+					t.textContent = String(i);
+					gN.appendChild(t);
+				}
+
+				document.querySelectorAll("#grow-table tr[data-row]").forEach(tr => {
+					tr.classList.toggle("gone", Number(tr.dataset.row) > nArrows);
+				});
+				const w = document.getElementById("grow-w");
+				if (w) w.style.opacity = step >= 5 ? "1" : "0";
+			}
+
+			function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+			function run() {
+				stop();
+				let step = 0;
+				render(step);
+				timer = setInterval(() => {
+					step++;
+					if (step > 5) { stop(); return; }
+					render(step);
+				}, 900);
+			}
+
+			window.__growQuiver = { run: run, stop: stop, render: render };
+		})();
+
+		/* =====================================================================
+		   Seiberg duality graph — the 42 toric phases of PdP_5c are added one
+		   at a time, and the brane tiling on the right advances in step.
+		   Same construction as the AI-for-Maths deck.
+		   ===================================================================== */
+		(function () {
+			const T = window.H1112;
+			const STEP_MS = 260;
+			if (!T) { window.__seiberg = { run() { }, leave() { } }; return; }
+
+			const N_PHASES = T.seiberg.nodes.length;
+			const LINK_DEFS = T.seiberg.links
+				.filter(l => l.source !== l.target)
+				.map(l => [l.source, l.target]);
+
+			function createStage(holderId, render) {
+				let graph = null, timer = null, cur = 0;
+				let nodes = [], liveNodes = [], liveLinks = [], seen = new Set();
+
+				function build() {
+					const el = document.getElementById(holderId);
+					if (!el || typeof ForceGraph3D === "undefined") return null;
+					return ForceGraph3D()(el)
+						.width(el.clientWidth || 720)
+						.height(el.clientHeight || 380)
+						.backgroundColor("rgba(0,0,0,0)")
+						.showNavInfo(false)
+						.nodeLabel(n => `phase ${n.id + 1}`)
+						.nodeRelSize(5)
+						.nodeVal(n => (n.id === cur ? 5 : 1.6))
+						.nodeOpacity(0.95)
+						.nodeColor(n => n.id === cur ? "#f59e0b" : (n.id === 0 ? "#0f766e" : "#6366f1"))
+						.linkColor(() => "#94a3b8")
+						.linkOpacity(0.55)
+						.linkWidth(0.7)
+						.onNodeClick(n => showPhase(n.id))
+						.graphData({ nodes: [], links: [] });
+				}
+
+				// grow the live arrays in place, so the library only ADDS the
+				// new node and its links instead of rebuilding every mesh
+				function pushGraph(i) {
+					liveNodes.push(nodes[i]);
+					seen.add(i);
+					for (const [s, t] of LINK_DEFS)
+						if ((s === i && seen.has(t)) || (t === i && seen.has(s)))
+							liveLinks.push({ source: s, target: t });
+					graph.graphData({ nodes: liveNodes, links: liveLinks });
+				}
+
+				function fitCamera(ms) {
+					let r = 60;
+					for (const n of graph.graphData().nodes)
+						r = Math.max(r, Math.hypot(n.x || 0, n.y || 0, n.z || 0));
+					const d = Math.max(175, (r + 25) * 1.45);
+					graph.cameraPosition({ x: d * 0.22, y: d * 0.12, z: d * 0.96 },
+						{ x: 0, y: 0, z: 0 }, ms);
+				}
+
+				function showPhase(i) {
+					cur = i;
+					render(i);
+					graph.nodeColor(graph.nodeColor()).nodeVal(graph.nodeVal());
+				}
+
+				function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+				// leaving the slide: park the WebGL render loop too, so it does
+				// not keep repainting a hidden canvas for the rest of the talk
+				function leave() {
+					stop();
+					if (graph) graph.pauseAnimation();
+				}
+
+				function run() {
+					stop();
+					if (!graph) graph = build();
+					if (!graph) return;
+					graph.resumeAnimation();
+					const el = document.getElementById(holderId);
+					graph.width(el.clientWidth || 720).height(el.clientHeight || 380);
+
+					cur = 0;
+					nodes = [];
+					for (let k = 0; k < N_PHASES; k++) nodes.push({ id: k });
+					liveNodes = [];
+					liveLinks = [];
+					seen = new Set();
+
+					pushGraph(0);
+					showPhase(0);
+					fitCamera(0);
+
+					let i = 0;
+					timer = setInterval(() => {
+						i++;
+						if (i >= N_PHASES) { stop(); fitCamera(800); return; }
+						cur = i;
+						pushGraph(i);      // one new phase per tick …
+						showPhase(i);      // … and its brane tiling, in step
+						fitCamera(STEP_MS);
+					}, STEP_MS);
+				}
+
+				return { run, leave };
+			}
+
+			window.__seiberg = createStage("seibergGraph", i => {
+				drawTiling(document.getElementById("tilingCanvas"), T.phases[i].tiling);
+				document.getElementById("phaseLabel").textContent =
+					`phase ${i + 1} / ${T.n_phases}`;
+			});
+		})();
+
+		/* =====================================================================
+		   The quiver-invariant duality, animated.
+
+		   Phase 2a of PdP_5c, Seiberg-dualized on node 9.  Rains's identity
+		   produces four mesons and reverses the four arrows at node 9 with
+		   R-charges U - r and T - r; two of the mesons pair up with existing
+		   arrows whose R-charges add to 2 and cancel through
+		   Gamma(z)Gamma(pq/z) = 1.  Reversing every arrow (the tiling with its
+		   two vertex colours exchanged) and relabelling the nodes by the
+		   involution (13)(24)(58)(67) then reproduces phase 2b exactly — on
+		   the very same quiver.  Driven by reveal's fragments, so the arrow
+		   keys step through it.
+		   ===================================================================== */
+		(function () {
+			const POS = {
+				1: [334, 75], 2: [140, 154], 3: [381, 245], 4: [659, 96], 5: [556, 266],
+				6: [648, 525], 7: [140, 524], 8: [238, 348], 9: [484, 427]
+			};
+			const PHI = { 1: 3, 2: 4, 3: 1, 4: 2, 5: 8, 6: 7, 7: 6, 8: 5, 9: 9 };
+			const SUB = ["", "₁", "₂", "₃", "₄", "₅", "₆"];
+			const R = n => "R" + SUB[n];
+
+			// phase 2a — nineteen chiral fields, R-charges in terms of the six
+			// extremal GLSM fields
+			const E2A = [
+				[1, 5, [3, 6]], [1, 8, [2]], [2, 1, [1]], [2, 8, [5, 6]], [3, 2, [2, 4]],
+				[3, 4, [6]], [4, 1, [4, 5]], [4, 6, [3]], [5, 3, [5]], [5, 4, [1, 2]],
+				[5, 9, [3, 6]], [6, 5, [1, 2, 4]], [6, 7, [6]], [7, 2, [3]], [7, 5, [4, 5]],
+				[8, 3, [1, 3]], [8, 9, [4]], [9, 6, [5]], [9, 7, [1, 2]]
+			];
+			// phase 2b, on the same quiver
+			const E2B = [
+				[1, 5, [1, 3]], [1, 8, [5]], [2, 1, [6]], [2, 8, [1, 2]], [3, 2, [4, 5]],
+				[3, 4, [1]], [4, 1, [2, 4]], [4, 6, [3]], [5, 3, [2]], [5, 4, [5, 6]],
+				[5, 9, [3, 6]], [6, 5, [1, 2, 4]], [6, 7, [6]], [7, 2, [3]], [7, 5, [4, 5]],
+				[8, 3, [3, 6]], [8, 9, [4]], [9, 6, [5]], [9, 7, [1, 2]]
+			];
+			const SWAPPED = ["15", "83", "18", "53", "21", "34", "28", "54", "32", "41"];
+
+			const AT9 = ["59", "89", "96", "97"];
+			// Rains: T = sum over arrows out of 9, U = sum over arrows into 9
+			const REV9 = [[9, 5, [4]], [9, 8, [3, 6]], [6, 9, [1, 2]], [7, 9, [5]]];
+			const MESONS = [
+				[5, 6, [3, 5, 6]], [5, 7, [1, 2, 3, 6]], [8, 6, [4, 5]], [8, 7, [1, 2, 4]]
+			];
+			const DEAD = ["56", "65", "57", "75"];   // the two massive pairs
+
+			const key = e => "" + e[0] + e[1];
+			const lab = parts => parts.map(R).join("+");
+
+			function edgesStep(s) {
+				if (s <= 1) return E2A.map(e => ({ s: e[0], t: e[1], r: e[2], cls: cls1(e, s) }));
+				// after the duality: drop the four arrows at node 9, add their
+				// reversals and the four mesons
+				let list = E2A.filter(e => AT9.indexOf(key(e)) < 0)
+					.map(e => ({ s: e[0], t: e[1], r: e[2], cls: "norm" }))
+					.concat(REV9.map(e => ({ s: e[0], t: e[1], r: e[2], cls: "hot" })))
+					.concat(MESONS.map(e => ({ s: e[0], t: e[1], r: e[2], cls: "meson" })));
+				if (s === 2) return list;
+				if (s === 3) return list.map(e => DEAD.indexOf(key([e.s, e.t])) >= 0
+					? Object.assign({}, e, { cls: "dead" }) : e);
+				list = list.filter(e => DEAD.indexOf(key([e.s, e.t])) < 0);
+				if (s === 4) return list.map(e => ({ s: e.t, t: e.s, r: e.r, cls: "norm" }));
+				// s >= 5: same edges, nodes relabelled by the involution
+				return list.map(e => ({
+					s: e.t, t: e.s, r: e.r,
+					cls: SWAPPED.indexOf("" + PHI[e.t] + PHI[e.s]) >= 0 ? "swap" : "norm"
+				}));
+			}
+
+			function cls1(e, s) {
+				if (s !== 1) return "norm";
+				return AT9.indexOf(key(e)) >= 0 ? "hot" : "dim";
+			}
+
+			const NS = "http://www.w3.org/2000/svg";
+			const mk = (tag, a) => {
+				const el = document.createElementNS(NS, tag);
+				for (const k in a) el.setAttribute(k, a[k]);
+				return el;
+			};
+
+			const STROKE = {
+				norm: "#94a3b8", dim: "#dbe1e9", hot: "#f59e0b",
+				meson: "#14b8a6", dead: "#e11d48", swap: "#7c3aed"
+			};
+			const MARKER = {
+				norm: "url(#mk-norm)", dim: "url(#mk-dim)", hot: "url(#mk-hot)",
+				meson: "url(#mk-meson)", dead: "url(#mk-dead)", swap: "url(#mk-swap)"
+			};
+
+			// current drawing state (interpolated between steps)
+			let curPos = {}, curLabel = {};
+			for (const k in POS) { curPos[k] = POS[k].slice(); curLabel[k] = k; }
+			let curStep = 0, anim = null;
+
+			const NR = 22, BOW = 26, LOFF = 11;
+
+			// point on the quadratic through (x1,y1)-(cx,cy)-(x2,y2), pushed a
+			// little further out along the edge normal so the plate clears the arc
+			function onCurve(g, t, off) {
+				const m = 1 - t;
+				return [m * m * g.x1 + 2 * m * t * g.cx + t * t * g.x2 + g.nx * off,
+				m * m * g.y1 + 2 * m * t * g.cy + t * t * g.y2 + g.ny * off];
+			}
+
+			// nineteen-plus R-charge plates on a nine-node quiver collide badly at
+			// the midpoints; slide each one along its own arc until the boxes come
+			// apart (and off the node discs)
+			function placeLabels(geo, nodePts) {
+				const box = geo.map(g => ({ t: 0.5, w: g.text.length * 7.4 + 10, h: 17 }));
+				for (let it = 0; it < 70; it++) {
+					let moved = false;
+					const pts = geo.map((g, i) => onCurve(g, box[i].t, LOFF));
+					for (let a = 0; a < geo.length; a++) {
+						for (let b = a + 1; b < geo.length; b++) {
+							const ox = (box[a].w + box[b].w) / 2 - Math.abs(pts[a][0] - pts[b][0]);
+							const oy = (box[a].h + box[b].h) / 2 - Math.abs(pts[a][1] - pts[b][1]);
+							if (ox <= 0 || oy <= 0) continue;
+							moved = true;
+							for (const [i, j] of [[a, b], [b, a]]) {
+								const d = (pts[i][0] - pts[j][0]) * (geo[i].x2 - geo[i].x1) +
+									(pts[i][1] - pts[j][1]) * (geo[i].y2 - geo[i].y1);
+								box[i].t = Math.max(0.18, Math.min(0.82, box[i].t + (d >= 0 ? 0.03 : -0.03)));
+							}
+						}
+						for (const n of nodePts) {
+							const p = onCurve(geo[a], box[a].t, LOFF);
+							if (Math.abs(p[0] - n[0]) < box[a].w / 2 + NR - 6 &&
+								Math.abs(p[1] - n[1]) < box[a].h / 2 + NR - 6) {
+								moved = true;
+								box[a].t = Math.max(0.18, Math.min(0.82, box[a].t +
+									(box[a].t < 0.5 ? 0.03 : -0.03)));
+							}
+						}
+					}
+					if (!moved) break;
+				}
+				return box.map((b, i) => ({ p: onCurve(geo[i], b.t, LOFF), w: b.w }));
+			}
+
+			function paint(pos, labels, edges, relax) {
+				const gE = document.getElementById("qv-edges");
+				const gL = document.getElementById("qv-elabels");
+				const gN = document.getElementById("qv-nodes");
+				if (!gE) return;
+				gE.innerHTML = ""; gL.innerHTML = ""; gN.innerHTML = "";
+
+				const geo = [];
+				edges.forEach(e => {
+					const p = pos[e.s], q = pos[e.t];
+					if (!p || !q) return;
+					const dx = q[0] - p[0], dy = q[1] - p[1];
+					const len = Math.hypot(dx, dy) || 1;
+					const ux = dx / len, uy = dy / len;
+					const nx = -uy, ny = ux;              // bow always to the left of travel,
+					const g = {                            // so i->j and j->i separate cleanly
+						e: e, nx: nx, ny: ny,
+						x1: p[0] + ux * NR, y1: p[1] + uy * NR,
+						x2: q[0] - ux * NR, y2: q[1] - uy * NR,
+						cx: (p[0] + q[0]) / 2 + nx * BOW * 2,
+						cy: (p[1] + q[1]) / 2 + ny * BOW * 2,
+						text: lab(e.r)
+					};
+					geo.push(g);
+					gE.appendChild(mk("path", {
+						d: `M${g.x1},${g.y1} Q${g.cx},${g.cy} ${g.x2},${g.y2}`,
+						fill: "none",
+						stroke: STROKE[e.cls] || STROKE.norm,
+						"stroke-width": (e.cls === "norm" || e.cls === "dim") ? 2 : 3,
+						"marker-end": MARKER[e.cls] || MARKER.norm,
+						"stroke-dasharray": e.cls === "meson" ? "7 4" : "none"
+					}));
+				});
+
+				const shown = geo.filter(g => g.e.cls !== "dim");
+				const nodePts = Object.keys(pos).map(k => pos[k]);
+				const spots = relax
+					? placeLabels(shown, nodePts)
+					: shown.map(g => ({ p: onCurve(g, 0.5, LOFF), w: g.text.length * 7.4 + 10 }));
+
+				shown.forEach((g, i) => {
+					const [lx, ly] = spots[i].p;
+					gL.appendChild(mk("rect", {
+						x: lx - spots[i].w / 2, y: ly - 9, width: spots[i].w, height: 18, rx: 5,
+						fill: "#ffffff", opacity: 0.85
+					}));
+					const t = mk("text", {
+						x: lx, y: ly, "text-anchor": "middle", "dominant-baseline": "central",
+						class: "elabel " + (g.e.cls === "norm" ? "" : g.e.cls)
+					});
+					t.textContent = g.text;
+					gL.appendChild(t);
+				});
+
+				for (const id in pos) {
+					const p = pos[id];
+					const hot = (curStep === 1 || curStep === 2) && String(labels[id]) === "9";
+					gN.appendChild(mk("circle", {
+						cx: p[0], cy: p[1], r: NR,
+						fill: hot ? "#fffbeb" : "#eef2ff",
+						stroke: hot ? "#f59e0b" : "#6366f1",
+						"stroke-width": hot ? 3.4 : 2.6
+					}));
+					const t = mk("text", {
+						x: p[0], y: p[1], "text-anchor": "middle", "dominant-baseline": "central",
+						class: "nlabel", fill: hot ? "#b45309" : "#4f46e5"
+					});
+					t.textContent = String(labels[id]);
+					gN.appendChild(t);
+				}
+			}
+
+			const CAPTION = [
+				{
+					title: "Phase 2a",
+					body: "Nine \\(SU(N)\\) nodes, nineteen bifundamentals. Each arrow carries an R-charge, written in the six extremal GLSM charges \\(R_1,\\dots,R_6\\) with \\(\\sum_a R_a = 2\\).",
+					eq: ""
+				},
+				{
+					title: "Dualize node 9",
+					body: "Node 9 is a quadrilateral face: two arrows in, \\(X_{59}, X_{89}\\), two out, \\(X_{96}, X_{97}\\). Only the part of the index attached to node 9 is touched.",
+					eq: "\\[ T=r_{96}+r_{97}=R_1{+}R_2{+}R_5,\\quad U=r_{59}+r_{89}=R_3{+}R_4{+}R_6 \\]"
+				},
+				{
+					title: "Rains's identity",
+					body: "The prefactor creates one meson per path through node 9, with the two R-charges <em>added</em>; the swapped arguments reverse the four arrows, with \\(U-r\\) and \\(T-r\\).",
+					eq: "\\[ r_{56}=R_3{+}R_5{+}R_6,\\ \\ r_{57}=R_1{+}R_2{+}R_3{+}R_6 \\]"
+				},
+				{
+					title: "Massive fields cancel",
+					body: "\\(X_{56}\\) meets \\(X_{65}\\) with \\(r+r'=2\\), and likewise \\(X_{57}\\) with \\(X_{75}\\). The inversion formula collapses each pair — exactly the mass terms being integrated out.",
+					eq: "\\[ \\Gamma(z;p,q)\\,\\Gamma(pq/z;p,q)=1 \\]"
+				},
+				{
+					title: "Exchange black and white",
+					body: "The dual tiling is phase 2b with its two vertex colours exchanged: reverse every arrow. The remaining new fields \\(X_{86}, X_{87}\\) carry exactly the R-charges of the two that were integrated out.",
+					eq: ""
+				},
+				{
+					title: "Phase 2b — the same quiver",
+					body: "Relabelling by the involution \\((13)(24)(58)(67)\\) lands on the <strong>identical</strong> quiver. Ten R-charges have been exchanged in pairs, nine are untouched, and the set of R-charges is unchanged.",
+					eq: "\\[ r_{15}\\!\\leftrightarrow\\! r_{83},\\ r_{18}\\!\\leftrightarrow\\! r_{53},\\ r_{21}\\!\\leftrightarrow\\! r_{34},\\ r_{28}\\!\\leftrightarrow\\! r_{54},\\ r_{32}\\!\\leftrightarrow\\! r_{41} \\]"
+				}
+			];
+
+			function setCaption(s) {
+				const c = CAPTION[Math.max(0, Math.min(5, s))];
+				const t = document.getElementById("qv-title");
+				const b = document.getElementById("qv-body");
+				const q = document.getElementById("qv-eq");
+				if (!t) return;
+				t.innerHTML = '<span class="num">' + s + "</span>" + c.title;
+				b.innerHTML = c.body;
+				q.innerHTML = c.eq;
+				if (window.MathJax && MathJax.typesetPromise)
+					MathJax.typesetPromise([b, q]).catch(() => { });
+			}
+
+			function targetOf(s) {
+				const pos = {}, labels = {};
+				for (const id in POS) {
+					const home = s >= 5 ? PHI[id] : Number(id);
+					pos[id] = POS[home].slice();
+					labels[id] = home;
+				}
+				return { pos, labels, edges: edgesStep(s) };
+			}
+
+			function render(s, animate) {
+				s = Math.max(0, Math.min(5, s));
+				if (anim) { cancelAnimationFrame(anim); anim = null; }
+				const from = { pos: JSON.parse(JSON.stringify(curPos)), labels: Object.assign({}, curLabel) };
+				const to = targetOf(s);
+				curStep = s;
+				setCaption(s);
+				const moves = Object.keys(POS).some(id =>
+					Math.abs(from.pos[id][0] - to.pos[id][0]) > 0.5 ||
+					Math.abs(from.pos[id][1] - to.pos[id][1]) > 0.5);
+				if (!animate || !moves) {
+					curPos = to.pos; curLabel = to.labels;
+					paint(curPos, curLabel, to.edges, true);
+					return;
+				}
+				const t0 = performance.now(), DUR = 900;
+				const tick = now => {
+					const u = Math.min(1, (now - t0) / DUR);
+					const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;  // ease-in-out
+					const pos = {};
+					for (const id in POS)
+						pos[id] = [from.pos[id][0] + (to.pos[id][0] - from.pos[id][0]) * e,
+						from.pos[id][1] + (to.pos[id][1] - from.pos[id][1]) * e];
+					const labels = u < 0.55 ? from.labels : to.labels;
+					paint(pos, labels, to.edges, u >= 1);   // relax only once it has settled
+					if (u < 1) { anim = requestAnimationFrame(tick); }
+					else { anim = null; curPos = to.pos; curLabel = to.labels; }
+				};
+				anim = requestAnimationFrame(tick);
+			}
+
+			window.__qv = {
+				reset() {
+					if (anim) { cancelAnimationFrame(anim); anim = null; }
+					curPos = {}; curLabel = {};
+					for (const k in POS) { curPos[k] = POS[k].slice(); curLabel[k] = Number(k); }
+					render(0, false);
+				},
+				show(s) { render(s, true); }
+			};
+		})();
+
+		/* =====================================================================
+		   Per-slide wiring: start the animations on entry, park them on exit.
+		   ===================================================================== */
+		(function () {
+			function witten(shown) {
+				const track = document.getElementById("witten-track");
+				const naive = document.getElementById("wi-naive");
+				if (!track) return;
+				track.classList.toggle("shift", !!shown);
+				if (naive) naive.classList.toggle("faded", !!shown);
+				if (shown) window.__spectrum.run(); else window.__spectrum.stop();
+			}
+
+			function sync(slide) {
+				const id = slide && slide.id;
+				fitEquations(slide);
+				const f = Reveal.getIndices().f;
+
+				if (id === "ch2-quiver-a") window.__growQuiver.run();
+				else window.__growQuiver.stop();
+
+				if (id === "ch1-witten") witten(f != null && f >= 0);
+				else witten(false);
+
+				if (id === "ch2-tiling") window.__f0.run(); else window.__f0.stop();
+				if (id === "ch3-spider") window.__spider.run(); else window.__spider.stop();
+				if (id === "ch3-model") modelStage.run(); else modelStage.stop();
+				if (id === "ch4-tilting") tiltStage.run(); else tiltStage.stop();
+
+				if (id === "ch3-seiberg-quiver") window.__seiberg.run();
+				else window.__seiberg.leave();
+
+				if (id === "ch4-anim") {
+					if (f == null || f < 0) window.__qv.reset();
+					else window.__qv.show(f + 1);
+				}
+			}
+
+			Reveal.on("ready", ev => sync(ev.currentSlide));
+			Reveal.on("slidechanged", ev => sync(ev.currentSlide));
+			// typesetting finishes after `ready`, so re-fit the opening slide
+			if (window.MathJax && MathJax.startup && MathJax.startup.promise)
+				MathJax.startup.promise.then(() => setTimeout(() => fitEquations(Reveal.getCurrentSlide()), 150));
+
+			function onFragment() {
+				const id = Reveal.getCurrentSlide().id;
+				const f = Reveal.getIndices().f;
+				if (id === "ch4-anim") window.__qv.show((f == null || f < 0) ? 0 : f + 1);
+				else if (id === "ch1-witten") witten(f != null && f >= 0);
+			}
+			Reveal.on("fragmentshown", onFragment);
+			Reveal.on("fragmenthidden", onFragment);
+		})();
+	</script>
+</body>
+
+</html>
