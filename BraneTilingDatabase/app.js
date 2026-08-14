@@ -1,5 +1,5 @@
 /* ============================================================================
- * DimerDatabase webapp
+ * BraneTilingDatabase webapp
  * - name search with typeahead (keyboard + mouse)
  * - property search (config-driven criteria)
  * - toric-diagram drawing search (canonical polygon matching, identical

@@ -1285,8 +1285,8 @@ function recognizeToric(toric) {
     return out.join(" = ");
 }
 
-/* ================== DIMERDATABASE MATCH ================== */
-// If window.DIMER_DB_INDEX is present (DimerDatabase/db/index.js), match the
+/* ================== BraneTilingDatabase MATCH ================== */
+// If window.DIMER_DB_INDEX is present (BraneTilingDatabase/db/index.js), match the
 // current toric diagram against it by canonical polygon key — the same
 // SL(2,Z)+reflection+translation-invariant key the database is indexed by, so
 // the display frame is irrelevant.  A hit reveals the "Open in Database" float.
@@ -1305,7 +1305,7 @@ function buildDbKeyLookup() {
     return map;
 }
 
-// TeX for a database display name (ported from DimerDatabase/app.js nameToTeX
+// TeX for a database display name (ported from BraneTilingDatabase/app.js nameToTeX
 // so the float renders names exactly as the database does).
 function dbNameToTeX(name) {
     let t = name;
@@ -1364,7 +1364,7 @@ function updateDbLink(toric) {
 
 document.getElementById("dbLinkBtn").addEventListener("click", () => {
     if (dbMatchId) window.open(
-        "DimerDatabase/index.html#/theory/" + encodeURIComponent(dbMatchId), "_blank");
+        "/BraneTilingDatabase/index.html#/theory/" + encodeURIComponent(dbMatchId), "_blank");
 });
 
 /* ================== PANEL TITLE (MathJax) ================== */
