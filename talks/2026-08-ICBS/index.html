@@ -1,0 +1,4185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<title>Suzzoni — ICBS 2026</title>
+
+	<link rel="stylesheet" href="../dist/reset.css" />
+	<link rel="stylesheet" href="../dist/reveal.css" />
+	<link rel="stylesheet" href="../dist/theme/white.css" />
+	<link rel="stylesheet" href="../dist/plugin/highlight/monokai.css" />
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=STIX+Two+Math&amp;display=swap"
+		rel="stylesheet">
+
+	<script>
+		window.MathJax = {
+			tex: {
+				inlineMath: [["\\(", "\\)"]],
+				displayMath: [["\\[", "\\]"]]
+			}
+		};
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+	<style>
+		:root {
+			--ink: #0f172a;
+			--muted: #64748b;
+			--line: #e2e8f0;
+			--ambient: #6366f1;
+			--ml: #f59e0b;
+			--defect: #14b8a6;
+			--accent: #4f46e5;
+			--rose: #e11d48;
+			--violet: #8b5cf6;
+			--pale-indigo: #eef2ff;
+			--pale-teal: #f0fdfa;
+			--pale-amber: #fffbeb;
+			--pale-rose: #fff1f2;
+		}
+
+		html,
+		body {
+			background: #ffffff;
+		}
+
+		.reveal-viewport {
+			background:
+				radial-gradient(900px 620px at 88% -12%, rgba(99, 102, 241, 0.10), transparent 62%),
+				radial-gradient(760px 560px at -8% 108%, rgba(20, 184, 166, 0.10), transparent 60%),
+				#ffffff;
+		}
+
+		.reveal {
+			position: relative;
+			z-index: 1;
+			font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+			font-size: 30px;
+			font-weight: 400;
+			color: var(--ink);
+			letter-spacing: -0.005em;
+		}
+
+		.reveal section {
+			text-align: left;
+		}
+
+		.reveal :is(h1, h2, h3, h4) {
+			font-family: Inter, "Segoe UI", system-ui, sans-serif;
+			text-transform: none;
+			color: var(--ink);
+			font-weight: 600;
+			letter-spacing: -0.025em;
+			text-shadow: none;
+			margin: 0 0 0.35em;
+			line-height: 1.15;
+		}
+
+		.reveal h1 { font-size: 1.95em; }
+		.reveal h2 { font-size: 1.28em; }
+		.reveal h3 { font-size: 1.05em; }
+
+		.reveal :is(p, li, table) {
+			font-size: 0.8em;
+			line-height: 1.45;
+		}
+
+		.reveal p { margin: 0.35em 0; }
+		.reveal ul,
+		.reveal ol { margin: 0.35em 0 0.35em 1.15em; }
+		.reveal li { margin: 0.14em 0; }
+		.reveal strong { font-weight: 600; }
+		.reveal a { color: var(--accent); }
+
+		.slide-title {
+			position: relative;
+			padding-bottom: 0.32em;
+			margin-bottom: 0.58em;
+		}
+
+		.slide-title::after {
+			content: "";
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			width: 108px;
+			height: 3px;
+			border-radius: 3px;
+			background: linear-gradient(90deg, var(--ambient), var(--defect));
+		}
+
+		.muted { color: var(--muted); }
+		.ambient { color: var(--ambient); }
+		.defect { color: #0f766e; }
+		.ml { color: #b45309; }
+		.rose { color: var(--rose); }
+
+		.kicker,
+		.reveal p.kicker {
+			font-size: 0.52em;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		.hl {
+			background: linear-gradient(90deg, rgba(99, 102, 241, 0.16), rgba(20, 184, 166, 0.13));
+			border-left: 3px solid var(--accent);
+			border-radius: 0 10px 10px 0;
+			padding: 0.5em 0.85em;
+			display: block;
+		}
+
+		.hl.teal {
+			background: linear-gradient(90deg, rgba(20, 184, 166, 0.16), rgba(99, 102, 241, 0.08));
+			border-left-color: var(--defect);
+		}
+
+		.footer {
+			position: absolute;
+			color: var(--muted);
+			bottom: 0.85em;
+			left: 1.1em;
+			right: 4.2em;
+			font-size: 0.42em;
+			z-index: 20;
+			display: grid;
+			grid-template-columns: 1fr auto 1fr;
+			gap: 18px;
+			font-weight: 400;
+			pointer-events: none;
+		}
+
+		.footer span:nth-child(2) { text-align: center; }
+		.footer span:last-child { text-align: right; pointer-events: auto; }
+
+		.reveal .slide-number {
+			background: transparent;
+			color: var(--muted);
+			font-size: 15px;
+			font-family: Inter, sans-serif;
+			bottom: 12px;
+			right: 18px;
+		}
+
+		.reveal .progress {
+			color: var(--accent);
+			height: 3px;
+		}
+
+		/* ---------------- title and chapter slides ---------------- */
+		#title-slide {
+			text-align: left;
+			isolation: isolate;
+		}
+
+		#title-slide .orbs { z-index: -2; }
+
+		.title-cityscape-layer {
+			position: fixed;
+			left: 50%;
+			bottom: 0;
+			width: calc(100vw + 80px);
+			height: auto;
+			max-width: none;
+			max-height: none;
+			margin: 0;
+			filter: grayscale(1) brightness(1.03);
+			mix-blend-mode: multiply;
+			opacity: 0;
+			transform: translateX(-50%);
+			transition: opacity 0.35s ease;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		body.title-cityscape-visible .title-cityscape-layer { opacity: 0.78; }
+
+		#title-slide > :not(.orbs):not(.notes) {
+			position: relative;
+			z-index: 2;
+		}
+
+		.reveal h1.title-main {
+			font-size: 1.72em;
+			font-weight: 700;
+			letter-spacing: -0.035em;
+			line-height: 1.1;
+			margin: 0;
+			max-width: 18em;
+		}
+
+		.reveal p.title-sub {
+			font-size: 1.02em;
+			font-weight: 500;
+			letter-spacing: -0.02em;
+			margin: 0.34em 0 0;
+			background: linear-gradient(90deg, var(--ambient) 0%, var(--violet) 45%, var(--defect) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		.title-rule {
+			width: 140px;
+			height: 4px;
+			border-radius: 4px;
+			margin: 0.75em 0 0.7em;
+			background: linear-gradient(90deg, var(--ambient), var(--ml), var(--defect));
+		}
+
+		.reveal p.title-meta {
+			font-size: 0.69em;
+			line-height: 1.58;
+		}
+
+		.title-meta .name {
+			font-weight: 600;
+			font-size: 1.15em;
+			color: var(--ink);
+		}
+
+		.orbs {
+			position: absolute;
+			inset: 0;
+			overflow: visible;
+			pointer-events: none;
+			z-index: -1;
+		}
+
+		.orb {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(26px);
+			mix-blend-mode: multiply;
+			opacity: 0.34;
+		}
+
+		.people {
+			display: flex;
+			gap: 9px;
+			flex-wrap: wrap;
+		}
+
+		.reveal .person {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+			padding: 3px 15px 3px 3px;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+			font-size: 0.55em;
+			font-weight: 500;
+			color: var(--ink);
+			text-decoration: none;
+			white-space: nowrap;
+		}
+
+		.person .mono {
+			width: 38px;
+			height: 38px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 600;
+			font-size: 0.85em;
+			color: #fff;
+			border: 1px solid var(--line);
+			flex: 0 0 38px;
+		}
+
+		.credits { margin-top: 0.92em; }
+
+		.credits-label {
+			display: block;
+			font: 500 14px Inter, sans-serif;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 9px;
+		}
+
+		.reveal p.chapter-num {
+			font-size: 0.52em;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 600;
+		}
+
+		.reveal h1.chapter-title {
+			font-size: 1.85em;
+			font-weight: 700;
+			letter-spacing: -0.035em;
+			line-height: 1.1;
+			margin: 0.1em 0 0;
+		}
+
+		.reveal p.chapter-sub {
+			font-size: 1.02em;
+			font-weight: 500;
+			letter-spacing: -0.02em;
+			margin: 0.3em 0 0;
+			background: linear-gradient(90deg, var(--ambient) 0%, var(--violet) 45%, var(--defect) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		/* ---------------- outline and topic wash ---------------- */
+		.toc {
+			display: flex;
+			flex-direction: column;
+			gap: 11px;
+			margin-top: 0.15em;
+		}
+
+		.toc-row {
+			display: flex;
+			align-items: center;
+			gap: 17px;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			padding: 0.36em 0.9em;
+			background: rgba(255, 255, 255, 0.72);
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+		}
+
+		.toc-n {
+			flex: 0 0 42px;
+			height: 42px;
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			font-size: 0.64em;
+			color: #fff;
+		}
+
+		.toc-t { font-size: 0.68em; font-weight: 600; }
+		.toc-d { font-size: 0.54em; color: var(--muted); margin-top: 1px; }
+
+		.topic-wash {
+			position: absolute;
+			inset: 0;
+			z-index: 30;
+			overflow: hidden;
+			pointer-events: none;
+		}
+
+		.wash-disk {
+			position: absolute;
+			left: var(--wash-x, 50%);
+			top: var(--wash-y, 50%);
+			width: 900px;
+			height: 900px;
+			margin: -450px 0 0 -450px;
+			border-radius: 50%;
+			background: var(--wash-colour, #f59e0b);
+			mix-blend-mode: multiply;
+			opacity: 0;
+			transform: scale(0.02);
+		}
+
+		.wash-disk.run {
+			animation: topic-wash 1000ms cubic-bezier(0.5, 0.05, 0.8, 0.5);
+			will-change: transform, opacity;
+		}
+
+		@keyframes topic-wash {
+			0% { transform: scale(0.02); opacity: 0; }
+			15% { opacity: 0.34; }
+			62% { opacity: 0.34; }
+			100% { transform: scale(4.5); opacity: 0; }
+		}
+
+		/* ---------------- reusable layout ---------------- */
+		.cols {
+			display: flex;
+			gap: 28px;
+			align-items: stretch;
+		}
+
+		.cols > div { flex: 1; min-width: 0; }
+
+		.card {
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			padding: 0.68em 0.92em;
+			background: rgba(255, 255, 255, 0.76);
+			min-width: 0;
+		}
+
+		.card > :first-child { margin-top: 0; }
+		.card > :last-child { margin-bottom: 0; }
+
+		.card.ambient-card { border-top: 4px solid var(--ambient); }
+		.card.defect-card { border-top: 4px solid var(--defect); }
+		.card.ml-card { border-top: 4px solid var(--ml); }
+
+		.card-label {
+			font-size: 0.47em;
+			letter-spacing: 0.13em;
+			text-transform: uppercase;
+			color: var(--muted);
+			font-weight: 600;
+			margin-bottom: 0.4em;
+		}
+
+		.frame {
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			background: linear-gradient(180deg, #fbfcff, #f6f8fd);
+			position: relative;
+			overflow: hidden;
+			min-width: 0;
+		}
+
+		.boxcap {
+			font: 500 14px Inter, sans-serif;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			color: var(--muted);
+			position: absolute;
+			top: 12px;
+			left: 16px;
+			z-index: 5;
+		}
+
+		.flowline {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 13px;
+			font-size: 0.71em;
+			color: var(--ink);
+		}
+
+		.flowline .chip {
+			border: 1px solid var(--line);
+			border-radius: 999px;
+			padding: 0.25em 0.8em;
+			background: #fff;
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+			white-space: nowrap;
+		}
+
+		.flowline .arrow {
+			color: var(--accent);
+			font-weight: 600;
+			font-size: 1.1em;
+		}
+
+		.pillrow {
+			display: flex;
+			gap: 9px;
+			flex-wrap: wrap;
+			align-items: center;
+		}
+
+		.pillrow > span {
+			font-size: 0.58em;
+			padding: 0.26em 0.82em;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: #fff;
+			color: var(--muted);
+			font-weight: 500;
+		}
+
+		.reveal .eq { font-size: 0.70em; }
+		.reveal .eq-sm { font-size: 0.61em; }
+		.reveal .eq-xs { font-size: 0.52em; }
+		.reveal .eq-xxs { font-size: 0.44em; }
+		.reveal .cross-ratio-row .eq-xxs,
+		.reveal .invariant-chip .eq-xxs { font-size: 0.8em; }
+
+		.reveal mjx-container[display="true"] {
+			margin: 0.25em 0 !important;
+		}
+
+		.eqbox {
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			background: rgba(255, 255, 255, 0.86);
+			padding: 0.28em 0.65em;
+			min-width: 0;
+		}
+
+		.callout {
+			border-left: 4px solid var(--rose);
+			background: var(--pale-rose);
+			padding: 0.48em 0.76em;
+			border-radius: 0 10px 10px 0;
+			font-size: 0.66em;
+		}
+
+		.step-trigger {
+			position: absolute !important;
+			width: 0 !important;
+			height: 0 !important;
+			overflow: hidden !important;
+			opacity: 0 !important;
+			pointer-events: none !important;
+		}
+
+		/* ---------------- motivation ---------------- */
+		.exchange {
+			display: grid;
+			grid-template-columns: 1fr 105px 1fr;
+			align-items: center;
+			gap: 20px;
+			margin-top: 0.2em;
+		}
+
+		.exchange-side {
+			min-height: 330px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.exchange-arrow {
+			position: relative;
+			height: 130px;
+		}
+
+		.exchange-arrow::before,
+		.exchange-arrow::after {
+			content: "";
+			position: absolute;
+			left: 4px;
+			right: 12px;
+			height: 3px;
+			border-radius: 3px;
+		}
+
+		.exchange-arrow::before {
+			top: 37px;
+			background: linear-gradient(90deg, var(--ml), var(--ambient));
+		}
+
+		.exchange-arrow::after {
+			bottom: 37px;
+			background: linear-gradient(270deg, var(--defect), var(--ambient));
+		}
+
+		.exchange-arrow .head-a,
+		.exchange-arrow .head-b {
+			position: absolute;
+			width: 0;
+			height: 0;
+			border-top: 8px solid transparent;
+			border-bottom: 8px solid transparent;
+		}
+
+		.exchange-arrow .head-a {
+			top: 30px;
+			right: 2px;
+			border-left: 13px solid var(--ambient);
+		}
+
+		.exchange-arrow .head-b {
+			bottom: 30px;
+			left: -7px;
+			border-right: 13px solid var(--ambient);
+		}
+
+		.exchange-arrow .swap-label {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.48em;
+			color: var(--muted);
+			text-align: center;
+		}
+
+		.number-list {
+			list-style: none;
+			margin-left: 0 !important;
+			counter-reset: item;
+		}
+
+		.number-list li {
+			counter-increment: item;
+			position: relative;
+			padding-left: 2.1em;
+			margin: 0.38em 0;
+		}
+
+		.number-list li::before {
+			content: counter(item);
+			position: absolute;
+			left: 0;
+			top: 0.08em;
+			width: 1.52em;
+			height: 1.52em;
+			border-radius: 50%;
+			display: grid;
+			place-items: center;
+			background: var(--pale-indigo);
+			color: var(--ambient);
+			font-size: 0.77em;
+			font-weight: 700;
+		}
+
+		/* ---------------- CFT and dCFT data ---------------- */
+		.data-stage {
+			height: 365px;
+			display: grid;
+			grid-template-columns: 52% 48%;
+			align-items: center;
+		}
+
+		.data-stage svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		.svg-node {
+			fill: #fff;
+			stroke: var(--ambient);
+			stroke-width: 3;
+		}
+
+		.svg-node.defect-node { stroke: var(--defect); }
+		.svg-edge {
+			fill: none;
+			stroke: #cbd5e1;
+			stroke-width: 3;
+			stroke-linecap: round;
+		}
+
+		.svg-edge.hot { stroke: var(--violet); }
+		.svg-label {
+			font: 600 18px Inter, sans-serif;
+			fill: var(--ink);
+			text-anchor: middle;
+		}
+
+		.svg-small {
+			font: 500 14px Inter, sans-serif;
+			fill: var(--muted);
+			text-anchor: middle;
+		}
+
+		.data-copy {
+			padding: 0.2em 0.55em 0.2em 0.1em;
+			min-width: 0;
+		}
+
+		.data-copy .datum {
+			border-left: 3px solid var(--line);
+			padding: 0.28em 0 0.28em 0.72em;
+			margin: 0.4em 0;
+			transition: opacity 0.45s ease, border-color 0.45s ease, transform 0.45s ease;
+		}
+
+		.cft-data-stage {
+			position: relative;
+			height: 600px;
+			box-sizing: border-box;
+			display: grid;
+			grid-template-columns: minmax(0, 41fr) minmax(0, 59fr);
+			grid-template-rows: 220px 234px 64px;
+			gap: 14px 20px;
+			padding: 38px 22px 14px;
+			overflow: hidden;
+		}
+
+		.cft-viz-panel,
+		.cft-copy-panel {
+			position: relative;
+			min-width: 0;
+			border: 1px solid var(--line);
+			border-radius: 13px;
+			background: rgba(255, 255, 255, 0.72);
+			transition: opacity 0.55s ease, transform 0.55s ease, border-color 0.55s ease;
+		}
+
+		.cft-viz-panel svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		.cft-copy-panel {
+			padding: 0.48em 0.72em;
+			box-sizing: border-box;
+			overflow: hidden;
+		}
+
+		.cft-primary-spectrum {
+			display: flex;
+			align-items: center;
+			gap: 0.32em;
+			font-size: 0.69em;
+			font-weight: 600;
+			margin: 0.12em 0 0.2em;
+		}
+
+		.reveal #cft-data-slide p.cft-primary-law {
+			font-size: 0.58em;
+			line-height: 1.28;
+			margin: 0.08em 0 0.18em;
+		}
+
+		.reveal #cft-data-slide p.cft-scalar-note {
+			font-size: 0.45em;
+			line-height: 1.3;
+			margin: 0.18em 0 0;
+			color: var(--muted);
+		}
+
+		.reveal #cft-data-slide .cft-two-equation p { margin: 0.1em 0 0; }
+
+		.cft-token-anchor {
+			display: inline-block;
+			min-width: 1.15em;
+			color: transparent;
+			white-space: nowrap;
+		}
+
+		.cft-data-token {
+			position: absolute;
+			left: 0;
+			top: 0;
+			z-index: 8;
+			font-family: "STIX Two Math", "Times New Roman", serif;
+			font-style: italic;
+			font-size: 24px;
+			font-weight: 600;
+			line-height: 1;
+			color: var(--accent);
+			transform: translate(-50%, -50%);
+			transition: transform 0.82s cubic-bezier(0.22, 1, 0.36, 1),
+				color 0.45s ease, opacity 0.45s ease;
+			pointer-events: none;
+		}
+
+		.cft-data-token sub { font-size: 0.58em; vertical-align: -0.32em; }
+		.cft-data-token[data-token="lambda"] { opacity: 0; }
+		#cft-data-slide.step-2 .cft-data-token[data-token="lambda"],
+		#cft-data-slide.step-3 .cft-data-token[data-token="lambda"] { opacity: 1; }
+
+		.cft-two-link,
+		.cft-two-equation,
+		.cft-three-context,
+		.cft-three-equation,
+		.cft-three-vertex,
+		.cft-three-lambda {
+			opacity: 0;
+			transition: opacity 0.52s ease, transform 0.58s ease;
+		}
+
+		.cft-two-link {
+			fill: none;
+			stroke: var(--ambient);
+			stroke-width: 4;
+			stroke-linecap: round;
+			stroke-dasharray: 9 8;
+			transform-origin: center;
+		}
+
+		.cft-two-equation { transform: translateY(8px); }
+		.cft-three-context { transform: translateY(10px); }
+
+		#cft-data-slide.step-1 .cft-two-link,
+		#cft-data-slide.step-2 .cft-two-link,
+		#cft-data-slide.step-3 .cft-two-link,
+		#cft-data-slide.step-1 .cft-two-equation,
+		#cft-data-slide.step-2 .cft-two-equation,
+		#cft-data-slide.step-3 .cft-two-equation,
+		#cft-data-slide.step-2 .cft-three-context,
+		#cft-data-slide.step-3 .cft-three-context,
+		#cft-data-slide.step-2 .cft-three-equation,
+		#cft-data-slide.step-3 .cft-three-equation,
+		#cft-data-slide.step-2 .cft-three-vertex,
+		#cft-data-slide.step-3 .cft-three-vertex,
+		#cft-data-slide.step-2 .cft-three-lambda,
+		#cft-data-slide.step-3 .cft-three-lambda {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.present#cft-data-slide.step-1 .cft-two-link,
+		.present#cft-data-slide.step-2 .cft-two-link {
+			animation: cft-flow 1.1s linear infinite;
+		}
+
+		.cft-three-arm {
+			fill: none;
+			stroke: var(--violet);
+			stroke-width: 3.5;
+			stroke-linecap: round;
+			stroke-dasharray: 120;
+			stroke-dashoffset: 120;
+			transition: stroke-dashoffset 0.72s ease;
+		}
+
+		#cft-data-slide.step-2 .cft-three-arm,
+		#cft-data-slide.step-3 .cft-three-arm { stroke-dashoffset: 0; }
+
+		.cft-three-lambda {
+			filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.38));
+		}
+
+		.cft-three-formula {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			align-items: center;
+			gap: 0.12em;
+			font-size: 0.55em;
+			margin-top: 0.12em;
+		}
+
+		.cft-fraction {
+			display: grid;
+			grid-template-rows: auto 1px auto;
+			align-items: center;
+			justify-self: center;
+			width: max-content;
+			max-width: 100%;
+			min-width: 0;
+			text-align: center;
+		}
+
+		.cft-fraction-line { height: 1px; background: currentColor; margin: 0.1em 0; }
+		.cft-denominator { font-size: 0.86em; line-height: 1.32; white-space: nowrap; }
+
+		.cft-final-data {
+			grid-column: 1 / -1;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.18em;
+			border: 1px solid rgba(99, 102, 241, 0.4);
+			border-radius: 12px;
+			background: linear-gradient(90deg, rgba(238, 242, 255, 0.96), rgba(245, 243, 255, 0.96));
+			font-size: 0.68em;
+			font-weight: 700;
+			font-family: "Times New Roman", serif;
+			opacity: 0;
+			transition: opacity 0.55s ease;
+		}
+
+		.cft-final-data > span:first-child { font-family: Inter, sans-serif; }
+		.cft-target-slot { display: inline-block; min-width: 1.75em; color: transparent; }
+		.cft-target-slot.lambda-slot { min-width: 3.25em; }
+
+		#cft-data-slide.step-3 .cft-final-data { opacity: 1; }
+
+		#cft-data-slide.step-3 .cft-data-token {
+			color: var(--violet);
+			transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(1.08);
+		}
+
+		#cft-data-slide.step-3 .cft-viz-panel,
+		#cft-data-slide.step-3 .cft-copy-panel { opacity: 0.22; }
+
+		@keyframes cft-flow {
+			to { stroke-dashoffset: -34; }
+		}
+
+		.crossing-stage {
+			display: grid;
+			grid-template-columns: 1fr 90px 1fr;
+			align-items: center;
+			height: 310px;
+			margin-top: 0.15em;
+		}
+
+		.channel {
+			height: 285px;
+			border: 1px solid var(--line);
+			border-radius: 15px;
+			background: rgba(255, 255, 255, 0.75);
+			transition: opacity 0.45s ease, border-color 0.45s ease, transform 0.45s ease, box-shadow 0.45s ease;
+		}
+
+		.channel svg { width: 100%; height: 100%; display: block; }
+		.cross-equals {
+			text-align: center;
+			font-size: 1.55em;
+			font-weight: 300;
+			color: var(--line);
+			transition: color 0.45s ease, transform 0.45s ease;
+		}
+
+		#cft-crossing-slide.step-0 .channel-t,
+		#cft-crossing-slide.step-1 .channel-s { opacity: 0.28; transform: scale(0.96); }
+
+		#cft-crossing-slide.step-0 .channel-s,
+		#cft-crossing-slide.step-1 .channel-t,
+		#cft-crossing-slide.step-2 .channel {
+			opacity: 1;
+			transform: scale(1);
+			border-color: rgba(99, 102, 241, 0.55);
+			box-shadow: 0 10px 26px rgba(79, 70, 229, 0.10);
+		}
+
+		#cft-crossing-slide.step-2 .cross-equals {
+			color: var(--ambient);
+			transform: scale(1.08);
+		}
+
+		.symmetry-stage {
+			height: 402px;
+			box-sizing: border-box;
+			display: grid;
+			grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
+			gap: 18px;
+			align-items: stretch;
+			padding: 38px 18px 14px;
+		}
+
+		.group-reduction {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			min-width: 0;
+		}
+
+		.group-chip {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.42em 0.75em;
+			border: 2px solid var(--ambient);
+			border-radius: 999px;
+			background: rgba(238, 242, 255, 0.94);
+			font-size: 0.66em;
+			font-weight: 650;
+			white-space: nowrap;
+			transition: opacity 0.5s ease, transform 0.55s ease, border-color 0.45s ease,
+				background 0.45s ease, box-shadow 0.45s ease;
+		}
+
+		.group-parent { font-size: 0.78em; }
+
+		.group-reduction-arrow {
+			font-size: 0.72em;
+			line-height: 1;
+			color: var(--muted);
+			margin: 0.52em 0;
+			opacity: 0;
+			transform: translateY(-8px);
+			transition: opacity 0.48s ease, transform 0.52s ease;
+		}
+
+		.group-product {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.26em;
+			opacity: 0;
+			transform: translateY(-10px);
+			transition: opacity 0.52s ease, transform 0.58s ease;
+		}
+
+		.group-product .times { color: var(--muted); font-size: 0.62em; }
+		.group-chip[data-group="tangent"] { border-color: var(--defect); background: var(--pale-teal); }
+		.group-chip[data-group="normal"] { border-color: var(--ml); background: var(--pale-amber); }
+
+		.group-explainer {
+			font-size: 0.48em;
+			color: var(--muted);
+			margin: 0.75em 0 0;
+			min-height: 3.1em;
+			max-width: 19em;
+			opacity: 0;
+			transform: translateY(-5px);
+			transition: opacity 0.45s ease, transform 0.5s ease;
+		}
+
+		#defect-symmetry-slide.step-1 .group-parent,
+		#defect-symmetry-slide.step-2 .group-parent { opacity: 0.24; transform: scale(0.92); }
+
+		#defect-symmetry-slide.step-1 .group-reduction-arrow,
+		#defect-symmetry-slide.step-2 .group-reduction-arrow,
+		#defect-symmetry-slide.step-1 .group-product,
+		#defect-symmetry-slide.step-2 .group-product,
+		#defect-symmetry-slide.step-1 .group-explainer,
+		#defect-symmetry-slide.step-2 .group-explainer { opacity: 1; transform: translateY(0); }
+
+		#defect-symmetry-slide.step-1 .group-chip[data-group="normal"] {
+			border-color: #d97706;
+			background: #fef3c7;
+			box-shadow: 0 0 0 7px rgba(245, 158, 11, 0.13), 0 9px 22px rgba(180, 83, 9, 0.16);
+			transform: scale(1.06);
+		}
+
+		#defect-symmetry-slide.step-2 .group-chip[data-group="tangent"] {
+			border-color: #0f766e;
+			background: #ccfbf1;
+			box-shadow: 0 0 0 7px rgba(20, 184, 166, 0.13), 0 9px 22px rgba(15, 118, 110, 0.16);
+			transform: scale(1.06);
+		}
+
+		.symmetry-canvas-wrap {
+			position: relative;
+			min-width: 0;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			background:
+				radial-gradient(circle at 70% 25%, rgba(99, 102, 241, 0.09), transparent 36%),
+				linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,250,252,0.8));
+			overflow: hidden;
+		}
+
+		#symmetryCanvas {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		.symmetry-slice-label {
+			position: absolute;
+			left: 12px;
+			top: 9px;
+			font-size: 0.39em;
+			font-weight: 650;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+			color: var(--muted);
+			pointer-events: none;
+		}
+
+		.symmetry-legend {
+			position: absolute;
+			left: 12px;
+			bottom: 9px;
+			display: flex;
+			gap: 8px;
+			font-size: 0.37em;
+			color: var(--muted);
+			pointer-events: none;
+		}
+
+		.symmetry-legend span::before {
+			content: "";
+			display: inline-block;
+			width: 8px;
+			height: 8px;
+			border: 2px solid var(--ambient);
+			border-radius: 50%;
+			margin-right: 5px;
+			vertical-align: -1px;
+			background: #fff;
+		}
+
+		.symmetry-legend .defect-key::before { border-color: var(--defect); }
+		.symmetry-legend .defect-key {
+			opacity: 0;
+			transform: translateY(4px);
+			transition: opacity 0.45s ease, transform 0.5s ease;
+		}
+		#defect-symmetry-slide.step-2 .symmetry-legend .defect-key {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.dcft-data-layout {
+			height: 432px;
+			display: grid;
+			grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+			gap: 20px;
+			align-items: stretch;
+		}
+
+		.boe-visual {
+			position: relative;
+			min-width: 0;
+			overflow: hidden;
+		}
+
+		.boe-visual svg { width: 100%; height: 100%; display: block; }
+
+		.defect-axis-svg {
+			stroke: var(--defect);
+			stroke-width: 5;
+			stroke-linecap: round;
+			filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.25));
+		}
+
+		.boe-ambient,
+		.boe-defect-primary,
+		.boe-specks,
+		.boe-approach-guide {
+			transform-box: fill-box;
+			transform-origin: center;
+			transition: opacity 0.5s ease, transform 0.78s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.boe-defect-primary { opacity: 0; transform: scale(0.35); }
+		.boe-specks { opacity: 0; }
+		.boe-approach-guide { opacity: 0.38; }
+		.boe-ambient { transform-box: view-box; transform-origin: 385px 180px; }
+		.boe-defect-primary,
+		.boe-specks { transform-box: view-box; transform-origin: 150px 180px; }
+
+		#dcft-data-slide.step-1 .boe-ambient,
+		#dcft-data-slide.step-2 .boe-ambient,
+		#dcft-data-slide.step-3 .boe-ambient,
+		#dcft-data-slide.step-4 .boe-ambient { transform: translateX(-235px); }
+
+		#dcft-data-slide.step-2 .boe-ambient,
+		#dcft-data-slide.step-3 .boe-ambient,
+		#dcft-data-slide.step-4 .boe-ambient { opacity: 0; transform: translateX(-235px) scale(0.22); }
+
+		#dcft-data-slide.step-2 .boe-defect-primary,
+		#dcft-data-slide.step-3 .boe-defect-primary,
+		#dcft-data-slide.step-4 .boe-defect-primary { opacity: 1; transform: scale(1); }
+
+		#dcft-data-slide.step-1 .boe-approach-guide,
+		#dcft-data-slide.step-2 .boe-approach-guide,
+		#dcft-data-slide.step-3 .boe-approach-guide,
+		#dcft-data-slide.step-4 .boe-approach-guide { opacity: 0; }
+
+		#dcft-data-slide.step-2 .boe-specks { opacity: 1; animation: boe-dissolve 0.85s ease both; }
+
+		@keyframes boe-dissolve {
+			0% { opacity: 0; transform: scale(0.45); }
+			42% { opacity: 1; }
+			100% { opacity: 0; transform: scale(1.25); }
+		}
+
+		.dcft-explanation {
+			display: grid;
+			grid-template-rows: auto 1fr auto;
+			gap: 10px;
+			min-width: 0;
+		}
+
+		.boe-equation-card {
+			border: 1px solid rgba(99, 102, 241, 0.28);
+			border-left: 4px solid var(--ambient);
+			border-radius: 11px;
+			background: rgba(255, 255, 255, 0.84);
+			padding: 0.38em 0.6em 0.24em;
+			transition: border-color 0.45s ease, box-shadow 0.45s ease, transform 0.45s ease;
+		}
+
+		.reveal .boe-equation-card .eq-xxs { font-size: 0.58em; margin: 0; }
+
+		#dcft-data-slide.step-1 .boe-equation-card,
+		#dcft-data-slide.step-2 .boe-equation-card {
+			border-color: rgba(99, 102, 241, 0.65);
+			box-shadow: 0 9px 22px rgba(79, 70, 229, 0.10);
+			transform: translateY(-2px);
+		}
+
+		.dcft-data-merge { position: relative; min-height: 165px; }
+
+		.dcft-source-data {
+			position: absolute;
+			inset: 5px 0 auto;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 8px;
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.5s ease, transform 0.62s ease;
+		}
+
+		.dcft-source-chip {
+			min-width: 0;
+			border: 1px solid var(--line);
+			border-top: 4px solid var(--ambient);
+			border-radius: 10px;
+			background: rgba(255,255,255,0.82);
+			padding: 0.45em 0.42em;
+			font-size: 0.47em;
+			text-align: center;
+			box-sizing: border-box;
+		}
+
+		.dcft-source-chip.defect-source { border-top-color: var(--defect); }
+		.dcft-source-chip.coupling-source { border-top-color: var(--ml); }
+
+		#dcft-data-slide.step-2 .dcft-source-data { opacity: 1; transform: translateY(0); }
+		#dcft-data-slide.step-3 .dcft-source-data,
+		#dcft-data-slide.step-4 .dcft-source-data { opacity: 0; transform: translateY(48px) scale(0.88); }
+
+		.dcft-combined-data {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 3px;
+			border: 1px solid rgba(20, 184, 166, 0.45);
+			border-radius: 11px;
+			background: linear-gradient(100deg, rgba(238,242,255,0.96), rgba(240,253,250,0.96));
+			padding: 0.42em 0.62em;
+			opacity: 0;
+			transform: scale(0.9) translateY(12px);
+			transition: opacity 0.55s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.dcft-combined-data p { margin: 0.08em 0 0; font-size: 0.55em; line-height: 1.45; }
+
+		#dcft-data-slide.step-3 .dcft-combined-data,
+		#dcft-data-slide.step-4 .dcft-combined-data { opacity: 1; transform: scale(1) translateY(0); }
+
+		.dcft-kinematics {
+			border: 1px solid var(--line);
+			border-left: 4px solid var(--violet);
+			border-radius: 10px;
+			background: rgba(255,255,255,0.8);
+			padding: 0.32em 0.62em 0.2em;
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.5s ease, transform 0.55s ease;
+		}
+
+		.reveal .dcft-kinematics .eq-xxs { font-size: 0.72em; margin: 0; }
+		#dcft-data-slide.step-4 .dcft-kinematics { opacity: 1; transform: translateY(0); }
+
+		/* ---------------- neural-network slides ---------------- */
+		.nn-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
+			gap: 24px;
+			align-items: center;
+		}
+
+		.nn-svg {
+			width: 100%;
+			height: 330px;
+			display: block;
+		}
+
+		.nn-edge {
+			stroke: #cbd5e1;
+			stroke-width: 2.3;
+			fill: none;
+		}
+
+		.nn-node {
+			fill: #fff;
+			stroke: var(--ambient);
+			stroke-width: 3;
+		}
+
+		.nn-node.hidden { fill: var(--pale-indigo); }
+		.nn-node.output { stroke: var(--defect); }
+
+		.present .signal {
+			stroke-dasharray: 9 10;
+			animation: signal-flow 1.6s linear infinite;
+		}
+
+		@keyframes signal-flow {
+			to { stroke-dashoffset: -38; }
+		}
+
+		.uat-frame {
+			height: 385px;
+			padding-top: 34px;
+		}
+
+		#uatCanvas {
+			width: 100%;
+			height: 350px;
+			display: block;
+		}
+
+		.uat-caption {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 18px;
+			margin-top: 0.42em;
+		}
+
+		.uat-caption > div {
+			font-size: 0.57em;
+			color: var(--muted);
+		}
+
+		.limit-clarifier {
+			display: flex;
+			gap: 18px;
+			margin-top: 0.48em;
+		}
+
+		.limit-clarifier .mini {
+			flex: 1;
+			border-left: 3px solid var(--ml);
+			padding-left: 0.65em;
+			font-size: 0.55em;
+			color: var(--muted);
+		}
+
+		.limit-clarifier .mini:last-child { border-left-color: var(--defect); }
+
+		.integral-stage {
+			display: grid;
+			grid-template-columns: 1fr 105px 1fr;
+			gap: 20px;
+			align-items: center;
+			margin-top: 0.25em;
+		}
+
+		.integral-card {
+			min-height: 245px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.45s ease;
+		}
+
+		.integral-card.parameters {
+			opacity: 0.26;
+			transform: translateX(-8px);
+		}
+
+		.integral-bridge {
+			text-align: center;
+			color: var(--muted);
+			font-size: 0.52em;
+			transition: color 0.45s ease, transform 0.45s ease;
+		}
+
+		.integral-bridge .big-arrow {
+			display: block;
+			font-size: 2.1em;
+			line-height: 1;
+			margin-bottom: 0.2em;
+		}
+
+		#integral-slide.step-1 .parameters,
+		#integral-slide.step-2 .parameters {
+			opacity: 1;
+			transform: translateX(0);
+			border-color: rgba(20, 184, 166, 0.65);
+		}
+
+		#integral-slide.step-1 .fields { opacity: 0.36; transform: translateX(-8px); }
+		#integral-slide.step-1 .integral-bridge,
+		#integral-slide.step-2 .integral-bridge { color: var(--accent); transform: scale(1.06); }
+
+		.finite-cft-note {
+			opacity: 0;
+			transform: translateY(10px);
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		#integral-slide.step-2 .finite-cft-note {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.reveal table.dict {
+			border-collapse: collapse;
+			width: 100%;
+			font-size: 0.61em;
+		}
+
+		.reveal table.dict th {
+			text-align: left;
+			font-weight: 600;
+			color: var(--muted);
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			font-size: 0.82em;
+			border-bottom: 1px solid var(--line);
+			padding: 8px 12px;
+		}
+
+		.reveal table.dict td {
+			padding: 12px;
+			border-bottom: 1px solid var(--line);
+			vertical-align: middle;
+		}
+
+		.reveal table.dict tr:last-child td { border-bottom: none; }
+
+		#dictionary-slide tbody tr {
+			opacity: 0.22;
+			transition: opacity 0.5s ease, background 0.5s ease;
+		}
+
+		#dictionary-slide.step-0 tbody tr:nth-child(1),
+		#dictionary-slide.step-1 tbody tr:nth-child(-n+2),
+		#dictionary-slide.step-2 tbody tr {
+			opacity: 1;
+			background: linear-gradient(90deg, rgba(99, 102, 241, 0.07), rgba(20, 184, 166, 0.04));
+		}
+
+		.dictionary-takeaway {
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		#dictionary-slide.step-2 .dictionary-takeaway {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.prior-stage {
+			display: grid;
+			grid-template-columns: 1fr 96px 1fr;
+			gap: 18px;
+			align-items: center;
+			margin-top: 0.36em;
+		}
+
+		.prior-z-row {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			background: linear-gradient(90deg, rgba(99, 102, 241, 0.07), rgba(20, 184, 166, 0.05));
+			overflow: hidden;
+		}
+
+		.prior-z-cell {
+			position: relative;
+			min-width: 0;
+			padding: 0.42em 0.65em 0.28em;
+		}
+
+		.prior-z-cell + .prior-z-cell { border-left: 1px solid var(--line); }
+		.reveal #prior-slide .prior-z-cell p { font-size: 0.49em; margin: 0; }
+
+		.prior-z-label {
+			font-size: 0.39em;
+			font-weight: 650;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 0.08em;
+		}
+
+		.prior-wheel {
+			width: 275px;
+			height: 275px;
+			margin: 0 auto;
+			border: 2px solid var(--line);
+			border-radius: 50%;
+			position: relative;
+			background: radial-gradient(circle, #fff 0 28%, var(--pale-indigo) 29% 31%, transparent 32%);
+		}
+
+		.prior-wheel-label {
+			position: absolute;
+			inset: 0;
+			display: grid;
+			place-items: center;
+			font-size: 0.68em;
+			font-weight: 600;
+			color: var(--ambient);
+			z-index: 2;
+		}
+
+		.prior-dot {
+			position: absolute;
+			width: 15px;
+			height: 15px;
+			border-radius: 50%;
+			background: var(--ml);
+			transition: transform 0.7s ease, background 0.5s ease;
+		}
+
+		.present .prior-dot { animation: orbit 6s linear infinite; }
+
+		@keyframes orbit {
+			to { transform: rotate(360deg); }
+		}
+
+		.prior-output {
+			opacity: 0.3;
+			transform: translateX(-8px);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+
+		#prior-slide.step-1 .prior-output,
+		#prior-slide.step-2 .prior-output {
+			opacity: 1;
+			transform: translateX(0);
+		}
+
+		.symmetry-lock {
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		#prior-slide.step-2 .symmetry-lock {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.key-idea-box {
+			background: linear-gradient(90deg, rgba(225, 29, 72, 0.17), rgba(251, 113, 133, 0.09));
+			border: 1px solid rgba(225, 29, 72, 0.28);
+			border-left: 5px solid var(--rose);
+			border-radius: 0 11px 11px 0;
+			padding: 0.46em 0.82em;
+			color: #881337;
+		}
+
+		.reveal #prior-slide p.key-idea-box {
+			font-size: 0.62em;
+			line-height: 1.38;
+			margin: 0.42em 0 0;
+		}
+
+		.embedding-stage {
+			position: relative;
+			height: 410px;
+			overflow: hidden;
+			background:
+				radial-gradient(circle at 50% 52%, rgba(99, 102, 241, 0.075), transparent 48%),
+				linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.88));
+		}
+
+		.embedding-space-label {
+			position: absolute;
+			z-index: 5;
+			top: 14px;
+			left: 50%;
+			width: 290px;
+			height: 48px;
+			transform: translateX(-50%);
+			text-align: center;
+			font-size: 0.86em;
+			font-weight: 650;
+			transition: left 0.55s ease, transform 0.55s ease;
+		}
+
+		.embedding-space-label > span {
+			position: absolute;
+			inset: 0;
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		.embedding-euclidean { opacity: 1; transform: translateY(0); }
+		.embedding-lorentz { opacity: 0; transform: translateY(8px); color: var(--ambient); }
+
+		#embedding-slide:is(.step-1, .step-2, .step-3) .embedding-euclidean {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
+
+		#embedding-slide:is(.step-1, .step-2, .step-3) .embedding-lorentz {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		#embedding-slide:is(.step-2, .step-3) .embedding-space-label {
+			left: 3%;
+			transform: translateX(0);
+			text-align: left;
+		}
+
+		.wick-badge {
+			position: absolute;
+			z-index: 5;
+			top: 57px;
+			left: 50%;
+			transform: translate(-50%, 7px);
+			padding: 5px 13px;
+			border: 1px solid rgba(225, 29, 72, 0.28);
+			border-radius: 999px;
+			background: rgba(225, 29, 72, 0.1);
+			color: #9f1239;
+			font-size: 0.43em;
+			font-weight: 650;
+			opacity: 0;
+			transition: opacity 0.4s ease, transform 0.4s ease;
+		}
+
+		#embedding-slide.step-1 .wick-badge {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+
+		.embedding-cone {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		.cone-fill {
+			fill: rgba(99, 102, 241, 0.11);
+			opacity: 0;
+			transition: opacity 0.55s ease;
+		}
+
+		.cone-outline path,
+		.ps-line {
+			fill: none;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 1;
+			stroke-dashoffset: 1;
+			opacity: 0;
+		}
+
+		.cone-outline path {
+			stroke: var(--ambient);
+			stroke-width: 3;
+			transition: stroke-dashoffset 0.85s ease, opacity 0.35s ease;
+		}
+
+		#embedding-slide:is(.step-2, .step-3) .cone-fill { opacity: 1; }
+
+		#embedding-slide:is(.step-2, .step-3) .cone-outline path {
+			stroke-dashoffset: 0;
+			opacity: 1;
+		}
+
+		.ps-line {
+			stroke: var(--rose);
+			stroke-width: 6;
+			filter: drop-shadow(0 2px 4px rgba(225, 29, 72, 0.22));
+			transition: stroke-dashoffset 0.75s ease, opacity 0.3s ease;
+		}
+
+		#embedding-slide.step-3 .ps-line {
+			stroke-dashoffset: 0;
+			opacity: 1;
+		}
+
+		.null-cone-label,
+		.section-label {
+			position: absolute;
+			z-index: 5;
+			opacity: 0;
+			transition: opacity 0.4s ease, transform 0.4s ease;
+		}
+
+		.null-cone-label {
+			left: 3%;
+			top: 31%;
+			width: 31%;
+			font-size: 0.46em;
+			transform: translateX(-7px);
+		}
+
+		.null-cone-label small,
+		.section-label small {
+			display: block;
+			margin-top: 3px;
+			color: var(--muted);
+			font-size: 0.78em;
+		}
+
+		#embedding-slide:is(.step-2, .step-3) .null-cone-label {
+			opacity: 1;
+			transform: translateX(0);
+		}
+
+		.section-label {
+			left: 64%;
+			width: 32%;
+			color: #9f1239;
+			font-size: 0.48em;
+			transform: translateX(7px);
+		}
+
+		.section-top { top: 23%; }
+		.section-bottom { top: 68%; }
+
+		#embedding-slide.step-3 .section-label {
+			opacity: 1;
+			transform: translateX(0);
+		}
+
+		.embedding-ingredients { margin-top: 0.42em; }
+
+		/* ---------------- nn-dCFT construction and examples ---------------- */
+		.build-stage {
+			display: grid;
+			grid-template-columns: 1fr 80px 1fr 80px 1fr;
+			gap: 9px;
+			align-items: center;
+			margin-top: 0.42em;
+		}
+
+		.build-piece {
+			min-height: 210px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			opacity: 0.2;
+			transform: translateY(10px);
+			transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease;
+		}
+
+		.build-arrow {
+			text-align: center;
+			color: var(--line);
+			font-size: 1.3em;
+			transition: color 0.45s ease;
+		}
+
+		#nndcft-build-slide.step-0 .piece-group,
+		#nndcft-build-slide.step-1 .piece-group,
+		#nndcft-build-slide.step-1 .piece-prior,
+		#nndcft-build-slide.step-2 .build-piece,
+		#nndcft-build-slide.step-3 .build-piece {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		#nndcft-build-slide.step-1 .build-arrow:nth-child(2),
+		#nndcft-build-slide.step-2 .build-arrow,
+		#nndcft-build-slide.step-3 .build-arrow { color: var(--accent); }
+
+		.generating-functional {
+			opacity: 0;
+			transform: translateY(10px);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+
+		#nndcft-build-slide.step-3 .generating-functional {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.ingredient-stage {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 13px;
+			margin-top: 0.4em;
+		}
+
+		.ingredient {
+			min-height: 245px;
+			padding: 0.68em;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			background: rgba(255, 255, 255, 0.78);
+			opacity: 0.2;
+			transform: translateY(10px);
+			transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.45s ease;
+		}
+
+		.ingredient .i-num {
+			width: 32px;
+			height: 32px;
+			border-radius: 10px;
+			display: grid;
+			place-items: center;
+			color: #fff;
+			background: var(--ambient);
+			font-size: 0.57em;
+			font-weight: 700;
+			margin-bottom: 0.6em;
+		}
+
+		.ingredient h3 { font-size: 0.72em; margin-bottom: 0.5em; }
+		.ingredient p { font-size: 0.55em; }
+
+		#monomial-ingredients-slide.step-0 .ingredient:nth-child(1),
+		#monomial-ingredients-slide.step-1 .ingredient:nth-child(-n+2),
+		#monomial-ingredients-slide.step-2 .ingredient:nth-child(-n+3),
+		#monomial-ingredients-slide.step-3 .ingredient,
+		#reciprocal-ingredients-slide.step-0 .ingredient,
+		#reciprocal-ingredients-slide.step-1 .ingredient {
+			opacity: 1;
+			transform: translateY(0);
+			border-color: rgba(99, 102, 241, 0.4);
+		}
+
+		.onepoint-stage {
+			display: grid;
+			grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
+			gap: 24px;
+			align-items: stretch;
+		}
+
+		.vev-scene {
+			min-height: 350px;
+			position: relative;
+			background:
+				linear-gradient(90deg, transparent 27%, rgba(20, 184, 166, 0.10) 27.5%, rgba(20, 184, 166, 0.10) 33%, transparent 33.5%),
+				radial-gradient(circle at 62% 24%, rgba(99, 102, 241, 0.10), transparent 37%);
+		}
+
+		.vev-defect {
+			position: absolute;
+			left: 30%;
+			top: 8%;
+			bottom: 8%;
+			width: 4px;
+			transform: translateX(-50%);
+			background: linear-gradient(180deg, #2dd4bf, #0f766e);
+			border-radius: 4px;
+			box-shadow: 0 0 0 6px rgba(20, 184, 166, 0.08);
+		}
+
+		.vev-ambient-dot,
+		.vev-defect-dot {
+			position: absolute;
+			z-index: 1;
+			width: 27px;
+			height: 27px;
+			border-radius: 50%;
+			background: #fff;
+			border: 4px solid var(--ambient);
+		}
+
+		.vev-defect-dot { border-color: var(--defect); }
+
+		.vev-ray {
+			position: absolute;
+			z-index: 0;
+			height: 3px;
+			background: var(--ml);
+			transform-origin: 0 50%;
+			opacity: 0;
+			transition: opacity 0.5s ease;
+		}
+
+		#monomial-onepoint-slide.step-1 .vev-ray,
+		#reciprocal-onepoint-slide.step-1 .vev-ray { opacity: 1; }
+
+		.vev-spectrum-strip {
+			position: absolute;
+			left: 43%;
+			right: 6%;
+			top: 70%;
+			height: 68px;
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			background: rgba(255,255,255,0.84);
+		}
+
+		.vev-spectrum-strip::before {
+			content: "defect spectrum";
+			position: absolute;
+			left: 8px;
+			top: 4px;
+			font: 600 10px Inter, sans-serif;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+			color: var(--muted);
+		}
+
+		.vev-spectrum-strip .tower-line { top: 29px; left: 8%; right: 8%; }
+		.vev-spectrum-strip .tower-dot { top: 17px; }
+
+		.onepoint-equations {
+			display: flex;
+			flex-direction: column;
+			gap: 13px;
+			justify-content: center;
+		}
+
+		.onepoint-equations .ambient-result {
+			opacity: 0.22;
+			transition: opacity 0.5s ease, border-color 0.5s ease;
+		}
+
+		#monomial-onepoint-slide.step-1 .ambient-result,
+		#reciprocal-onepoint-slide.step-1 .ambient-result {
+			opacity: 1;
+			border-color: rgba(245, 158, 11, 0.6);
+		}
+
+		.corr-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 32fr) minmax(0, 68fr);
+			gap: 24px;
+			align-items: stretch;
+		}
+
+		.corr-matrix {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1fr 1fr;
+			gap: 9px;
+			height: 452px;
+		}
+
+		.corr-cell {
+			border: 1px solid var(--line);
+			border-radius: 13px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background: rgba(255, 255, 255, 0.74);
+			opacity: 0.25;
+			transition: opacity 0.45s ease, border-color 0.45s ease, transform 0.45s ease;
+		}
+
+		.corr-cell .pair {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+		}
+
+		.corr-cell .tiny-node {
+			width: 22px;
+			height: 22px;
+			border: 3px solid var(--ambient);
+			background: #fff;
+			border-radius: 50%;
+		}
+
+		.corr-cell .tiny-node.d { border-color: var(--defect); }
+		.corr-cell .cname { font-size: 0.48em; color: var(--muted); margin-top: 0.5em; }
+
+		#monomial-twopoint-slide.step-0 .dd,
+		#monomial-twopoint-slide.step-1 .dd,
+		#monomial-twopoint-slide.step-1 .da,
+		#monomial-twopoint-slide.step-2 .corr-cell {
+			opacity: 1;
+			transform: scale(1);
+			border-color: rgba(99, 102, 241, 0.52);
+		}
+
+		.corr-formulas {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			gap: 10px;
+			min-width: 0;
+		}
+
+		.corr-formula {
+			opacity: 0.22;
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		.reveal #monomial-twopoint-slide .formula-aa .eq-xxs {
+			font-size: 0.48em;
+		}
+
+		.reveal #monomial-twopoint-slide p.corr-note {
+			font-size: 0.43em;
+			line-height: 1.28;
+			margin: 0.08em 0 0;
+		}
+
+		#monomial-twopoint-slide.step-0 .formula-dd,
+		#monomial-twopoint-slide.step-1 .formula-dd,
+		#monomial-twopoint-slide.step-1 .formula-da,
+		#monomial-twopoint-slide.step-2 .corr-formula {
+			opacity: 1;
+		}
+
+		.invariant-row {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 12px;
+			margin-bottom: 0.46em;
+		}
+
+		.invariant-chip {
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			padding: 0.4em 0.55em;
+			background: #fff;
+			font-size: 0.55em;
+			text-align: center;
+			opacity: 0.22;
+			transform: translateY(8px);
+			transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.45s ease;
+			min-width: 0;
+		}
+
+		#ambient-twopoint-slide.step-0 .invariant-chip:first-child,
+		#ambient-twopoint-slide.step-1 .invariant-chip,
+		#ambient-twopoint-slide.step-2 .invariant-chip {
+			opacity: 1;
+			transform: translateY(0);
+			border-color: rgba(99, 102, 241, 0.5);
+		}
+
+		.ambient-formula {
+			opacity: 0.2;
+			transform: translateY(10px);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+
+		#ambient-twopoint-slide.step-2 .ambient-formula {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.ope-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+			gap: 22px;
+			align-items: stretch;
+		}
+
+		.ope-general {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.ope-stage {
+			height: 350px;
+			position: relative;
+		}
+
+		.ope-stage svg { width: 100%; height: 100%; display: block; }
+		.ope-term { transition: opacity 0.45s ease, transform 0.45s ease; }
+
+		.ope-takeaway {
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		#monomial-ope-slide.step-4 .ope-takeaway {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.tower {
+			position: relative;
+			height: 92px;
+			margin-top: 0.55em;
+			overflow: hidden;
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+
+		.tower-line {
+			position: absolute;
+			top: 43px;
+			left: 4%;
+			right: 4%;
+			height: 3px;
+			background: linear-gradient(90deg, var(--defect), var(--ambient), transparent);
+		}
+
+		.tower-dot {
+			position: absolute;
+			top: 31px;
+			width: 25px;
+			height: 25px;
+			border-radius: 50%;
+			border: 3px solid var(--defect);
+			background: #fff;
+			transform: translateX(-50%);
+		}
+
+		.tower-dot::after {
+			content: attr(data-label);
+			position: absolute;
+			top: 30px;
+			left: 50%;
+			transform: translateX(-50%);
+			white-space: nowrap;
+			font: 500 13px Inter, sans-serif;
+			color: var(--muted);
+		}
+
+		#reciprocal-ingredients-slide.step-1 .tower {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.tower-equation {
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 0.5s ease, transform 0.5s ease;
+		}
+
+		#reciprocal-ingredients-slide.step-1 .tower-equation {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.reciprocal-formulas {
+			display: grid;
+			grid-template-columns: 1fr 1.15fr;
+			gap: 18px;
+			align-items: stretch;
+		}
+
+		.reciprocal-formula {
+			opacity: 0.25;
+			transition: opacity 0.5s ease, border-color 0.5s ease, transform 0.5s ease;
+		}
+
+		#reciprocal-twopoint-slide.step-0 .reciprocal-formula:first-child,
+		#reciprocal-twopoint-slide.step-1 .reciprocal-formula {
+			opacity: 1;
+			border-color: rgba(99, 102, 241, 0.55);
+			transform: translateY(0);
+		}
+
+		/* ---------------- conclusion ---------------- */
+		.status-cols {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 25px;
+		}
+
+		.status-card {
+			min-height: 330px;
+		}
+
+		.status-card.done { border-top: 4px solid var(--defect); }
+		.status-card.open { border-top: 4px solid var(--ml); }
+
+		.check-list,
+		.open-list {
+			list-style: none;
+			margin-left: 0 !important;
+		}
+
+		.check-list li,
+		.open-list li {
+			position: relative;
+			padding-left: 1.75em;
+			margin: 0.48em 0;
+		}
+
+		.check-list li::before,
+		.open-list li::before {
+			position: absolute;
+			left: 0;
+			top: 0;
+			font-weight: 700;
+		}
+
+		.check-list li::before { content: "✓"; color: #0f766e; }
+		.open-list li::before { content: "→"; color: #b45309; }
+
+		.takeaway-stack {
+			display: flex;
+			flex-direction: column;
+			gap: 13px;
+			margin-top: 0.15em;
+		}
+
+		.takeaway {
+			display: grid;
+			grid-template-columns: 48px 1fr;
+			gap: 16px;
+			align-items: center;
+			border-bottom: 1px solid var(--line);
+			padding: 0.34em 0;
+		}
+
+		.takeaway:last-child { border-bottom: none; }
+
+		.takeaway-n {
+			width: 42px;
+			height: 42px;
+			border-radius: 12px;
+			display: grid;
+			place-items: center;
+			color: #fff;
+			font-size: 0.58em;
+			font-weight: 700;
+			background: linear-gradient(140deg, var(--ambient), var(--defect));
+		}
+
+		.takeaway p { font-size: 0.66em; margin: 0; }
+
+		@media (prefers-reduced-motion: reduce) {
+			*,
+			*::before,
+			*::after {
+				animation-duration: 0.001ms !important;
+				animation-iteration-count: 1 !important;
+				transition-duration: 0.001ms !important;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<img class="title-cityscape-layer" src="cityscape.png" alt="" aria-hidden="true" />
+	<div class="reveal">
+		<div class="footer">
+			<span>Benjamin Suzzoni</span>
+			<span>ICBS — August 2026</span>
+			<span><a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></span>
+		</div>
+
+		<div class="topic-wash" aria-hidden="true">
+			<div class="wash-disk"></div>
+		</div>
+
+		<div class="slides">
+			<section id="title-slide">
+				<div class="orbs">
+					<div class="orb" style="width:420px;height:420px;right:-90px;top:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:300px;height:300px;right:120px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+					<div class="orb" style="width:190px;height:190px;right:330px;top:170px;background:radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);opacity:0.26;"></div>
+				</div>
+				<p class="kicker">ICBS — August 2026</p>
+				<h1 class="title-main">Conformal defects in neural network field theories</h1>
+				<p class="title-sub">symmetry breaking &nbsp;·&nbsp; solvable nn-dCFTs</p>
+				<div class="title-rule"></div>
+				<p class="title-meta">
+					<span class="name"><a href="https://inspirehep.net/authors/2714489"
+							target="_blank">Benjamin Suzzoni</a></span><br />
+					<span class="muted">Department of Mathematical Sciences, UNIST</span><br />
+					<a href="https://arxiv.org/abs/2512.07946" target="_blank">arXiv:2512.07946</a>
+				</p>
+
+				<div class="credits">
+					<span class="credits-label">with</span>
+					<div class="people">
+						<a class="person" href="https://inspirehep.net/authors/2054645" target="_blank">
+							<span class="mono" style="background:linear-gradient(140deg,#818cf8,#4f46e5);">PC</span>
+							P. Capuozzo</a>
+						<a class="person" href="https://inspirehep.net/authors/1288263" target="_blank">
+							<span class="mono" style="background:linear-gradient(140deg,#5eead4,#0f766e);">BR</span>
+							B. Robinson</a>
+					</div>
+				</div>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="outline-slide">
+				<h2 class="slide-title">Outline</h2>
+				<div class="toc">
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#fb7185,#be123c);">1</div>
+						<div>
+							<div class="toc-t">Why NN? Why defects CFTs?</div>
+							<div class="toc-d">physics for ML for physics · conformal symmetry ubiquitous</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#818cf8,#4338ca);">2</div>
+						<div>
+							<div class="toc-t">CFT and dCFT data</div>
+							<div class="toc-d">conformal primaries · OPE · crossing · ambient and defect channels</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#fbbf24,#d97706);">3</div>
+						<div>
+							<div class="toc-t">Neural-network CFTs</div>
+							<div class="toc-d">UATs · parameter averages · symmetry in architecture and distribution</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#5eead4,#0f766e);">4</div>
+						<div>
+							<div class="toc-t">Neural-network defect CFTs</div>
+							<div class="toc-d">general construction · monomial and reciprocal examples</div>
+						</div>
+					</div>
+					<div class="toc-row">
+						<div class="toc-n" style="background:linear-gradient(140deg,#94a3b8,#475569);">5</div>
+						<div>
+							<div class="toc-t">What we learn</div>
+							<div class="toc-d">results · limits · directions opened by the defect viewpoint</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="motivation-divider" data-wash="#e11d48" data-wash-pos="25% 42%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-60px;bottom:-110px;background:radial-gradient(circle at 35% 35%, #fecdd3, #e11d48);"></div>
+				</div>
+				<p class="chapter-num">Chapter 1</p>
+				<h1 class="chapter-title">Why NN? Why defect CFTs?</h1>
+				<p class="chapter-sub">a lot can be found by combining the two</p>
+			</section>
+
+			<section id="motivation-exchange-slide">
+				<h2 class="slide-title">Strong interplay between ML and physics</h2>
+				<br>
+				<div class="exchange">
+					<div class="card ml-card exchange-side">
+						<div class="card-label">ML → physics</div>
+						<ul class="number-list">
+							<li>Find hidden symmetries in data</li>
+							<li>Compute numerical approximations</li>
+							<li>Formulate exact conjectures</li>
+							<li>Assist theorem proving</li>
+						</ul>
+					</div>
+					<div class="exchange-arrow" aria-hidden="true">
+						<span class="head-a"></span>
+						<span class="head-b"></span>
+						<span class="swap-label">exchange<br />of ideas</span>
+					</div>
+					<div class="card defect-card exchange-side">
+						<div class="card-label">physics → ML</div>
+						<p style="font-size:0.78em;font-weight:600;">Neural Network Field Theories</p>
+						<p class="muted" style="font-size:0.62em;">Then symmetry, correlation functions and defects become tools for organizing families of random networks.</p>
+						<p class="hl teal" style="font-size:0.59em;margin-top:0.7em;">A defect is a controlled way to break symmetry—and probe what survives.</p>
+					</div>
+				</div>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="why-cft-slide">
+				<h2 class="slide-title">Conformal symmetry and defect conformal symmetry</h2>
+				<br>
+				<div class="cols">
+					<div class="card ambient-card">
+						<div class="card-label">Why CFTs?</div>
+						<h3>Symmetry controls dynamics</h3>
+						<ul>
+							<li>The conformal group strongly constrains correlators.</li>
+							<li>CFTs sit at RG fixed points; exactly marginal deformations can connect families of them.</li>
+							<li>They arise naturally in critical systems and D-brane constructions.</li>
+						</ul>
+					</div>
+					<div class="card defect-card">
+						<div class="card-label">Why dCFTs?</div>
+						<h3>Extended operators complete the picture</h3>
+						<ul>
+							<li>Boundaries, interfaces and defects carry their own degrees of freedom.</li>
+							<li>Higher-form and generalized symmetries act on extended operators.</li>
+							<li>Ambient spectrum + defect spectrum + couplings characterize the deformed theory.</li>
+						</ul>
+					</div>
+				</div>
+				<p class="hl" style="font-size:0.64em;margin-top:0.72em;">The same organization can be transferred to neural-network ensembles.</p>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/1601.02883
+				</aside>
+			</section>
+
+			<section id="cft-divider" data-wash="#6366f1" data-wash-pos="72% 34%">
+				<div class="orbs">
+					<div class="orb" style="width:360px;height:360px;right:-50px;top:-100px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+				</div>
+				<p class="chapter-num">Chapter 2</p>
+				<h1 class="chapter-title">CFT and dCFT data</h1>
+				<p class="chapter-sub">we can bootstrap from building blocks</p>
+			</section>
+
+			<section id="cft-data-slide" class="step-0">
+				<h2 class="slide-title">A CFT is encoded by dimensions and OPE coefficients</h2>
+				<div id="cftDataStage" class="frame cft-data-stage">
+					<span class="boxcap">correlators reveal the independent CFT data</span>
+					<div class="cft-viz-panel">
+						<svg viewBox="0 0 390 160" role="img" aria-label="Two scalar primary insertions connected by a two-point correlation">
+							<path class="cft-two-link" d="M112 81 C155 27 235 27 278 81" />
+							<circle class="svg-node" cx="92" cy="93" r="34" />
+							<circle class="svg-node" cx="298" cy="93" r="34" />
+							<text class="svg-label" x="92" y="99">Φᵢ</text>
+							<text class="svg-label" x="298" y="99">Φⱼ</text>
+							<text class="svg-small" x="195" y="139">two operator insertions</text>
+						</svg>
+					</div>
+					<div class="cft-copy-panel">
+						<div class="card-label">conformal primary</div>
+						<div class="cft-primary-spectrum">
+							<span>\(\mathcal O_i:\)</span><span>(</span>
+							<span class="cft-token-anchor" data-source="delta">Δᵢ</span><span>,</span>
+							<span class="cft-token-anchor" data-source="spin">Jᵢ</span><span>)</span>
+						</div>
+						<p class="cft-primary-law">\(\mathcal O_i(\rho x)=\rho^{-\Delta_i}\mathcal O_i(x)\)</p>
+						<div class="cft-two-equation">
+							<div class="card-label">symmetry fixes the scalar two-point function</div>
+							<p class="eq-xs">\[
+								\langle\Phi_i(x_1)\Phi_j(x_2)\rangle
+								=\frac{\delta_{ij}}{|x_{12}|^{2\Delta_i}}
+							\]</p>
+						</div>
+					</div>
+
+					<div class="cft-viz-panel cft-three-context">
+						<svg viewBox="0 0 390 182" role="img" aria-label="Three scalar primaries coupled at a three-point vertex">
+							<path class="cft-three-arm" d="M91 47 L195 101" />
+							<path class="cft-three-arm" d="M299 47 L195 101" />
+							<path class="cft-three-arm" d="M195 159 L195 101" />
+							<circle class="svg-node" cx="73" cy="37" r="28" />
+							<circle class="svg-node" cx="317" cy="37" r="28" />
+							<circle class="svg-node" cx="195" cy="155" r="28" />
+							<circle class="cft-three-vertex" cx="195" cy="101" r="9" fill="#8b5cf6" />
+							<text class="svg-label" x="73" y="43">Φᵢ</text>
+							<text class="svg-label" x="317" y="43">Φⱼ</text>
+							<text class="svg-label" x="195" y="161">Φₖ</text>
+							<text class="svg-small cft-three-lambda" x="237" y="107">λᵢⱼₖ</text>
+						</svg>
+					</div>
+					<div class="cft-copy-panel cft-three-equation">
+						<div class="card-label">the scalar three-point function defines the OPE coefficient</div>
+						<div class="cft-three-formula">
+							<span>\(\langle\Phi_i(x_1)\Phi_j(x_2)\Phi_k(x_3)\rangle=\)</span>
+							<span class="cft-fraction">
+								<span><span class="cft-token-anchor" data-source="lambda">λᵢⱼₖ</span></span>
+								<span class="cft-fraction-line"></span>
+								<span class="cft-denominator">
+									\(|x_{12}|^{\Delta_i+\Delta_j-\Delta_k}|x_{23}|^{\Delta_j+\Delta_k-\Delta_i}\)<br />
+									\(|x_{13}|^{\Delta_i+\Delta_k-\Delta_j}\)
+								</span>
+							</span>
+						</div>
+						<p class="cft-scalar-note">Scalar correlators shown; spinning tensor structures are suppressed.</p>
+					</div>
+
+					<div class="cft-final-data" aria-label="CFT data: dimensions, spins, and OPE coefficients">
+						<span>CFT data</span><span>=</span><span>{</span>
+						<span class="cft-target-slot" data-target="delta">Δᵢ</span><span>,</span>
+						<span class="cft-target-slot" data-target="spin">Jᵢ</span><span>,</span>
+						<span class="cft-target-slot lambda-slot" data-target="lambda">λᵢⱼₖ</span><span>}</span>
+					</div>
+					<span class="cft-data-token" data-token="delta">Δ<sub>i</sub></span>
+					<span class="cft-data-token" data-token="spin">J<sub>i</sub></span>
+					<span class="cft-data-token" data-token="lambda">λ<sub>ijk</sub></span>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/html/2512.07946#S2.E4
+- https://arxiv.org/html/2512.07946#S2.E5
+- https://arxiv.org/abs/1601.02883
+
+The displayed correlator formulas are for scalar primaries in a normalized two-point basis. For spinning
+primaries, the three-point function may carry several tensor structures and corresponding coefficients.
+				</aside>
+			</section>
+
+			<section id="cft-crossing-slide" class="step-0">
+				<h2 class="slide-title">OPE data obeys the crossing equations</h2>
+				<p class="eq-sm">\[
+					\phi_1(x)\phi_2(y)\sim\sum_{\mathcal O}
+					f_{\phi_1\phi_2\mathcal O}\,
+					P(x-y,\partial_y)\mathcal O(y)
+				\]</p>
+				<div class="crossing-stage">
+					<div class="channel channel-s">
+						<svg viewBox="0 0 430 285" role="img" aria-label="s-channel operator product expansion">
+							<text class="svg-small" x="215" y="27">s-channel</text>
+							<path d="M72 66 L165 143 L72 219 M358 66 L265 143 L358 219" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6 6" fill="none" />
+							<path d="M165 143 L265 143" stroke="#6366f1" stroke-width="5" stroke-dasharray="10 7" />
+							<circle cx="72" cy="66" r="10" fill="#0f172a" />
+							<circle cx="72" cy="219" r="10" fill="#0f172a" />
+							<circle cx="358" cy="66" r="10" fill="#0f172a" />
+							<circle cx="358" cy="219" r="10" fill="#0f172a" />
+							<circle cx="165" cy="143" r="13" fill="#14b8a6" />
+							<circle cx="265" cy="143" r="13" fill="#14b8a6" />
+							<text class="svg-small" x="215" y="178">𝒪</text>
+						</svg>
+					</div>
+					<div class="cross-equals">=</div>
+					<div class="channel channel-t">
+						<svg viewBox="0 0 430 285" role="img" aria-label="t-channel operator product expansion">
+							<text class="svg-small" x="215" y="27">t-channel</text>
+							<path d="M72 66 L215 95 L358 66 M72 219 L215 190 L358 219" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6 6" fill="none" />
+							<path d="M215 95 L215 190" stroke="#6366f1" stroke-width="5" stroke-dasharray="10 7" />
+							<circle cx="72" cy="66" r="10" fill="#0f172a" />
+							<circle cx="72" cy="219" r="10" fill="#0f172a" />
+							<circle cx="358" cy="66" r="10" fill="#0f172a" />
+							<circle cx="358" cy="219" r="10" fill="#0f172a" />
+							<circle cx="215" cy="95" r="13" fill="#14b8a6" />
+							<circle cx="215" cy="190" r="13" fill="#14b8a6" />
+							<text class="svg-small" x="245" y="148">𝒪′</text>
+						</svg>
+					</div>
+				</div>
+				<p class="hl" style="font-size:0.61em;">The same four-point function must be reconstructed in either channel.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/1601.02883
+				</aside>
+			</section>
+
+			<section id="defect-symmetry-slide" class="step-0">
+				<h2 class="slide-title">A defect breaks the symmetry subgroup</h2>
+				<div class="frame symmetry-stage">
+					<span class="boxcap">symmetry acts differently once the defect is present</span>
+					<div class="group-reduction">
+						<div class="group-chip group-parent">\(SO(1,D+1)\)</div>
+						<div class="group-reduction-arrow">↓</div>
+						<div class="group-product">
+							<div class="group-chip" data-group="tangent">\(SO(1,p+1)\)</div>
+							<span class="times">×</span>
+							<div class="group-chip" data-group="normal">\(SO(q)\)</div>
+						</div>
+						<p><br></p>
+						<p class="group-explainer">\(q=D-p\)</p>
+					</div>
+					<div class="symmetry-canvas-wrap">
+						<canvas id="symmetryCanvas" role="img"
+							aria-label="Schematic two-dimensional slice: ambient operators first move on full planar orbits; a vertical defect then restricts the geometry and defect operators appear on its worldvolume."></canvas>
+						<span class="symmetry-slice-label">schematic 2D slice</span>
+						<div class="symmetry-legend" aria-hidden="true">
+							<span>ambient \(\mathcal O\)</span>
+							<span class="defect-key">defect \(\widehat{\mathcal O}\)</span>
+						</div>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/1601.02883
+
+This is deliberately a schematic two-dimensional slice, not a literal realization of every group action.
+The highlighted SO(q) chip cues the normal symmetry acting on ambient operators; motion along the vertical
+worldvolume cues the SO(1,p+1) action on defect operators.
+				</aside>
+			</section>
+
+			<section id="dcft-data-slide" class="step-0">
+				<h2 class="slide-title">An ambient operator expands into defect primaries</h2>
+				<div class="dcft-data-layout">
+					<div class="frame boe-visual">
+						<span class="boxcap">bring \(\mathcal O_i\) to the defect</span>
+						<svg viewBox="0 0 520 390" role="img" aria-label="An ambient operator approaches a vertical defect, fades away, and is replaced at its projected point by a defect-primary tower">
+							<line class="defect-axis-svg" x1="150" y1="38" x2="150" y2="354" />
+							<text class="svg-small" x="117" y="373">defect</text>
+							<g class="boe-approach-guide">
+								<path d="M354 180 L177 180" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="7 6" />
+								<path d="M178 180 L192 172 L192 188 Z" fill="#94a3b8" />
+								<text class="svg-small" x="267" y="163">orthogonal approach</text>
+							</g>
+							<g class="boe-ambient">
+								<circle cx="385" cy="180" r="34" fill="#fff" stroke="#6366f1" stroke-width="4" />
+								<text class="svg-label" x="385" y="187">𝒪ᵢ</text>
+								<text class="svg-small" x="385" y="229">ambient</text>
+							</g>
+							<g class="boe-specks" fill="#8b5cf6">
+								<circle cx="131" cy="154" r="4" /><circle cx="171" cy="148" r="3" />
+								<circle cx="128" cy="205" r="3" /><circle cx="176" cy="211" r="4" />
+								<circle cx="150" cy="132" r="2.5" /><circle cx="150" cy="229" r="2.5" />
+							</g>
+							<g class="boe-defect-primary">
+								<circle cx="150" cy="180" r="42" fill="none" stroke="#99f6e4" stroke-width="3" opacity="0.42" />
+								<circle cx="150" cy="180" r="35" fill="none" stroke="#5eead4" stroke-width="3" opacity="0.6" />
+								<circle cx="150" cy="180" r="27" fill="#fff" stroke="#14b8a6" stroke-width="4" />
+								<text class="svg-label" x="150" y="187">Ôₐ</text>
+								<text class="svg-small" x="235" y="202">Σₐ defect primaries</text>
+							</g>
+						</svg>
+					</div>
+					<div class="dcft-explanation">
+						<div class="boe-equation-card">
+							<div class="card-label">bulk-to-defect OPE (BOE)</div>
+							<p class="eq-xxs">\[
+								\begin{aligned}
+								\mathcal O_i(x_\parallel,x_\perp)
+								&=\sum_a b_{ia}|x_\perp|^{\widehat\Delta_a-\Delta_i}\\[-1pt]
+								&\quad\times\mathcal C_{ia}(x_\perp^2\partial_\parallel^2)
+								\widehat{\mathcal O}_a(x_\parallel)
+								\end{aligned}
+							\]</p>
+						</div>
+						<div class="dcft-data-merge">
+							<div class="dcft-source-data">
+								<div class="dcft-source-chip">
+									<strong>ambient</strong><br />\(\Delta_i,J_i,\lambda_{ijk}\)
+								</div>
+								<div class="dcft-source-chip defect-source">
+									<strong>defect</strong><br />\(\widehat\Delta_a,s_a,\widehat\lambda_{abc}\)
+								</div>
+								<div class="dcft-source-chip coupling-source">
+									<strong>couplings</strong><br />\(a_i,b_{ia}\)
+								</div>
+							</div>
+							<div class="dcft-combined-data">
+								<div class="card-label">full dCFT data</div>
+								<p>\[
+									\left\{
+									\begin{aligned}
+									&\Delta_i,J_i,\lambda_{ijk};\,
+									\widehat\Delta_a,s_a,\widehat\lambda_{abc};\\[-2pt]
+									&a_i,b_{ia}
+									\end{aligned}
+									\right\}
+								\]</p>
+							</div>
+						</div>
+						<div class="dcft-kinematics">
+							<div class="card-label">new kinematics</div>
+							<p class="eq-xxs">\[
+								\begin{aligned}
+								\chi&=-\frac{2X_1\bullet X_2}{\lVert X_1\rVert_\circ\lVert X_2\rVert_\circ},\\
+								\cos\psi&=\frac{X_1\circ X_2}{\lVert X_1\rVert_\circ\lVert X_2\rVert_\circ}
+								\end{aligned}
+							\]</p>
+						</div>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<span class="fragment step-trigger" data-fragment-index="3"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/1601.02883
+
+All terms in the BOE are inserted at the same projected point x_parallel. The rings represent the
+sum over defect primaries and descendants, not operators spread along the defect.
+				</aside>
+			</section>
+
+			<section id="nncft-divider" data-wash="#f59e0b" data-wash-pos="76% 66%">
+				<div class="orbs">
+					<div class="orb" style="width:350px;height:350px;right:-50px;bottom:-100px;background:radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);"></div>
+				</div>
+				<p class="chapter-num">Chapter 3</p>
+				<h1 class="chapter-title">Neural-network CFTs</h1>
+				<p class="chapter-sub">from function approximation to parameter-space field theory</p>
+			</section>
+
+			<section id="nn-basics-slide">
+				<h2 class="slide-title">A neural network is a composable map</h2>
+				<div class="nn-layout">
+					<div>
+						<p style="font-size:0.78em;"><strong>Neural network:</strong><br />
+							\(f:\mathbb R^m\rightarrow\mathbb R^n\)</p>
+						<p style="font-size:0.68em;"><strong>Operations:</strong> composition, addition and scalar multiplication.</p>
+						<p class="hl" style="font-size:0.61em;margin-top:0.7em;">Its functional form is the <strong>architecture</strong>; its weights and biases are the <strong>parameters</strong>.</p>
+					</div>
+					<div class="frame">
+						<span class="boxcap">one hidden layer</span>
+						<svg class="nn-svg" viewBox="0 0 680 330" role="img" aria-label="Animated feed-forward neural network">
+							<path class="nn-edge signal" d="M78 165 L280 72 M78 165 L280 130 M78 165 L280 200 M78 165 L280 258" />
+							<path class="nn-edge signal" d="M302 72 L555 165 M302 130 L555 165 M302 200 L555 165 M302 258 L555 165" />
+							<circle class="nn-node" cx="70" cy="165" r="25" />
+							<circle class="nn-node hidden" cx="290" cy="72" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="130" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="200" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="258" r="20" />
+							<circle class="nn-node output" cx="565" cy="165" r="26" />
+							<text class="svg-label" x="70" y="172">x</text>
+							<text class="svg-label" x="565" y="172">f(x)</text>
+							<text class="svg-small" x="290" y="306">basis functions fᵢ</text>
+							<text class="svg-small" x="433" y="117">weights wᵢ</text>
+						</svg>
+					</div>
+				</div>
+				<p class="eq" style="text-align:center;margin-top:0.35em;">\[
+					f(x)=f_o\!\left(\sum_i w_i f_i(x)\right)
+				\]</p>
+			</section>
+
+			<section id="large-n-slide">
+				<h2 class="slide-title">The Universal Approximation Theorem (UAT)</h2>
+				<div class="frame uat-frame">
+					<span class="boxcap">one width parameter \(N\) controls both pictures</span>
+					<canvas id="uatCanvas" width="1100" height="350" aria-label="Network width grows while a schematic function approximation converges"></canvas>
+				</div>
+				<div class="uat-caption">
+					<div><strong id="uatNLabel" class="ambient">\(N=1\)</strong> &nbsp; width parameter; displayed nodes are schematic</div>
+					<div style="text-align:right;"><strong id="uatErrorLabel" class="defect">coarse approximation</strong> &nbsp; schematic error</div>
+				</div>
+				<div class="limit-clarifier">
+					<div class="mini"><strong>UAT:</strong> expressivity/density in a function space.</div>
+					<div class="mini"><strong>NNGP:</strong> a suitably normalized iid large-width limit can become Gaussian.</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<span class="fragment step-trigger" data-fragment-index="3"></span>
+				<aside class="notes">The APCTP deck used uat.gif for this joint width/convergence story. This version redraws it live so each state is reversible.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/2409.12222
+- https://arxiv.org/abs/2008.08601
+- https://arxiv.org/abs/2307.03223
+				</aside>
+			</section>
+
+			<section id="integral-slide" class="step-0">
+				<h2 class="slide-title">A functional integral through the UAT</h2>
+				<br>
+				<div class="integral-stage">
+					<div class="card ambient-card integral-card fields">
+						<div class="card-label">function space</div>
+						<p class="eq-sm">\[
+							\int\mathcal D\phi\,\mu[\phi]\,\mathcal F[\phi]
+						\]</p>
+						<p class="muted" style="font-size:0.56em;">integrate over field configurations</p>
+					</div>
+					<div class="integral-bridge">
+						<span class="big-arrow">↔</span>
+						pushforward<br />through \(\Phi_\Theta\)
+					</div>
+					<div class="card defect-card integral-card parameters">
+						<div class="card-label">parameter space</div>
+						<p class="eq-xs">\[
+							\lim_{N\to\infty}\int_{\Theta_N}
+							d\Theta\,P_N(\Theta)\,
+							\mathcal F[\Phi_\Theta]
+						\]</p>
+						<p class="muted" style="font-size:0.56em;">ordinary integrals over network parameters</p>
+					</div>
+				</div>
+				<br>
+				<p class="key-idea-box finite-cft-note"><strong>Key Idea:</strong> replace the functional integral with a statistical average.</p>
+				<p class="hl finite-cft-note" style="font-size:0.6em;margin-top:0.65em;"><strong>But:</strong> conformal correlators can already emerge at finite architecture—the UAT limit is not required to define an nn-CFT.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">A UAT alone does not approximate a measure; this slide states the required pushforward/measure assumption explicitly.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/2409.12222
+				</aside>
+			</section>
+
+			<section id="dictionary-slide" class="step-0">
+				<h2 class="slide-title">What is a NN-CFT?</h2>
+				<br>
+				<div class="frame" style="padding:0.55em 0.8em;">
+					<table class="dict">
+						<thead>
+							<tr>
+								<th>Field-theory language</th>
+								<th>Neural-network language</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>\(\phi(\lambda x)=\lambda^{-\Delta}\phi(x)\)</td>
+								<td>\(\Phi_\Theta(\lambda X)=\lambda^{-\Delta}\Phi_\Theta(X)\)</td>
+							</tr>
+							<tr>
+								<td>\(\displaystyle Z[J]=\int\mathcal D\phi\,e^{-S[\phi]}e^{\int J\phi}\)</td>
+								<td>\(\displaystyle Z[J]=\int d\Theta\,P(\Theta)e^{\int J\Phi_\Theta}\)</td>
+							</tr>
+							<tr>
+								<td>\(\langle\phi(x)\phi(y)\rangle\)</td>
+								<td>\(\mathbb E_{P(\Theta)}[\Phi_\Theta(X)\Phi_\Theta(Y)]\)</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<br>
+				<p class="hl dictionary-takeaway" style="font-size:0.64em;margin-top:0.68em;"><strong>Takeaway:</strong> conformal structure is a property of the architecture–distribution pair, not of the \(N\to\infty\) limit alone.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2409.12222
+				</aside>
+			</section>
+
+			<section id="prior-slide" class="step-0">
+				<h2 class="slide-title">How to encode symmetry?</h2>
+				<br>
+				<div class="prior-z-row" aria-label="The generating functional in field and parameter space">
+					<div class="prior-z-cell">
+						<div class="prior-z-label">field theory</div>
+						<p>\[
+							Z[J]=\int\mathcal D\phi\,e^{-S[\phi]}
+							e^{\int d^D x\,J(x)\phi(x)}
+						\]</p>
+					</div>
+					<div class="prior-z-cell">
+						<div class="prior-z-label">parameter ensemble</div>
+						<p>\[
+							Z[J]=\int d\Theta\,P(\Theta)
+							e^{\int d^D x\,J(x)\Phi_\Theta(x)}
+						\]</p>
+					</div>
+				</div>
+				<br>
+				<div class="prior-stage">
+					<div class="card ml-card">
+						<div class="card-label">parameter ensemble</div>
+						<div class="prior-wheel" aria-label="Parameters orbiting a symmetry-invariant probability measure">
+							<span class="prior-wheel-label">\(P(\Theta)\)</span>
+							<span class="prior-dot" style="left:47%;top:3%;transform-origin:7px 130px;"></span>
+							<span class="prior-dot" style="left:83%;top:27%;transform-origin:-92px 68px;animation-direction:reverse;"></span>
+							<span class="prior-dot" style="left:78%;top:72%;transform-origin:-78px -64px;"></span>
+							<span class="prior-dot" style="left:16%;top:70%;transform-origin:92px -58px;animation-direction:reverse;"></span>
+							<span class="prior-dot" style="left:9%;top:25%;transform-origin:112px 73px;"></span>
+						</div>
+					</div>
+					<div style="text-align:center;color:var(--accent);font-size:1.2em;">→</div>
+					<div class="prior-output">
+						<div class="card ambient-card">
+							<div class="card-label">correlators</div>
+							<p class="eq-sm">\[
+								\mathbb E_{P(\Theta)}
+								[\Phi_{\Theta,1}\cdots\Phi_{\Theta,n}]
+							\]</p>
+							<p style="font-size:0.62em;">inherit the symmetries respected by both \(P(\Theta)\) and \(\Phi_\Theta\).</p>
+						</div>
+					</div>
+				</div>
+				<br>
+				<p class="key-idea-box symmetry-lock"><strong>Key Idea:</strong> Symmetries of \(S[\phi]\) are encoded in the probability measure \(P(\Theta)\).</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2409.12222
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="embedding-slide" class="step-0">
+				<h2 class="slide-title">Embedding space gives a linear action</h2>
+				<div class="embedding-stage frame">
+					<div class="embedding-space-label">
+						<span class="embedding-euclidean">\(\mathbb R^{D+2}\)</span>
+						<span class="embedding-lorentz">\(\mathbb R^{1,D+1}\)</span>
+					</div>
+					<div class="wick-badge"><span aria-hidden="true">↻</span>&nbsp; Wick rotation</div>
+					<svg class="embedding-cone" viewBox="0 0 1000 400" role="img"
+						aria-label="Projective null cone with curved upper and lower Poincare sections">
+						<g class="cone-fill">
+							<path d="M310 65 Q500 20 690 65 L500 210 Z" />
+							<path d="M310 355 Q500 400 690 355 L500 210 Z" />
+						</g>
+						<g class="cone-outline">
+							<path pathLength="1" d="M310 65 L500 210 L690 65" />
+							<path pathLength="1" d="M310 355 L500 210 L690 355" />
+							<path pathLength="1" d="M310 65 Q500 20 690 65" />
+							<path pathLength="1" d="M310 65 Q500 110 690 65" />
+							<path pathLength="1" d="M310 355 Q500 310 690 355" />
+							<path pathLength="1" d="M310 355 Q500 400 690 355" />
+						</g>
+						<g class="poincare-sections">
+							<path class="ps-line" pathLength="1" d="M325 72 Q628 284 511 85" />
+							<path class="ps-line" pathLength="1" d="M675 348 Q372 136 489 335" />
+						</g>
+					</svg>
+					<div class="null-cone-label">
+						\(\mathrm{NC}=\{X\in\mathbb R^{1,D+1}\mid X^2=0\}\)
+						<small>projective identification \(X\sim\lambda X\)</small>
+					</div>
+					<div class="section-label section-top">
+						\(\mathbb R^D:\ X^+=1\)
+						<small>\(x^\mu\mapsto(1,x^2,x^\mu)\)</small>
+					</div>
+					<div class="section-label section-bottom">
+						\(\mathbb R^D:\ X^+=-1\)
+						<small>antipodal representative</small>
+					</div>
+				</div>
+				<div class="cols embedding-ingredients">
+					<div class="card">
+						<div class="card-label">distribution</div>
+						<p style="font-size:0.69em;">\(SO(D+2)\)-invariant \(P(\theta)\)</p>
+					</div>
+					<div class="card">
+						<div class="card-label">homogeneous architecture</div>
+						<p style="font-size:0.69em;">\(\Phi_\Delta(X)=(X\cdot\theta)^{-\Delta}\)</p>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<aside class="notes">The compact group shown first is the pre-Wick Euclidean statement; after continuation the conformal group is SO(1,D+1).
+
+				The red parabolic curves are the Poincaré section X+=1 and its antipodal locus X+=-1.
+				They lie on the upper and lower halves of the projective null cone.
+
+[Sources]
+- https://arxiv.org/abs/2409.12222
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/html/2512.07946#S2.F1
+				</aside>
+			</section>
+
+			<section id="nndcft-divider" data-wash="#14b8a6" data-wash-pos="28% 64%">
+				<div class="orbs">
+					<div class="orb" style="width:370px;height:370px;left:-80px;bottom:-120px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+				</div>
+				<p class="chapter-num">Chapter 4</p>
+				<h1 class="chapter-title">Neural-network defect CFTs</h1>
+				<p class="chapter-sub">break the symmetry, choose an invariant distribution, pick an architecture</p>
+			</section>
+
+			<section id="nndcft-build-slide" class="step-0">
+				<h2 class="slide-title">Ingredients for nn-dCFTs</h2>
+				<br>
+				<div class="build-stage">
+					<div class="card ambient-card build-piece piece-group">
+						<div class="card-label">1 · preserved symmetry</div>
+						<p class="eq-sm">\[
+							SO(1,D+1)\rightarrow
+							SO(1,p+1)\times SO(q)
+						\]</p>
+						<p class="muted" style="font-size:0.54em;">with \(q=D-p\)</p>
+					</div>
+					<div class="build-arrow">→</div>
+					<div class="card ml-card build-piece piece-prior">
+						<div class="card-label">2 · invariant distribution</div>
+						<p class="eq-xs">\[
+							P(g\theta)=P(\theta),\qquad g\in G_{\rm defect}
+						\]</p>
+						<p class="muted" style="font-size:0.54em;"></p>
+					</div>
+					<div class="build-arrow">→</div>
+					<div class="card defect-card build-piece piece-fields">
+						<div class="card-label">3 · covariant architectures</div>
+						<p style="font-size:0.63em;">
+							ambient &nbsp; \(\Phi_\Delta(X)\)<br />
+							defect  &nbsp;&nbsp; \(\widehat\varphi_{\widehat\Delta,s}(X)\)
+						</p>
+					</div>
+				</div>
+				<div class="eqbox generating-functional" style="margin-top:0.62em;">
+					<p class="eq-s">\[
+						Z[\widehat J,J]=
+						\int d\theta\,P(\theta)\,
+						e^{\int d^p x_\parallel\,\widehat J(x_\parallel)\widehat\varphi(x_\parallel)}
+						e^{\int d^D x\,J(x)\Phi(x)}
+					\]</p>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="monomial-ingredients-slide" class="step-0">
+				<h2 class="slide-title">Example 1: a monomial nn-dCFT</h2>
+				<br>
+				<div class="ingredient-stage">
+					<div class="ingredient">
+						<div class="i-num">1</div>
+						<h3>Factorized distribution</h3>
+						<p>\(\widehat P(\hat\theta)\widetilde P(\tilde\theta)\): centered Gaussians.</p>
+						<p class="muted">second moments \(\widehat\mu_2\) and \(\widetilde\mu_2\)</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--defect);">2</div>
+						<h3>Defect network</h3>
+						<p class="eq-sm">\[
+							\widehat\varphi_{\widehat n}(X)
+							=(X\bullet\hat\theta)^{\widehat n}
+						\]</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--ml);">3</div>
+						<h3>Ambient network</h3>
+						<p class="eq-sm">\[
+							\Phi_n(X)=
+							(X\bullet\hat\theta+X\circ\tilde\theta)^n
+						\]</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--violet);">4</div>
+						<h3>Scaling weights</h3>
+						<p>\(\widehat\Delta=-\widehat n\), \(\Delta=-n\)</p>
+						<p class="muted">negative dimensions; \(n,\widehat n\in\mathbb N\)</p>
+					</div>
+				</div>
+				<br>
+				<p class="hl teal" style="font-size:0.6em;margin-top:0.68em;">Convention: hats are tangent/\(\bullet\); tildes are normal/\(\circ\).</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="monomial-onepoint-slide" class="step-0">
+				<h2 class="slide-title">Example 1: One-point functions</h2>
+				<br>
+				<div class="onepoint-stage">
+					<div class="frame vev-scene">
+						<span class="boxcap">selection by the defect</span>
+						<div class="vev-defect"></div>
+						<div class="vev-ambient-dot" style="left:62%;top:22%;"></div>
+						<div class="vev-defect-dot" style="left:calc(30% - 17.5px);top:57%;"></div>
+						<div class="vev-ray" style="left:calc(62% + 17.5px);top:calc(22% + 17.5px);width:210px;transform:rotate(144deg);"></div>
+						<span style="position:absolute;left:18%;top:73%;font-size:0.5em;color:var(--muted);">defect insertion</span>
+						<span style="position:absolute;left:60%;top:14%;font-size:0.5em;color:var(--muted);">ambient insertion</span>
+					</div>
+					<div class="onepoint-equations">
+						<div class="eqbox">
+							<div class="card-label">defect</div>
+							<p class="eq-sm">\[
+								\mathbb E[\widehat\varphi_{\widehat n}(X)]
+								\overset{\mathrm{P.S.}}{=}0,\qquad \widehat n>0
+							\]</p>
+							<p class="muted" style="font-size:0.5em;text-align:center;">The identity \(\widehat n=0\) has expectation value 1.</p>
+						</div>
+						<div class="eqbox ambient-result">
+							<div class="card-label">ambient</div>
+							<p class="eq-xs">\[
+								\mathbb E[\Phi_n(X)]\overset{\mathrm{P.S.}}{=}
+								\begin{cases}
+								\displaystyle
+								\frac{\Gamma(n+1)}
+								{2^{n/2}\Gamma(\frac n2+1)}
+								\big[(\widetilde\mu_2-\widehat\mu_2)X\circ X\big]^{n/2},
+								& n\in2\mathbb Z,\\[4pt]
+								0,&\text{otherwise.}
+								\end{cases}
+							\]</p>
+						</div>
+					</div>
+				</div>
+				<br>
+				<p class="hl" style="font-size:0.59em;margin-top:0.5em;">The variance difference measures the defect deformation; it vanishes when the two sectors match.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<aside class="notes">The displayed formula corrects the tangent/normal convention in the original TeX.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="monomial-twopoint-slide" class="step-0">
+				<h2 class="slide-title">Example 1: Two-point functions</h2>
+				<br>
+				<div class="corr-layout">
+					<div class="corr-matrix" aria-label="Matrix of defect-defect, defect-ambient and ambient-ambient correlators">
+						<div class="corr-cell dd">
+							<div class="pair"><span class="tiny-node d"></span><span class="tiny-node d"></span></div>
+							<div class="cname">defect–defect</div>
+						</div>
+						<div class="corr-cell da">
+							<div class="pair"><span class="tiny-node d"></span><span class="tiny-node"></span></div>
+							<div class="cname">defect–ambient</div>
+						</div>
+						<div class="corr-cell da">
+							<div class="pair"><span class="tiny-node"></span><span class="tiny-node d"></span></div>
+							<div class="cname">ambient–defect</div>
+						</div>
+						<div class="corr-cell aa">
+							<div class="pair"><span class="tiny-node"></span><span class="tiny-node"></span></div>
+							<div class="cname">ambient–ambient</div>
+						</div>
+					</div>
+					<div class="corr-formulas">
+						<div class="eqbox corr-formula formula-dd">
+							<div class="card-label">defect–defect</div>
+							<p class="eq-xs">\[
+								\mathbb E[\widehat\varphi_{\widehat n_1}(X_1)
+								\widehat\varphi_{\widehat n_2}(X_2)]
+								=\delta_{\widehat n_1,\widehat n_2}
+								\Gamma(\widehat n_1+1)
+								(\widehat\mu_2X_1\bullet X_2)^{\widehat n_1}
+							\]</p>
+						</div>
+						<div class="eqbox corr-formula formula-da">
+							<div class="card-label">defect–ambient</div>
+							<p class="eq-xxs">\[
+								\begin{aligned}
+								&\mathbb E[\widehat\varphi_{\widehat n_1}(X_1)\Phi_{n_2}(X_2)]
+								=\frac{\Gamma(n_2+1)}
+								{2^{(n_2-\widehat n_1)/2}
+								\Gamma(\frac{n_2-\widehat n_1}{2}+1)}
+								(\widehat\mu_2X_1\bullet X_2)^{\widehat n_1}\\
+								&\hspace{2.3cm}\times
+								[(\widetilde\mu_2-\widehat\mu_2)X_2\circ X_2]^{
+								(n_2-\widehat n_1)/2}
+								\end{aligned}
+							\]</p>
+							<p class="muted" style="font-size:0.48em;">nonzero for \(n_2\geq\widehat n_1\) and \(n_2-\widehat n_1\in2\mathbb Z\)</p>
+						</div>
+						<div class="eqbox corr-formula formula-aa">
+							<div class="card-label">ambient–ambient</div>
+							<p class="eq-xxs">\[
+								\begin{aligned}
+								\mathbb E[\Phi_{n_1}(X_1)\Phi_{n_2}(X_2)]
+								={}&\frac{\Gamma(n_2+1)}
+								{\Gamma(\frac{n_2-n_1}{2}+1)}
+								\left(\frac{\alpha_{22}}{2}\right)^{\frac{n_2-n_1}{2}}
+								\alpha_{12}^{n_1}\\
+								&\times{}_2F_1\!\left(
+								\frac{1-n_1}{2},-\frac{n_1}{2};
+								\frac{n_2-n_1}{2}+1;
+								\frac{\alpha_{11}\alpha_{22}}{\alpha_{12}^2}
+								\right)
+								\end{aligned}
+							\]</p>
+							<p class="muted corr-note">for \(n_1\leq n_2\) with equal parity; exchange \(1\leftrightarrow2\) otherwise</p>
+						</div>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">The original TeX used the normal variance in the DD result and swapped the variance difference in the mixed result; both are corrected here.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/1601.02883
+				</aside>
+			</section>
+
+			<!-- <section id="ambient-twopoint-slide" class="step-0">
+				<h2 class="slide-title">Example 1: The ambient channel resums to a hypergeometric function</h2>
+				<div class="invariant-row">
+					<div class="invariant-chip"><p class="eq-xxs">\[\alpha_{11}=(\widetilde\mu_2-\widehat\mu_2)X_1\circ X_1\]</p></div>
+					<div class="invariant-chip"><p class="eq-xxs">\[\alpha_{22}=(\widetilde\mu_2-\widehat\mu_2)X_2\circ X_2\]</p></div>
+					<div class="invariant-chip"><p class="eq-xxs">\[\alpha_{12}=\widehat\mu_2X_1\bullet X_2+\widetilde\mu_2X_1\circ X_2\]</p></div>
+				</div>
+				<div class="eqbox ambient-formula">
+					<p class="eq-xxs">\[
+						\begin{aligned}
+						\mathbb E[\Phi_{n_1}(X_1)\Phi_{n_2}(X_2)]
+						={}&
+						\frac{\Gamma(n_2+1)}
+						{\Gamma(\frac{n_2-n_1}{2}+1)}
+						\left(\frac{\alpha_{22}}{2}\right)^{\frac{n_2-n_1}{2}}
+						\alpha_{12}^{n_1}\\
+						&\times{}_2F_1\!\left(
+						\frac{1-n_1}{2},-\frac{n_1}{2};
+						\frac{n_2-n_1}{2}+1;
+						\frac{\alpha_{11}\alpha_{22}}{\alpha_{12}^2}
+						\right).
+						\end{aligned}
+					\]</p>
+				</div>
+				<div class="cols" style="margin-top:0.55em;">
+					<div class="card">
+						<div class="card-label">selection rule</div>
+						<p style="font-size:0.59em;">\(n_1\leq n_2\), \(n_1+n_2\in2\mathbb Z\); exchange \(1\leftrightarrow2\) otherwise.</p>
+					</div>
+					<div class="card">
+						<div class="card-label">Wick check</div>
+						<p style="font-size:0.59em;">For \(n_1=n_2=2\): \(2\alpha_{12}^2+\alpha_{11}\alpha_{22}\).</p>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">The original TeX contained an extra 1/Gamma(n_1+1), which failed the n_1=n_2=2 Wick-contraction check; it is removed here.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section> -->
+
+			<section id="monomial-ope-slide" class="step-0">
+				<h2 class="slide-title">Example 1: Finite defect-network expansion</h2>
+				<br>
+				<div class="ope-layout">
+					<div class="ope-general">
+						<div class="eqbox">
+							<div class="card-label">exact OPE-like decomposition</div>
+							<p class="eq-s">\[
+								\Phi_n(X)=
+								\sum_{d=0}^{n}\binom nd
+								\underbrace{(X\circ\tilde\theta)^{n-d}}_{\text{normal degree }n-d}
+								\underbrace{(X\bullet\hat\theta)^d}_{\text{tangent degree }d}
+							\]</p>
+						</div>
+						<p style="font-size:0.62em;margin-top:0.65em;">Each term is a smaller network with a definite scaling dimensions.</p>
+						<p class="hl teal ope-takeaway" style="font-size:0.58em;margin-top:0.55em;"><strong>For \(n=4\):</strong> exactly five network factors  ⟾ no infinite defect tower.</p>
+					</div>
+					<div class="frame ope-stage">
+						<span class="boxcap">example \(n=4\)</span>
+						<svg id="opeSvg" viewBox="0 0 690 350" role="img" aria-label="Ambient monomial decomposes into five defect-network factors"></svg>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<span class="fragment step-trigger" data-fragment-index="3"></span>
+				<aside class="notes">This answers the red question in the LaTeX deck: the defect OPE-like expansion is literally a finite decomposition into sub-architectures for a polynomial network.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="reciprocal-ingredients-slide" class="step-0">
+				<h2 class="slide-title">Example 2: a reciprocal nn-dCFT</h2>
+				<br>
+				<div class="ingredient-stage">
+					<div class="ingredient">
+						<div class="i-num">1</div>
+						<h3>Same factorized distribution</h3>
+						<p>\(\widehat P(\hat\theta)\widetilde P(\tilde\theta)\), with moments \(\widehat\mu_2,\widetilde\mu_2\).</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--defect);">2</div>
+						<h3>Defect network</h3>
+						<p class="eq-sm">\[
+							\widehat\varphi_{\widehat\Delta}(X)
+							=(X\bullet\hat\theta)^{-\widehat\Delta}
+						\]</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--ml);">3</div>
+						<h3>Ambient network</h3>
+						<p class="eq-sm">\[
+							\Phi_\Delta(X)=
+							(X\bullet\hat\theta+X\circ\tilde\theta)^{-\Delta}
+						\]</p>
+					</div>
+					<div class="ingredient">
+						<div class="i-num" style="background:var(--violet);">4</div>
+						<h3>Positive dimensions</h3>
+						<p>\(\widehat\Delta,\Delta>0\)</p>
+						<p class="muted">positive does not by itself imply unitarity</p>
+					</div>
+				</div>
+				<div class="tower" aria-label="Infinite sequence of defect dimensions Delta, Delta plus one, Delta plus two and so on">
+					<div class="tower-line"></div>
+					<div class="tower-dot" data-label="Δ" style="left:8%;"></div>
+					<div class="tower-dot" data-label="Δ+1" style="left:26%;"></div>
+					<div class="tower-dot" data-label="Δ+2" style="left:44%;"></div>
+					<div class="tower-dot" data-label="Δ+3" style="left:62%;"></div>
+					<div class="tower-dot" data-label="⋯" style="left:80%;"></div>
+				</div>
+				<div class="eqbox tower-equation" style="margin-top:0.22em;">
+					<p class="eq-xs">\[
+						\Phi_\Delta(X)=
+						\sum_{n=0}^{\infty}\frac{(\Delta)_n}{n!}(-1)^n\,
+						\widetilde\varphi_{-n}(X)\,
+						\widehat\varphi_{\Delta+n}(X)
+					\]</p>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<aside class="notes">This is a formal expansion. Negative moments in the defect sector require analytic continuation and regularization.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="reciprocal-onepoint-slide" class="step-0">
+				<h2 class="slide-title">Example 2: One-point functions</h2>
+				<br>
+				<div class="onepoint-stage">
+					<div class="frame vev-scene">
+						<span class="boxcap">spectrum starts at \(\widehat\Delta=\Delta>0\)</span>
+						<div class="vev-defect"></div>
+						<div class="vev-ambient-dot" style="left:62%;top:22%;"></div>
+						<div class="vev-defect-dot" style="left:calc(30% - 17.5px);top:57%;"></div>
+						<div class="vev-spectrum-strip" aria-label="Defect spectrum Delta, Delta plus one, and higher">
+							<div class="tower-line"></div>
+							<div class="tower-dot" data-label="Δ" style="left:15%;"></div>
+							<div class="tower-dot" data-label="Δ+1" style="left:48%;"></div>
+							<div class="tower-dot" data-label="⋯" style="left:80%;"></div>
+						</div>
+					</div>
+					<div class="onepoint-equations">
+						<div class="eqbox">
+							<div class="card-label">defect</div>
+							<p class="eq">\[
+								\mathbb E[\widehat\varphi_{\widehat\Delta}(X)]=0
+							\]</p>
+						</div>
+						<div class="eqbox ambient-result">
+							<div class="card-label">ambient</div>
+							<p class="eq">\[
+								\mathbb E[\Phi_\Delta(X)]=0
+							\]</p>
+						</div>
+						<p class="callout" style="margin:0;">With no \(\widehat\Delta=0\) term, there is no coupling to the defect identity.</p>
+					</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<aside class="notes">The vanishing statement uses the regularization scheme defined in the paper.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+				</aside>
+			</section>
+
+			<section id="reciprocal-twopoint-slide" class="step-0">
+				<h2 class="slide-title">Example 2:Two-point functions</h2>
+				<br>
+				<div class="reciprocal-formulas">
+					<div class="card defect-card reciprocal-formula">
+						<div class="card-label">defect–defect</div>
+						<p class="eq-s">\[
+							\begin{aligned}
+							&\mathbb E[
+							\widehat\varphi_{\widehat\Delta_1}(X_1)
+							\widehat\varphi_{\widehat\Delta_2}(X_2)]\\
+							&\quad=
+							\frac{\sec(\pi\widehat\Delta_1)}
+							{\Gamma(\widehat\Delta_1)}
+							(\widehat\mu_2X_1\bullet X_2)^{-\widehat\Delta_1}
+							\delta_{\widehat\Delta_1,\widehat\Delta_2}.
+							\end{aligned}
+						\]</p>
+						<p class="muted" style="font-size:0.5em;">For integer \(\widehat\Delta\), \(\sec(\pi\widehat\Delta)=(-1)^{\widehat\Delta}\).</p>
+					</div>
+					<div class="card ambient-card reciprocal-formula">
+						<div class="card-label">ambient–defect</div>
+						<p class="eq-s">\[
+							\begin{aligned}
+							&\mathbb E[
+							\Phi_{\Delta_1}(X_1)
+							\widehat\varphi_{\widehat\Delta_2}(X_2)]
+							=
+							\frac{
+							2^{(\Delta_1-\widehat\Delta_2)/2}
+							\sec(\pi\widehat\Delta_2)}
+							{\Gamma(\Delta_1)
+							\Gamma(\frac{\widehat\Delta_2-\Delta_1}{2}+1)}
+							\\[-1pt]
+							&\qquad\times
+							(\widetilde\mu_2X_1\circ X_1)^{
+							(\widehat\Delta_2-\Delta_1)/2}
+							(\widehat\mu_2X_1\bullet X_2)^{
+							-\widehat\Delta_2}.
+							\end{aligned}
+						\]</p>
+						<p class="muted" style="font-size:0.5em;">nonzero for \(\widehat\Delta_2\geq\Delta_1\)</p>
+					</div>
+				</div>
+				<br>
+				<p class="hl" style="font-size:0.6em;margin-top:0.72em;">The mixed result has exactly the kinematic form required by defect conformal symmetry.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<aside class="notes">The original TeX used (-1)^Delta outside the integer case and, more seriously, a positive final power. This slide follows the paper's meromorphic normalization and negative conformal power.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/1601.02883
+				</aside>
+			</section>
+
+			<section id="conclusion-divider" data-wash="#64748b" data-wash-pos="50% 50%">
+				<div class="orbs">
+					<div class="orb" style="width:340px;height:340px;right:-40px;bottom:-100px;background:radial-gradient(circle at 35% 35%, #cbd5e1, #64748b);"></div>
+				</div>
+				<p class="chapter-num">Chapter 5</p>
+				<h1 class="chapter-title">What was achieved?</h1>
+				<p class="chapter-sub">a solvable laboratory · a new toolset for dCFT data</p>
+			</section>
+
+			<section id="status-slide">
+				<h2 class="slide-title">A brief recap</h2>
+				<br>
+				<div class="status-cols">
+					<div class="card status-card done">
+						<div class="card-label">completed here</div>
+						<ul class="check-list">
+							<li>Extended neural-network conformal fields to flat defects.</li>
+							<li>Built monomial and reciprocal nn-dCFT toy models.</li>
+							<li>Computed ambient, defect and mixed scalar correlators.</li>
+							<li>Made explicit the dCFT data of new theories.</li>
+						</ul>
+					</div>
+					<div class="card status-card open">
+						<div class="card-label">next questions</div>
+						<ul class="open-list">
+							<li>We only considered scalar bosons  ⟾ include symmetric traceless tensors?</li>
+							<li>We only considered scalar bosons  ⟾ fermions?</li>
+							<li>Can we recover real life CFTs/dCFTs?</li>
+							<li>Can we compute their anomaly coefficients?</li>
+						</ul>
+					</div>
+				</div>
+				<aside class="notes">The original “upcoming” labels for 2d symmetry and fermions are stale by August 2026; this wording asks for their defect extensions instead.
+
+[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/2512.24420
+				</aside>
+			</section>
+
+			<section id="takeaways-slide">
+				<h2 class="slide-title">Key takeaways</h2>
+				<br>
+				<div class="takeaway-stack">
+					<div class="takeaway">
+						<div class="takeaway-n">1</div>
+						<p><strong>UATs give a well-defined approximation of the path integral.</strong></p>
+					</div>
+					<div class="takeaway">
+						<div class="takeaway-n">2</div>
+						<p><strong>Finite neural architectures can already define CFT and dCFT data.</strong> A UAT limit is not required.</p>
+					</div>
+					<div class="takeaway">
+						<div class="takeaway-n">3</div>
+						<p><strong>Large-width Gaussian limits generally yield generalized-free theories</strong></p>
+					</div>
+					<div class="takeaway">
+						<div class="takeaway-n">4</div>
+						<p><strong>Can combine these nn-CFTs (nn-dCFTs) to generate infinitely many new theories</strong></p>
+					</div>
+				</div>
+				<br>
+				<!-- <p class="hl teal" style="font-size:0.61em;margin-top:0.55em;">Physics does answer back: it supplies an organizing language for structured ensembles of neural networks.</p> -->
+				<aside class="notes">[Sources]
+- https://arxiv.org/abs/2512.07946
+- https://arxiv.org/abs/2409.12222
+- https://arxiv.org/abs/2008.08601
+- https://arxiv.org/abs/2307.03223
+				</aside>
+			</section>
+
+			<section id="thanks-slide">
+				<div class="orbs">
+					<div class="orb" style="width:380px;height:380px;right:-70px;bottom:-120px;background:radial-gradient(circle at 35% 35%, #a5b4fc, #6366f1);"></div>
+					<div class="orb" style="width:260px;height:260px;right:250px;top:-90px;background:radial-gradient(circle at 35% 35%, #99f6e4, #14b8a6);"></div>
+				</div>
+				<h1 class="title-main">Thank you</h1>
+				<div class="title-rule"></div>
+				<br>
+				<p class="title-meta muted">Questions are welcome — <a href="mailto:b.suzzoni@benterre.com">b.suzzoni@benterre.com</a></p>
+				<p class="title-meta"><a href="https://arxiv.org/abs/2512.07946" target="_blank">arXiv:2512.07946</a></p>
+			</section>
+		</div>
+	</div>
+
+	<script src="../dist/reveal.js"></script>
+	<script src="../dist/plugin/notes.js"></script>
+	<script src="../dist/plugin/markdown.js"></script>
+	<script src="../dist/plugin/highlight.js"></script>
+	<script src="../dist/plugin/zoom.js"></script>
+	<script src="../dist/plugin/search.js"></script>
+
+	<script>
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+			controls: false,
+			width: 1280,
+			height: 800,
+			margin: 0.05,
+			transition: "slide",
+			transitionSpeed: "default",
+			backgroundTransition: "fade",
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+		});
+
+		/* The skyline belongs to the viewport, not the scaled Reveal stage.
+		   Toggle the fixed body layer as the title enters or leaves. */
+		(function () {
+			function setTitleCityscape(slide) {
+				document.body.classList.toggle("title-cityscape-visible",
+					Boolean(slide && slide.id === "title-slide"));
+			}
+			Reveal.on("ready", function (event) {
+				setTitleCityscape(event.currentSlide);
+			});
+			Reveal.on("beforeslidechange", function (event) {
+				var slides = document.querySelectorAll(".reveal .slides > section");
+				setTitleCityscape(slides[event.indexh]);
+			});
+			Reveal.on("slidechanged", function (event) {
+				setTitleCityscape(event.currentSlide);
+			});
+		})();
+
+		/* MathJax changes a slide's measured height after Reveal has centered it.
+		   Re-layout once fonts and equations have settled, as in the UNIST deck. */
+		(function () {
+			function relayout() {
+				if (window.Reveal && Reveal.layout) Reveal.layout();
+			}
+			if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+				MathJax.startup.promise
+					.then(relayout)
+					.then(function () { setTimeout(relayout, 140); });
+			} else {
+				window.addEventListener("load", function () { setTimeout(relayout, 450); });
+			}
+			if (document.fonts && document.fonts.ready) {
+				document.fonts.ready.then(function () { setTimeout(relayout, 80); });
+			}
+		})();
+
+		/* Display equations never wrap. Fit only the equations that exceed their
+		   actual host width, and recalculate on every entry/resize. */
+		function fitEquations(slide) {
+			if (!slide) return;
+			var scale = (Reveal.getScale && Reveal.getScale()) || 1;
+			slide.querySelectorAll('mjx-container[display="true"]').forEach(function (box) {
+				box.style.fontSize = "";
+				var host = box.parentElement;
+				var avail = host && host.clientWidth;
+				var math = box.querySelector("mjx-math");
+				if (!avail || !math) return;
+				var width = math.getBoundingClientRect().width / scale;
+				if (width > avail - 4) {
+					var current = parseFloat(getComputedStyle(box).fontSize) || 16;
+					box.style.fontSize = Math.max(8, current * (avail - 10) / width) + "px";
+				}
+			});
+		}
+
+		/* Topic-change wash, shared with the UNIST presentation. */
+		(function () {
+			var disk = document.querySelector(".wash-disk");
+			if (!disk) return;
+			Reveal.on("beforeslidechange", function (event) {
+				var slides = document.querySelectorAll(".reveal .slides > section");
+				var target = slides[event.indexh];
+				var colour = target && target.dataset.wash;
+				var current = Reveal.getCurrentSlide();
+				if (!colour || !current || current === target) return;
+				var pos = (target.dataset.washPos || "50% 50%").split(/\s+/);
+				disk.style.setProperty("--wash-colour", colour);
+				disk.style.setProperty("--wash-x", pos[0]);
+				disk.style.setProperty("--wash-y", pos[1] || pos[0]);
+				disk.classList.remove("run");
+				void disk.offsetWidth;
+				disk.classList.add("run");
+			});
+			disk.addEventListener("animationend", function () {
+				disk.classList.remove("run");
+			});
+		})();
+
+		function fragmentStep(slide) {
+			if (!slide) return 0;
+			return slide.querySelectorAll(".step-trigger.visible").length;
+		}
+
+		function setStepClass(slide, step) {
+			if (!slide) return;
+			Array.from(slide.classList).forEach(function (name) {
+				if (/^step-\d+$/.test(name)) slide.classList.remove(name);
+			});
+			slide.classList.add("step-" + step);
+			slide.dataset.step = String(step);
+		}
+
+		/* Move the three independent CFT labels from their defining relations
+		   into one common data set. Source and target anchors remain in layout,
+		   so this stays reversible and robust under Reveal scaling. */
+		var cftDataMotion = (function () {
+			var stage = document.getElementById("cftDataStage");
+			if (!stage) return { reflow: function () {} };
+
+			function reflow() {
+				var stageRect = stage.getBoundingClientRect();
+				if (!stageRect.width || !stageRect.height) return;
+				var scaleX = stage.clientWidth / stageRect.width;
+				var scaleY = stage.clientHeight / stageRect.height;
+				stage.querySelectorAll(".cft-data-token").forEach(function (token) {
+					var key = token.dataset.token;
+					var source = stage.querySelector('[data-source="' + key + '"]');
+					var target = stage.querySelector('[data-target="' + key + '"]');
+					if (!source || !target) return;
+					var sourceRect = source.getBoundingClientRect();
+					var targetRect = target.getBoundingClientRect();
+					var sourceX = (sourceRect.left + sourceRect.width / 2 - stageRect.left) * scaleX;
+					var sourceY = (sourceRect.top + sourceRect.height / 2 - stageRect.top) * scaleY;
+					var deltaX = (targetRect.left + targetRect.width / 2 -
+						sourceRect.left - sourceRect.width / 2) * scaleX;
+					var deltaY = (targetRect.top + targetRect.height / 2 -
+						sourceRect.top - sourceRect.height / 2) * scaleY;
+					token.style.left = sourceX + "px";
+					token.style.top = sourceY + "px";
+					token.style.setProperty("--dx", deltaX + "px");
+					token.style.setProperty("--dy", deltaY + "px");
+				});
+			}
+
+			return { reflow: reflow };
+		})();
+
+		/* Symmetry reduction in a schematic two-dimensional slice. The ambient
+		   insertions orbit before the defect appears, then interpolate to
+		   defect-preserving motion. The highlighted chip cues SO(q); vertical
+		   defect motion illustrates SO(1,p+1). */
+		var defectSymmetryStage = (function () {
+			var canvas = document.getElementById("symmetryCanvas");
+			if (!canvas) return { show: function () {}, stop: function () {}, redraw: function () {} };
+			var context = canvas.getContext("2d");
+			if (!context) return { show: function () {}, stop: function () {}, redraw: function () {} };
+			var frame = null;
+			var running = false;
+			var lastTime = 0;
+			var current = { restriction: 0, defect: 0 };
+			var target = { restriction: 0, defect: 0 };
+
+			function reducedMotion() {
+				return window.matchMedia &&
+					window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			}
+
+			function measure() {
+				var rect = canvas.getBoundingClientRect();
+				var ratio = Math.min(window.devicePixelRatio || 1, 2);
+				var width = Math.max(320, rect.width);
+				var height = Math.max(220, rect.height);
+				if (canvas.width !== Math.round(width * ratio) ||
+					canvas.height !== Math.round(height * ratio)) {
+					canvas.width = Math.round(width * ratio);
+					canvas.height = Math.round(height * ratio);
+				}
+				context.setTransform(ratio, 0, 0, ratio, 0, 0);
+				return { width: width, height: height };
+			}
+
+			function operator(x, y, radius, stroke, label, alpha) {
+				context.save();
+				context.globalAlpha = alpha;
+				context.beginPath();
+				context.arc(x, y, radius, 0, Math.PI * 2);
+				context.fillStyle = "#ffffff";
+				context.fill();
+				context.strokeStyle = stroke;
+				context.lineWidth = 3.5;
+				context.stroke();
+				context.fillStyle = "#0f172a";
+				context.font = "600 15px Inter, sans-serif";
+				context.textAlign = "center";
+				context.textBaseline = "middle";
+				context.fillText(label, x, y + 0.5);
+				context.restore();
+			}
+
+			function draw(time) {
+				var size = measure();
+				var width = size.width;
+				var height = size.height;
+				var restriction = current.restriction;
+				var defect = current.defect;
+				var axisX = width * 0.43;
+				var centerX = width * 0.56;
+				var centerY = height * 0.5;
+				context.clearRect(0, 0, width, height);
+
+				context.save();
+				context.globalAlpha = Math.max(0, 1 - restriction) * 0.5;
+				context.beginPath();
+				context.arc(centerX, centerY, Math.min(width, height) * 0.32, 0, Math.PI * 2);
+				context.strokeStyle = "#a5b4fc";
+				context.lineWidth = 1.5;
+				context.setLineDash([7, 7]);
+				context.stroke();
+				context.restore();
+
+				if (restriction > 0.002) {
+					context.save();
+					context.globalAlpha = restriction;
+					context.strokeStyle = "rgba(20,184,166,0.12)";
+					context.lineWidth = 13;
+					context.beginPath();
+					context.moveTo(axisX, 33);
+					context.lineTo(axisX, height - 31);
+					context.stroke();
+					var gradient = context.createLinearGradient(axisX, 33, axisX, height - 31);
+					gradient.addColorStop(0, "#2dd4bf");
+					gradient.addColorStop(1, "#0f766e");
+					context.strokeStyle = gradient;
+					context.lineWidth = 4;
+					context.lineCap = "round";
+					context.beginPath();
+					context.moveTo(axisX, 33);
+					context.lineTo(axisX, height - 31);
+					context.stroke();
+					context.translate(axisX - 12, centerY);
+					context.rotate(-Math.PI / 2);
+					context.fillStyle = "#0f766e";
+					context.font = "600 12px Inter, sans-serif";
+					context.textAlign = "center";
+					context.fillText("defect", 0, 0);
+					context.restore();
+				}
+
+				var phases = [0.15, 2.2, 4.25];
+				var orbitRadii = [0.24, 0.31, 0.27];
+				var restrictedX = [axisX + width * 0.18, axisX + width * 0.31, axisX - width * 0.17];
+				for (var i = 0; i < phases.length; i++) {
+					var angle = time * (0.00044 + i * 0.00006) + phases[i];
+					var orbitR = Math.min(width, height) * orbitRadii[i];
+					var orbitX = centerX + Math.cos(angle) * orbitR;
+					var orbitY = centerY + Math.sin(angle) * orbitR;
+					var verticalY = centerY + Math.sin(time * 0.00105 + phases[i]) *
+						(height * (0.2 + i * 0.018));
+					var x = orbitX * (1 - restriction) + restrictedX[i] * restriction;
+					var y = orbitY * (1 - restriction) + verticalY * restriction;
+					operator(x, y, 18, "#6366f1", "𝒪", 1 - 0.24 * defect);
+				}
+
+				if (defect > 0.002) {
+					var defectYs = [
+						centerY - height * 0.18 + Math.sin(time * 0.0012) * height * 0.07,
+						centerY + height * 0.19 + Math.sin(time * 0.0012 + 2.3) * height * 0.07
+					];
+					defectYs.forEach(function (y) {
+						operator(axisX, y, 17, "#14b8a6", "Ô", defect);
+					});
+				}
+
+				context.save();
+				context.fillStyle = restriction < 0.5 ? "#4f46e5" : "#64748b";
+				context.font = "600 12px Inter, sans-serif";
+				context.textAlign = "right";
+				context.fillText(restriction < 0.5 ? "full conformal group" : "defect subgroup",
+					width - 13, 20);
+				context.restore();
+			}
+
+			function tick(time) {
+				var delta = lastTime ? Math.min(48, time - lastTime) : 16;
+				lastTime = time;
+				var blend = 1 - Math.exp(-delta / 190);
+				current.restriction += (target.restriction - current.restriction) * blend;
+				current.defect += (target.defect - current.defect) * blend;
+				draw(time);
+				if (running) frame = requestAnimationFrame(tick);
+			}
+
+			function show(step) {
+				target.restriction = step >= 1 ? 1 : 0;
+				target.defect = step >= 2 ? 1 : 0;
+				if (reducedMotion()) {
+					stop();
+					current.restriction = target.restriction;
+					current.defect = target.defect;
+					draw(0);
+					return;
+				}
+				running = true;
+				if (!frame) frame = requestAnimationFrame(tick);
+			}
+
+			function stop() {
+				running = false;
+				if (frame) cancelAnimationFrame(frame);
+				frame = null;
+				lastTime = 0;
+			}
+
+			function redraw() {
+				if (reducedMotion()) {
+					current.restriction = target.restriction;
+					current.defect = target.defect;
+				}
+				draw(performance.now());
+			}
+
+			return { show: show, stop: stop, redraw: redraw };
+		})();
+
+		/* ------------------------------------------------------------------
+		   Live UAT stage. A single state controls both the network width and
+		   a deterministic basis expansion of the target function.
+		   ------------------------------------------------------------------ */
+		var largeNStage = (function () {
+			var canvas = document.getElementById("uatCanvas");
+			var nLabel = document.getElementById("uatNLabel");
+			var errorLabel = document.getElementById("uatErrorLabel");
+			if (!canvas) return { show: function () {}, stop: function () {}, redraw: function () {} };
+			var context = canvas.getContext("2d");
+			if (!context) return { show: function () {}, stop: function () {}, redraw: function () {} };
+			var states = [
+				{ n: 1, proxy: 1, infinite: 0, nodes: 1, terms: 1, quality: "coarse approximation" },
+				{ n: 5, proxy: 5, infinite: 0, nodes: 5, terms: 3, quality: "main features appear" },
+				{ n: 20, proxy: 20, infinite: 0, nodes: 11, terms: 7, quality: "finer structure resolved" },
+				{ n: 100, proxy: 100, infinite: 0, nodes: 18, terms: 18, quality: "small residual error" },
+				{ n: Infinity, proxy: 300, infinite: 1, nodes: 25, terms: 48, quality: "residual below visual scale" }
+			];
+			var frame = null;
+			var targetIndex = 0;
+
+			function vector(state) {
+				return {
+					n: state.proxy != null ? state.proxy : state.n,
+					infinite: state.infinite,
+					nodes: state.nodes,
+					terms: state.terms
+				};
+			}
+
+			function blend(a, b, u) {
+				return {
+					n: a.n + (b.n - a.n) * u,
+					infinite: a.infinite + (b.infinite - a.infinite) * u,
+					nodes: a.nodes + (b.nodes - a.nodes) * u,
+					terms: a.terms + (b.terms - a.terms) * u
+				};
+			}
+
+			var renderState = vector(states[0]);
+
+			function basisTerm(j, x) {
+				var amplitude = 0.68 / Math.pow(j + 1, 1.38);
+				return amplitude * Math.sin((j + 1) * x + 0.41 * j);
+			}
+
+			/* A high-resolution reference to an absolutely convergent infinite
+			   series. Finite-width states use genuine partial sums and retain a
+			   non-zero residual all the way through the displayed endpoint. */
+			function targetFunction(x) {
+				var sum = 0;
+				for (var j = 0; j < 160; j++) sum += basisTerm(j, x);
+				return sum;
+			}
+
+			function partialFunction(x, terms) {
+				var whole = Math.floor(terms);
+				var fraction = terms - whole;
+				var sum = 0;
+				for (var j = 0; j < whole; j++) sum += basisTerm(j, x);
+				if (whole < 160 && fraction > 0) sum += fraction * basisTerm(whole, x);
+				return sum;
+			}
+
+			function roundedRect(ctx, x, y, w, h, radius) {
+				var r = Math.min(radius, w / 2, h / 2);
+				ctx.beginPath();
+				ctx.moveTo(x + r, y);
+				ctx.arcTo(x + w, y, x + w, y + h, r);
+				ctx.arcTo(x + w, y + h, x, y + h, r);
+				ctx.arcTo(x, y + h, x, y, r);
+				ctx.arcTo(x, y, x + w, y, r);
+				ctx.closePath();
+			}
+
+			function measure() {
+				var rect = canvas.getBoundingClientRect();
+				var ratio = Math.min(window.devicePixelRatio || 1, 2);
+				var width = Math.max(300, rect.width);
+				var height = Math.max(180, rect.height);
+				if (canvas.width !== Math.round(width * ratio) ||
+					canvas.height !== Math.round(height * ratio)) {
+					canvas.width = Math.round(width * ratio);
+					canvas.height = Math.round(height * ratio);
+				}
+				context.setTransform(ratio, 0, 0, ratio, 0, 0);
+				return { width: width, height: height };
+			}
+
+			function drawNode(x, y, radius, stroke, fill) {
+				context.beginPath();
+				context.arc(x, y, radius, 0, Math.PI * 2);
+				context.fillStyle = fill;
+				context.fill();
+				context.strokeStyle = stroke;
+				context.lineWidth = 2;
+				context.stroke();
+			}
+
+			function stateLabel(state) {
+				if (state.infinite > 0.88) return "N → ∞";
+				var rounded = Math.round(state.n);
+				return Math.abs(state.n - rounded) < 0.08 ? "N = " + rounded : "N ≈ " + rounded;
+			}
+
+			function draw(state) {
+				var size = measure();
+				var width = size.width;
+				var height = size.height;
+				context.clearRect(0, 0, width, height);
+
+				var nodes = Math.max(1, Math.round(state.nodes));
+				var terms = state.terms;
+				var leftW = width * 0.43;
+				var inputX = 48;
+				var hiddenX = leftW * 0.53;
+				var outputX = leftW - 42;
+				var centerY = height * 0.53;
+				var top = 36;
+				var bottom = height - 34;
+
+				context.font = "600 14px Inter, sans-serif";
+				context.fillStyle = "#64748b";
+				context.textAlign = "center";
+				context.fillText("network width", leftW * 0.5, 19);
+
+				var yPositions = [];
+				for (var i = 0; i < nodes; i++) {
+					yPositions.push(nodes === 1 ? centerY : top + (bottom - top) * i / (nodes - 1));
+				}
+				context.strokeStyle = "rgba(99,102,241,0.22)";
+				context.lineWidth = 1.25;
+				yPositions.forEach(function (y) {
+					context.beginPath();
+					context.moveTo(inputX + 14, centerY);
+					context.lineTo(hiddenX - 8, y);
+					context.lineTo(outputX - 15, centerY);
+					context.stroke();
+				});
+				drawNode(inputX, centerY, 13, "#6366f1", "#ffffff");
+				yPositions.forEach(function (y, i) {
+					var hue = i % 2 ? "#eef2ff" : "#f0fdfa";
+					drawNode(hiddenX, y, nodes > 18 ? 4.2 : 6.2, "#6366f1", hue);
+				});
+				drawNode(outputX, centerY, 14, "#14b8a6", "#ffffff");
+				context.font = "500 13px Inter, sans-serif";
+				context.fillStyle = "#0f172a";
+				context.fillText("x", inputX, centerY + 4);
+				context.fillText("f", outputX, centerY + 4);
+				context.fillStyle = "#64748b";
+				context.fillText(stateLabel(state), hiddenX, height - 8);
+
+				var plotX = leftW + 38;
+				var plotY = 31;
+				var plotW = width - plotX - 25;
+				var plotH = height - 58;
+				roundedRect(context, plotX, plotY, plotW, plotH, 12);
+				context.fillStyle = "rgba(255,255,255,0.88)";
+				context.fill();
+				context.strokeStyle = "#e2e8f0";
+				context.lineWidth = 1;
+				context.stroke();
+
+				context.save();
+				roundedRect(context, plotX, plotY, plotW, plotH, 12);
+				context.clip();
+				for (var grid = 1; grid < 4; grid++) {
+					var gy = plotY + plotH * grid / 4;
+					context.beginPath();
+					context.moveTo(plotX, gy);
+					context.lineTo(plotX + plotW, gy);
+					context.strokeStyle = "#eef2f7";
+					context.lineWidth = 1;
+					context.stroke();
+				}
+
+				function curve(fn, colour, dash, lineWidth) {
+					context.beginPath();
+					for (var p = 0; p <= 180; p++) {
+						var t = p / 180;
+						var x = t * Math.PI * 2;
+						var value = fn(x);
+						var px = plotX + t * plotW;
+						var py = plotY + plotH * (0.5 - value / 3.3);
+						if (p === 0) context.moveTo(px, py);
+						else context.lineTo(px, py);
+					}
+					context.strokeStyle = colour;
+					context.lineWidth = lineWidth;
+					context.setLineDash(dash);
+					context.stroke();
+					context.setLineDash([]);
+				}
+				curve(targetFunction, "#94a3b8", [7, 6], 2);
+				curve(function (x) { return partialFunction(x, terms); }, "#f59e0b", [], 3);
+				context.restore();
+
+				context.font = "500 12px Inter, sans-serif";
+				context.textAlign = "left";
+				context.fillStyle = "#64748b";
+				context.fillText("target", plotX + 13, plotY + 18);
+				context.fillStyle = "#b45309";
+				context.fillText("network", plotX + 65, plotY + 18);
+			}
+
+			function updateLabels(state, settledIndex) {
+				nLabel.textContent = stateLabel(state);
+				errorLabel.textContent = settledIndex == null ?
+					"refining approximation…" : states[settledIndex].quality;
+			}
+
+			function show(index) {
+				index = Math.max(0, Math.min(states.length - 1, index));
+				if (frame) cancelAnimationFrame(frame);
+				frame = null;
+				var startState = vector(renderState);
+				var endState = vector(states[index]);
+				targetIndex = index;
+				var distance = Math.abs(startState.n - endState.n) +
+					Math.abs(startState.nodes - endState.nodes) +
+					Math.abs(startState.terms - endState.terms) +
+					Math.abs(startState.infinite - endState.infinite);
+				if (distance < 0.001 || (window.matchMedia &&
+					window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+					renderState = endState;
+					draw(renderState);
+					updateLabels(renderState, index);
+					return;
+				}
+				var start = performance.now();
+				var duration = 720;
+				function tick(now) {
+					var u = Math.min(1, (now - start) / duration);
+					var eased = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+					renderState = blend(startState, endState, eased);
+					draw(renderState);
+					updateLabels(renderState, u < 1 ? null : index);
+					if (u < 1) frame = requestAnimationFrame(tick);
+					else {
+						frame = null;
+						renderState = endState;
+					}
+				}
+				frame = requestAnimationFrame(tick);
+			}
+
+			function stop() {
+				if (frame) cancelAnimationFrame(frame);
+				frame = null;
+			}
+
+			function redraw() {
+				if (frame) cancelAnimationFrame(frame);
+				frame = null;
+				renderState = vector(states[targetIndex]);
+				draw(renderState);
+				updateLabels(renderState, targetIndex);
+			}
+
+			return { show: show, stop: stop, redraw: redraw };
+		})();
+
+		/* Monomial n=4 decomposition: one ambient network fans out into the
+		   five finite tangent/normal factors. */
+		var opeStage = (function () {
+			var svg = document.getElementById("opeSvg");
+			if (!svg) return { show: function () {} };
+			var ns = "http://www.w3.org/2000/svg";
+
+			function element(tag, attrs, text) {
+				var node = document.createElementNS(ns, tag);
+				Object.keys(attrs || {}).forEach(function (key) {
+					node.setAttribute(key, attrs[key]);
+				});
+				if (text != null) node.textContent = text;
+				return node;
+			}
+
+			var defs = element("defs");
+			var marker = element("marker", {
+				id: "opeArrow", markerWidth: "8", markerHeight: "8",
+				refX: "7", refY: "4", orient: "auto", markerUnits: "strokeWidth"
+			});
+			marker.appendChild(element("path", { d: "M0,0 L8,4 L0,8 Z", fill: "#94a3b8" }));
+			defs.appendChild(marker);
+			svg.appendChild(defs);
+
+			svg.appendChild(element("rect", {
+				x: "40", y: "130", width: "145", height: "90", rx: "18",
+				fill: "#eef2ff", stroke: "#6366f1", "stroke-width": "3"
+			}));
+			svg.appendChild(element("text", {
+				x: "112", y: "168", "text-anchor": "middle",
+				"font-family": "Inter, sans-serif", "font-size": "22",
+				"font-weight": "600", fill: "#4f46e5"
+			}, "Φ₄"));
+			svg.appendChild(element("text", {
+				x: "112", y: "194", "text-anchor": "middle",
+				"font-family": "Inter, sans-serif", "font-size": "13", fill: "#64748b"
+			}, "ambient network"));
+
+			var terms = [];
+			var termLabels = [
+				"ϕ̃₄",
+				"4\u2009ϕ̃₃\u2009ϕ̂₁",
+				"6\u2009ϕ̃₂\u2009ϕ̂₂",
+				"4\u2009ϕ̃₁\u2009ϕ̂₃",
+				"ϕ̂₄"
+			];
+			for (var i = 0; i < 5; i++) {
+				var y = 44 + i * 66;
+				var group = element("g", { class: "ope-term", opacity: i === 0 ? "1" : "0" });
+				group.appendChild(element("path", {
+					d: "M185 175 Q280 " + y + " 388 " + y,
+					fill: "none", stroke: "#94a3b8", "stroke-width": "2.2",
+					"marker-end": "url(#opeArrow)"
+				}));
+				group.appendChild(element("rect", {
+					x: "398", y: String(y - 24), width: "244", height: "48", rx: "12",
+					fill: i % 2 ? "#f0fdfa" : "#ffffff",
+					stroke: i % 2 ? "#14b8a6" : "#6366f1", "stroke-width": "2"
+				}));
+				group.appendChild(element("text", {
+					x: "420", y: String(y - 4), "text-anchor": "start",
+					"font-family": "STIX Two Math, Times New Roman, serif", "font-size": "18",
+					"font-weight": "600", fill: "#0f172a"
+				}, termLabels[i]));
+				var factorLabel = i === 0 ? "normal 4  ·  defect identity" :
+					(i === 4 ? "normal identity  ·  tangent 4" :
+						"normal " + (4 - i) + "  ·  tangent " + i);
+				group.appendChild(element("text", {
+					x: "420", y: String(y + 14), "text-anchor": "start",
+					"font-family": "Inter, sans-serif", "font-size": "12",
+					"font-weight": "500", fill: "#64748b"
+				}, factorLabel));
+				svg.appendChild(group);
+				terms.push(group);
+			}
+
+			function show(step) {
+				terms.forEach(function (term, index) {
+					var visible = index <= Math.max(0, Math.min(4, step));
+					term.style.opacity = visible ? "1" : "0";
+					term.style.transform = visible ? "translateX(0)" : "translateX(12px)";
+				});
+			}
+
+			return { show: show };
+		})();
+
+		var steppedIds = new Set([
+			"cft-data-slide", "cft-crossing-slide", "defect-symmetry-slide",
+			"dcft-data-slide", "integral-slide", "dictionary-slide", "prior-slide",
+			"embedding-slide", "nndcft-build-slide", "monomial-ingredients-slide",
+			"monomial-onepoint-slide", "monomial-twopoint-slide",
+			"ambient-twopoint-slide", "monomial-ope-slide",
+			"reciprocal-ingredients-slide", "reciprocal-onepoint-slide",
+			"reciprocal-twopoint-slide"
+		]);
+
+		function sync(slide) {
+			if (!slide) return;
+			var step = fragmentStep(slide);
+			if (steppedIds.has(slide.id)) setStepClass(slide, step);
+
+			if (slide.id === "large-n-slide") largeNStage.show(step);
+			else largeNStage.stop();
+
+			if (slide.id === "defect-symmetry-slide") defectSymmetryStage.show(step);
+			else defectSymmetryStage.stop();
+
+			if (slide.id === "monomial-ope-slide") opeStage.show(step);
+
+			fitEquations(slide);
+			if (slide.id === "cft-data-slide") cftDataMotion.reflow();
+			setTimeout(function () {
+				fitEquations(slide);
+				if (slide.id === "cft-data-slide") cftDataMotion.reflow();
+				if (Reveal.layout) Reveal.layout();
+			}, 80);
+		}
+
+		Reveal.on("ready", function (event) {
+			sync(event.currentSlide);
+		});
+
+		Reveal.on("slidechanged", function (event) {
+			sync(event.currentSlide);
+		});
+
+		function onFragment() {
+			sync(Reveal.getCurrentSlide());
+		}
+
+		Reveal.on("fragmentshown", onFragment);
+		Reveal.on("fragmenthidden", onFragment);
+
+		window.addEventListener("resize", function () {
+			largeNStage.redraw();
+			defectSymmetryStage.redraw();
+			cftDataMotion.reflow();
+			fitEquations(Reveal.getCurrentSlide());
+			if (Reveal.layout) Reveal.layout();
+		});
+
+		if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+			MathJax.startup.promise.then(function () {
+				setTimeout(function () {
+					fitEquations(Reveal.getCurrentSlide());
+					largeNStage.redraw();
+					defectSymmetryStage.redraw();
+					cftDataMotion.reflow();
+				}, 160);
+			});
+		}
+	</script>
+</body>
+
+</html>
