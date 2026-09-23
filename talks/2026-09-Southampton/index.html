@@ -4789,6 +4789,7 @@ This D=4 scalar decomposition is the paper's explicit n=1, m=2 example; it is no
 	<script src="../dist/plugin/highlight.js"></script>
 	<script src="../dist/plugin/zoom.js"></script>
 	<script src="../dist/plugin/search.js"></script>
+	<script src="../dist/slidecontrol.js"></script>
 	<script src="deformed_prior_animation.js"></script>
 
 	<script>
@@ -4802,7 +4803,7 @@ This D=4 scalar decomposition is the paper's explicit n=1, m=2 example; it is no
 			transition: "slide",
 			transitionSpeed: "default",
 			backgroundTransition: "fade",
-			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({ endpoint: 'wss://slidecontrol.benterre.com/ws' })]
 		});
 
 		/* The workshop artwork belongs to the viewport, not the scaled Reveal stage.

@@ -1665,6 +1665,7 @@
 	<script src="../dist/plugin/highlight.js"></script>
 	<script src="../dist/plugin/zoom.js"></script>
 	<script src="../dist/plugin/search.js"></script>
+	<script src="../dist/slidecontrol.js"></script>
 
 	<script>
 		Reveal.initialize({
@@ -1676,7 +1677,7 @@
 			transition: "slide",
 			transitionSpeed: "default",
 			backgroundTransition: "fade",
-			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({ endpoint: 'wss://slidecontrol.benterre.com/ws' })]
 		});
 
 		/* reveal measures each slide to centre it, but MathJax only replaces the

@@ -203,6 +203,7 @@
 		<script src="../dist/plugin/highlight.js"></script>
         <script src="../dist/plugin/zoom.js"></script>
         <script src="../dist/plugin/search.js"></script>
+        <script src="../dist/slidecontrol.js"></script>
 		<script>
 			// More info about initialization & config:
 			// - https://revealjs.com/initialization/
@@ -212,7 +213,7 @@
                 slideNumber: true,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch]
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({ endpoint: 'wss://slidecontrol.benterre.com/ws' })]
 			});
 		</script>
 	</body>
