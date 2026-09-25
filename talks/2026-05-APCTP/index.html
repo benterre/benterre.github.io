@@ -778,7 +778,7 @@
 		<script src="../dist/plugin/highlight.js"></script>
         <script src="../dist/plugin/zoom.js"></script>
         <script src="../dist/plugin/search.js"></script>
-        <script src="../dist/slidecontrol.js"></script>
+        <script src="../dist/slidecontrol.js?v=1.1.0"></script>
 		<script>
 			// More info about initialization & config:
 			// - https://revealjs.com/initialization/
@@ -790,7 +790,7 @@
                 margin: 0.1,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({ endpoint: 'wss://slidecontrol.benterre.com/ws' })]
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({})]
 			});
             Reveal.addEventListener('slidechanged', function(event) {
             // Check if the current slide has our restart attribute

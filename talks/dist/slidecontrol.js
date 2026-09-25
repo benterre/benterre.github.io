@@ -1,7 +1,8 @@
-/* SlideControl 1.0.0 | MIT | protocol 1 | no runtime dependencies */
+/* SlideControl 1.1.0 | MIT | protocol 1 | no runtime dependencies */
 (function (global) {
   'use strict';
   const attached = new WeakMap();
+  const rememberedDays = 3;
   const actions = Object.freeze({ LEFT: 'left', RIGHT: 'right', UP: 'up', DOWN: 'down',
     NEXT: 'next', PREVIOUS: 'prev', NEXT_FRAGMENT: 'nextFragment', PREVIOUS_FRAGMENT: 'prevFragment' });
   const events = ['ready', 'slidechanged', 'fragmentshown', 'fragmenthidden',
@@ -17,7 +18,7 @@
     const plugin = { id: 'slidecontrol', init(deck) { delegate = attach(deck, options); },
       destroy() { if (delegate) delegate.destroy(); delegate = null; } };
     for (const method of ['enable', 'disable', 'toggle', 'openSetup', 'closeSetup', 'setOwnerCredential',
-      'setEndpoint', 'createPairingCode', 'approvePairing', 'revokeDevice', 'getStatus', 'publishState']) {
+      'setEndpoint', 'forgetBrowser', 'createPairingCode', 'approvePairing', 'revokeDevice', 'getStatus', 'publishState']) {
       plugin[method] = (...args) => delegate && delegate[method](...args);
     }
     plugin.detach = plugin.destroy;
@@ -29,13 +30,14 @@
     if (!deck || typeof deck.on !== 'function' || typeof deck.next !== 'function') throw new TypeError('A Reveal instance is required.');
     let instanceId = uuid();
     let endpoint = options.endpoint || 'wss://slidecontrol.benterre.com/ws';
-    let ownerToken = '', presenterToken = '', sessionId = '', generation = '';
+    let ownerToken = '', presenterToken = '', sessionId = '', generation = '', authenticatedOwnerId = '';
     let enabled = false, destroyed = false, registered = false, epoch = 0, socket = null;
     let retryTimer = null, heartbeat = null, authTimer = null, updateTimer = null, pairTimer = null;
     let revision = 0, retries = 0, lastReceived = 0, phase = 'disabled', error = '';
     let dot = null, panel = null, style = null, previousFocus = null, code = null;
     let devices = [], requests = new Map(), seen = new Map();
     let serverTime = 0, syncStarted = 0, pingStarted = 0;
+    let rememberDevice = false, pendingRemember = null, storageNotice = '', resumeAfterPageHide = false;
     const now = () => performance.now();
     const title = () => String(options.title || document.title || 'Presentation').slice(0, 160);
     const suppressed = () => new URLSearchParams(location.search).has('print-pdf') ||
@@ -49,6 +51,36 @@
       if (u.protocol !== 'wss:' && !(options.allowInsecureDevelopment === true && u.protocol === 'ws:')) throw new Error('Secure wss:// is required.');
       return u.href;
     }
+    // Endpoint-scoped storage prevents a development relay from receiving production credentials.
+    // Never prefill the owner credential or include it in status or console messages.
+    function storageKey() { return 'slidecontrol.presenter.v2:' + validEndpoint(endpoint); }
+    function removeSaved() { try { global.localStorage.removeItem(storageKey()); return true; } catch (_) { return false; } }
+    function readSaved() {
+      try {
+        const raw = global.localStorage.getItem(storageKey());
+        if (!raw) return null;
+        const saved = JSON.parse(raw);
+        if (!saved || saved.version !== 1 || typeof saved.token !== 'string' || saved.token.length < 16 || saved.token.length > 512 ||
+            typeof saved.enabled !== 'boolean' || (saved.expiresAt !== null && (!Number.isFinite(saved.expiresAt) || saved.expiresAt <= Date.now()))) {
+          removeSaved(); return null;
+        }
+        return saved;
+      } catch (_) { removeSaved(); return null; }
+    }
+    function writeSaved(saved) {
+      try { global.localStorage.setItem(storageKey(), JSON.stringify(saved)); storageNotice = ''; return true; }
+      catch (_) { const removed = removeSaved(); storageNotice = removed ?
+        'Browser storage is unavailable. Sign-in works until this page closes.' :
+        'Browser storage is unavailable. Sign-in cannot be remembered. Clear this website’s data to remove any earlier saved sign-in.'; return false; }
+    }
+    function rememberAuthenticatedOwner() {
+      if (pendingRemember === null || !ownerToken) return;
+      rememberDevice = pendingRemember;
+      writeSaved({ version: 1, token: ownerToken, ownerId: authenticatedOwnerId, enabled: true,
+        expiresAt: rememberDevice ? null : Date.now() + rememberedDays * 86400000 });
+      pendingRemember = null;
+    }
+    function rememberEnabled(value) { const saved = readSaved(); if (saved) { saved.enabled = value; writeSaved(saved); } }
     function status() { return { enabled, registered, phase, error, endpoint, instanceId, sessionId, generation, revision,
       devices: devices.map(d => ({ deviceId: d.deviceId, name: d.name, connected: d.connected })) }; }
     function host() { return document.fullscreenElement || document.body; }
@@ -73,6 +105,12 @@
         codeEl.textContent = code && Date.now() < code.expiresAt ? `${code.code}` : '';
         panel.querySelector('[data-pair]').disabled = !registered;
         panel.querySelector('[data-toggle]').textContent = enabled ? 'Disable remote control' : 'Enable remote control';
+        const saved = readSaved();
+        panel.querySelector('[data-storage]').textContent = storageNotice || (saved ?
+          (saved.expiresAt === null ? 'This browser is remembered until you forget it or clear browser data.' :
+            'Sign-in is saved until ' + new Date(saved.expiresAt).toLocaleDateString() + '.') :
+          'Sign-in is saved for three days. Remember device keeps it until you forget it or clear browser data.');
+        panel.querySelector('[data-forget]').hidden = !saved;
         const list = panel.querySelector('[data-devices]'); list.replaceChildren();
         for (const d of devices) { const row = text('p', `${d.name} — ${d.connected ? 'connected' : 'remembered'} `);
           row.append(button('Revoke', () => revokeDevice(d.deviceId))); list.append(row); }
@@ -87,18 +125,24 @@
     function button(label, fn) { const b = text('button', label); b.type = 'button'; b.addEventListener('click', fn); return b; }
     function openSetup() {
       if (destroyed || suppressed()) return;
-      if (panel) { panel.querySelector('input').focus(); return; }
+      if (panel) return;
       css(); previousFocus = document.activeElement; panel = text('section', ''); panel.className = 'slidecontrol-panel';
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'SlideControl setup');
-      panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeSetup(); } });
+      panel.addEventListener('keydown', e => {
+        // Keep setup keyboard input away from Reveal while preserving native controls.
+        e.stopPropagation(); if (e.key === 'Escape') closeSetup();
+      });
       panel.append(text('h2', 'SlideControl'));
       const stateEl = text('p', ''); stateEl.dataset.status = ''; stateEl.setAttribute('role', 'status'); panel.append(stateEl);
-      const endpointLabel = text('label', 'Relay endpoint'); const endpointInput = document.createElement('input');
-      endpointInput.value = endpoint; endpointInput.type = 'url'; endpointInput.autocomplete = 'off'; endpointLabel.append(endpointInput); panel.append(endpointLabel);
-      panel.append(button('Save endpoint', () => { try { setEndpoint(endpointInput.value); } catch (_) { setPhase('error', 'Use a valid secure /ws endpoint.'); } }));
-      const tokenLabel = text('label', 'Private owner credential (memory only)'); const tokenInput = document.createElement('input');
+      const tokenLabel = text('label', 'Private owner credential'); const tokenInput = document.createElement('input');
       tokenInput.type = 'password'; tokenInput.autocomplete = 'off'; tokenInput.spellcheck = false; tokenLabel.append(tokenInput); panel.append(tokenLabel);
-      panel.append(button('Authenticate', () => { const token = tokenInput.value; tokenInput.value = ''; setOwnerCredential(token); enable(); }));
+      const rememberLabel = text('label', ''); const rememberInput = document.createElement('input');
+      rememberInput.type = 'checkbox'; rememberInput.checked = rememberDevice; rememberInput.style.width = 'auto';
+      rememberInput.style.marginRight = '8px'; rememberLabel.append(rememberInput, document.createTextNode('Remember device')); panel.append(rememberLabel);
+      const storage = text('p', ''); storage.dataset.storage = ''; storage.className = 'sc-details'; panel.append(storage);
+      panel.append(button('Authenticate', () => { const token = tokenInput.value; tokenInput.value = '';
+        if (setOwnerCredential(token, { rememberDevice: rememberInput.checked })) enable(); }));
+      const forget = button('Forget this browser', forgetBrowser); forget.dataset.forget = ''; panel.append(forget);
       const identity = text('p', ''); identity.dataset.identity = ''; identity.className = 'sc-details'; panel.append(identity);
       const pairing = button('Create pairing code', createPairingCode); pairing.dataset.pair = ''; panel.append(pairing);
       const codeEl = text('p', ''); codeEl.dataset.code = ''; codeEl.className = 'sc-code'; panel.append(codeEl);
@@ -106,20 +150,22 @@
       const requestsEl = text('div', ''); requestsEl.dataset.requests = ''; panel.append(requestsEl);
       panel.append(text('h2', 'Approved controllers')); const list = text('div', ''); list.dataset.devices = ''; panel.append(list);
       const toggleButton = button('', toggle); toggleButton.dataset.toggle = ''; panel.append(toggleButton, button('Close', closeSetup));
-      host().append(panel); renderStatus(); endpointInput.focus();
+      host().append(panel); renderStatus(); panel.tabIndex = -1; panel.focus();
       if (registered) send({ type: 'devices.list' });
     }
     function closeSetup() { if (!panel) return; panel.remove(); panel = null;
       if (previousFocus && previousFocus.isConnected && !previousFocus.classList.contains('slidecontrol-dot')) previousFocus.focus();
       else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); previousFocus = null; }
     function setEndpoint(value) { const next = validEndpoint(value); if (next === endpoint) return;
-      disable(); endpoint = next; renderStatus(); }
-    function setOwnerCredential(value) {
+      disable(); endpoint = next; pendingRemember = null; rememberDevice = false; storageNotice = ''; renderStatus(); }
+    // Programmatic credentials remain memory-only unless persistence is explicitly requested.
+    function setOwnerCredential(value, persistence) {
       if (typeof value !== 'string' || value.length < 16 || value.length > 512) { setPhase('error', 'Enter the private owner credential.'); return false; }
       if (registered) send({ type: 'unregister', sessionId, generation });
       if (enabled) stopSocket();
       instanceId = uuid();
-      ownerToken = value; presenterToken = ''; sessionId = ''; generation = '';
+      pendingRemember = persistence && typeof persistence.rememberDevice === 'boolean' ? persistence.rememberDevice : null;
+      ownerToken = value; presenterToken = ''; sessionId = ''; generation = ''; authenticatedOwnerId = '';
       if (enabled) connect(); return true;
     }
     function send(body) {
@@ -150,9 +196,12 @@
         lastReceived = now();
         if (m.type === 'ping') { send({ type: 'pong' }); return; }
         if (m.type === 'pong') { if (Number.isFinite(m.serverTime) && pingStarted) { serverTime = m.serverTime; syncStarted = pingStarted; pingStarted = 0; } return; }
-        if (m.type === 'authenticated') { syncStarted = now(); send({ type: 'register', instanceId, title: title() }); return; }
+        if (m.type === 'authenticated') {
+          if (m.role === 'owner') authenticatedOwnerId = typeof m.ownerId === 'string' ? m.ownerId : '';
+          syncStarted = now(); send({ type: 'register', instanceId, title: title() }); return; }
         if (m.type === 'registered') {
           if (typeof m.sessionId !== 'string' || typeof m.generation !== 'string' || typeof m.presenterToken !== 'string') return;
+          rememberAuthenticatedOwner();
           sessionId = m.sessionId; generation = m.generation; presenterToken = m.presenterToken; ownerToken = '';
           serverTime = Number.isFinite(m.serverTime) ? m.serverTime : Date.now();
           revision = 0; seen.clear(); registered = true; retries = 0; clearTimeout(authTimer); setPhase('registered');
@@ -161,7 +210,17 @@
             if (now() - lastReceived > 45000) { ws.close(1000, 'Heartbeat timeout'); return; }
             pingStarted = now(); send({ type: 'ping' }); }, 15000); return;
         }
-        if (!registered) { if (m.type === 'error') { ownerToken = ''; presenterToken = ''; setPhase('error', 'Authentication failed or session ended. Authenticate again.'); } return; }
+        if (!registered) { if (m.type === 'error') {
+          const saved = readSaved();
+          // A relay restart invalidates the short-lived presenter session, not the remembered owner.
+          if (m.code === 'auth_failed' && presenterToken && saved && authenticatedOwnerId && saved.ownerId === authenticatedOwnerId) {
+            presenterToken = sessionId = generation = ''; ownerToken = saved.token; instanceId = uuid();
+            ws.close(1000, 'Refresh presenter session'); return;
+          }
+          if (m.code === 'auth_failed' && saved && saved.token === ownerToken) removeSaved();
+          ownerToken = ''; presenterToken = ''; pendingRemember = null;
+          setPhase('error', 'Authentication failed or session ended. Authenticate again.');
+        } return; }
         if (m.type === 'command') applyCommand(m);
         else if (m.type === 'state.request') publishState();
         else if (m.type === 'pair.code' && /^\d{8}$/.test(m.code) && Number.isFinite(m.expiresAt)) {
@@ -226,40 +285,51 @@
     function online() { if (enabled && !registered) { stopSocket(); connect(); } }
     function enable() {
       if (destroyed || enabled || suppressed()) return;
+      if (!ownerToken && !presenterToken) { const saved = readSaved(); if (saved) { ownerToken = saved.token; rememberDevice = saved.expiresAt === null; } }
+      rememberEnabled(true);
       enabled = true; retries = 0; events.forEach(e => deck.on(e, stateChanged));
       document.addEventListener('fullscreenchange', position); global.addEventListener('online', online);
       connect(); renderStatus(); if (!ownerToken && !presenterToken && !registered) openSetup();
     }
-    function disable() {
+    function stopPresentation() {
       if (registered) send({ type: 'unregister', sessionId, generation });
       enabled = false; stopSocket(); clearTimeout(pairTimer); pairTimer = null;
       events.forEach(e => deck.off(e, stateChanged)); document.removeEventListener('fullscreenchange', position); global.removeEventListener('online', online);
-      ownerToken = presenterToken = sessionId = generation = ''; instanceId = uuid(); requests.clear(); seen.clear(); devices = []; code = null;
+      ownerToken = presenterToken = sessionId = generation = authenticatedOwnerId = ''; pendingRemember = null; instanceId = uuid(); requests.clear(); seen.clear(); devices = []; code = null;
       if (dot) { dot.remove(); dot = null; } closeSetup(); if (style) { style.remove(); style = null; }
       phase = 'disabled'; error = '';
     }
+    function disable() { rememberEnabled(false); resumeAfterPageHide = false; stopPresentation(); }
+    function forgetBrowser() { const removed = removeSaved(); rememberDevice = false; disable();
+      storageNotice = removed ? '' : 'Browser could not remove saved sign-in. Clear this website’s data in browser settings.'; openSetup(); }
+    function pagehide() { resumeAfterPageHide = enabled; stopPresentation(); }
+    function pageshow(event) { if (event.persisted && resumeAfterPageHide) { resumeAfterPageHide = false; const saved = readSaved(); if (saved && saved.enabled) enable(); } }
     function toggle() { if (enabled) disable(); else enable(); }
     function keydown(e) {
-      if (destroyed || e.repeat || editing(e.target) || suppressed()) return;
+      if (destroyed || e.repeat || suppressed()) return;
+      if (editing(e.target) && !(panel && panel.contains(e.target))) return;
       const root = deck.getRevealElement();
       // On a page with multiple embedded decks, only the focused deck owns shortcuts.
-      if (document.querySelectorAll('.reveal').length > 1 && !root.contains(document.activeElement)) return;
+      if (document.querySelectorAll('.reveal').length > 1 && !root.contains(document.activeElement) && !(panel && panel.contains(document.activeElement))) return;
       if (e.key === (options.toggleKey || 'F8') && !e.altKey && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault(); e.stopPropagation(); if (e.shiftKey) openSetup(); else toggle(); }
+        e.preventDefault(); e.stopPropagation(); if (e.shiftKey || !panel) openSetup(); else closeSetup(); }
     }
     function createPairingCode() { if (registered) send({ type: 'pair.create', sessionId }); }
     function approvePairing(requestId, approve) { if (!requests.has(requestId) || !registered) return;
       send({ type: 'pair.decide', requestId, approve: !!approve }); requests.delete(requestId); renderStatus();
       send({ type: 'devices.list' }); }
     function revokeDevice(deviceId) { if (registered) { send({ type: 'device.revoke', deviceId }); send({ type: 'devices.list' }); } }
-    function destroy() { if (destroyed) return; disable(); closeSetup(); if (style) style.remove(); style = null;
-      document.removeEventListener('keydown', keydown, true); global.removeEventListener('pagehide', disable); attached.delete(deck); destroyed = true; }
+    function destroy() { if (destroyed) return; stopPresentation(); closeSetup(); if (style) style.remove(); style = null;
+      document.removeEventListener('keydown', keydown, true); global.removeEventListener('pagehide', pagehide);
+      global.removeEventListener('pageshow', pageshow); attached.delete(deck); destroyed = true; }
     const api = { enable, disable, toggle, destroy, detach: destroy, openSetup, closeSetup, setEndpoint,
-      setOwnerCredential, createPairingCode, approvePairing, revokeDevice, getStatus: status, publishState };
-    attached.set(deck, api); document.addEventListener('keydown', keydown, true); global.addEventListener('pagehide', disable);
+      setOwnerCredential, forgetBrowser, createPairingCode, approvePairing, revokeDevice, getStatus: status, publishState };
+    attached.set(deck, api); document.addEventListener('keydown', keydown, true); global.addEventListener('pagehide', pagehide);
+    global.addEventListener('pageshow', pageshow);
+    const saved = readSaved(); if (saved) { rememberDevice = saved.expiresAt === null; if (saved.enabled) enable(); }
     return api;
   }
   SlideControl.attach = attach;
-  SlideControl.version = '1.0.0';
+  SlideControl.version = '1.1.0';
   global.SlideControl = SlideControl;
 })(window);

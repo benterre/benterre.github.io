@@ -720,7 +720,7 @@
 	<script src="../dist/plugin/highlight.js"></script>
 	<script src="../dist/plugin/zoom.js"></script>
 	<script src="../dist/plugin/search.js"></script>
-	<script src="../dist/slidecontrol.js"></script>
+	<script src="../dist/slidecontrol.js?v=1.1.0"></script>
 
 	<script>
 		Reveal.initialize({
@@ -732,7 +732,7 @@
 			transition: "slide",
 			transitionSpeed: "default",
 			backgroundTransition: "fade",
-			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({ endpoint: 'wss://slidecontrol.benterre.com/ws' })]
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealSearch, SlideControl({})]
 		});
 
 		/* =====================================================================
