@@ -20,6 +20,13 @@
     <script>
         window.THREE_SRC = "https://unpkg.com/three@0.160.1/build/three.min.js";
         window.FORCEGRAPH_SRC = "https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js";
+        // Optional API override. Blank uses the local Parquet publication when
+        // served alongside it, then https://branetilingdatabase.benterre.com.
+        // Public browsing transfers only requested result pages/theory phases.
+        window.BRANE_TILING_API_URL ??= "";
+        // Optional static v3 source for development/archived deployments.
+        window.BRANE_TILING_HUGGINGFACE_PARQUET_BASE_URL ??= "";
+        window.BRANE_TILING_HUGGINGFACE_PARQUET_MANIFEST_URL ??= "";
     </script>
     <style>
         :root {
@@ -56,6 +63,7 @@
         header {
             display: flex;
             align-items: baseline;
+            flex-wrap: wrap;
             gap: 14px;
             margin-bottom: 8px;
             cursor: pointer;
@@ -73,6 +81,74 @@
         }
 
         header .sub { color: var(--muted); font-size: 13px; }
+
+        .database-load-error {
+            margin: 12px 0 20px;
+            padding: 12px 14px;
+            color: #fecaca;
+            background: rgba(248, 113, 113, 0.10);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            border-radius: 10px;
+        }
+
+        .local-database-prompt {
+            margin: 12px 0 20px;
+            padding: 16px;
+            color: var(--text);
+            background: rgba(94, 234, 212, 0.07);
+            border: 1px solid rgba(94, 234, 212, 0.30);
+            border-radius: 10px;
+        }
+
+        .local-database-prompt p { margin: 0 0 12px; color: var(--muted); }
+
+        .database-source-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .database-file-button,
+        .database-hosted-button {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            color: #07111a;
+            background: var(--accent);
+            border: 0;
+            border-radius: 8px;
+            font: inherit;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .database-hosted-button { background: var(--accent2); }
+        .database-file-button:hover,
+        .database-hosted-button:hover { filter: brightness(1.08); }
+        .database-hosted-button:disabled { cursor: wait; opacity: 0.65; }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        .theory-loading {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            padding: 16px 22px;
+            color: var(--text);
+            background: #161c30;
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+        }
 
         .card {
             background: var(--panel);
@@ -356,9 +432,53 @@
 
         #seibergHint { position: absolute; bottom: 10px; left: 14px; color: var(--muted); font-size: 12px; pointer-events: none; }
 
+        .seiberg-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .seiberg-title-note { color: var(--muted); font-weight: 400; }
+
+        .seiberg-optin {
+            padding: 4px 9px;
+            border: 1px solid var(--panel-border);
+            border-radius: 999px;
+            background: rgba(167, 139, 250, 0.12);
+            color: var(--accent2);
+            font: 600 11px/1.2 sans-serif;
+            cursor: pointer;
+        }
+
+        .seiberg-optin:hover:not(:disabled) { border-color: var(--accent2); }
+
+        .seiberg-optin:focus-visible {
+            border-color: var(--accent2);
+            outline: 2px solid var(--accent2);
+            outline-offset: 2px;
+        }
+
+        .seiberg-optin:disabled { cursor: default; opacity: 0.72; }
+
+        .seiberg-message { padding: 20px; color: var(--muted); }
+
         #phaseSect .phase-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
         #phasePills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .phase-jump { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+
+        .phase-jump input {
+            width: 9ch;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+            background: #0d1220;
+            color: var(--text);
+            font-family: var(--mono);
+        }
+
+        .phase-jump input:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+        .phase-step { min-width: 34px; padding-left: 9px; padding-right: 9px; }
+
+        .phase-step:disabled { opacity: 0.4; cursor: default; }
 
         .pill {
             padding: 4px 12px;
@@ -440,7 +560,137 @@
 
         #qwErr { color: var(--danger); }
 
-        footer { margin-top: 60px; color: var(--muted); font-size: 12px; text-align: center; }
+        .site-footer {
+            margin-top: 64px;
+            padding: 30px 0 8px;
+            border-top: 1px solid var(--panel-border);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .footer-about { max-width: 900px; }
+
+        .footer-about h2, .citation-box h2 {
+            margin: 0 0 8px;
+            color: var(--text);
+            font-size: 16px;
+            letter-spacing: 0.3px;
+        }
+
+        .footer-about p, .citation-box > p { margin: 0; }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            margin-top: 10px;
+        }
+
+        .site-footer a { text-decoration: underline; text-underline-offset: 3px; }
+
+        .site-footer a:focus-visible,
+        .citation-copy:focus-visible,
+        .citation-entry summary:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        .citation-box {
+            margin-top: 22px;
+            padding: 18px;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+        }
+
+        .citation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .citation-entry {
+            min-width: 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--panel-border);
+            border-radius: 11px;
+        }
+
+        .citation-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .citation-heading h3 {
+            margin: 0;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .citation-copy {
+            flex: 0 0 auto;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        .citation-copy.copied {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .citation-record { margin: 0 0 10px; }
+
+        .citation-entry details { margin-top: 9px; }
+
+        .citation-entry summary {
+            width: fit-content;
+            min-height: 44px;
+            padding: 10px 0;
+            color: var(--accent);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .citation-code {
+            max-width: 100%;
+            margin: 10px 0 0;
+            padding: 12px;
+            overflow: auto;
+            color: #cbd5e1;
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 8px;
+            font: 11px/1.5 var(--mono);
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        #citationStatus {
+            min-height: 1.5em;
+            margin-top: 8px;
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .footer-note {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        @media (max-width: 520px) {
+            .site-footer { margin-top: 44px; }
+            .citation-box { padding: 14px; }
+            .citation-entry { padding: 13px; }
+            .citation-heading { align-items: flex-start; flex-wrap: wrap; }
+        }
     </style>
 </head>
 
@@ -450,6 +700,19 @@
             <h1>Brane Tiling Database</h1>
             <span class="sub" id="dbCount"></span>
         </header>
+        <div id="databaseLoadError" class="database-load-error hidden" role="alert"></div>
+        <section id="localDatabasePrompt" class="local-database-prompt hidden"
+            aria-labelledby="localDatabaseHeading">
+            <strong id="localDatabaseHeading">Open the local database</strong>
+            <p>Select the v3 catalog and all theory, phase, and graph Parquet shards together.</p>
+            <div class="database-source-actions">
+                <label class="database-file-button" for="localDatabaseFile">Select Parquet dataset</label>
+                <input id="localDatabaseFile" class="visually-hidden" type="file"
+                    accept=".parquet,application/vnd.apache.parquet" multiple>
+                <button id="useHostedDatabase" class="database-hosted-button hidden" type="button">Use hosted database</button>
+            </div>
+        </section>
+        <div id="theoryLoadStatus" class="theory-loading hidden" role="status" aria-live="polite"></div>
 
         <!-- ==================== landing / search ==================== -->
         <div id="homePage">
@@ -527,17 +790,34 @@
                 </div>
             </div>
 
-            <h2 class="sect">SEIBERG DUALITY GRAPH — <span style="color:var(--muted);font-weight:400;">click a phase
-                    to inspect it</span></h2>
-            <div id="seibergWrap">
-                <div id="seibergGraph"></div>
-                <div id="seibergHint"></div>
-            </div>
+            <section id="seibergSection">
+                <h2 class="sect seiberg-title">SEIBERG DUALITY GRAPH —
+                    <button id="seibergShowButton" class="seiberg-optin hidden" type="button"
+                        aria-controls="seibergGraph" aria-expanded="false">Display graph</button>
+                    <span class="seiberg-title-note">click a phase to inspect it</span>
+                </h2>
+                <div id="seibergWrap">
+                    <div id="seibergGraph"></div>
+                    <div id="seibergHint"></div>
+                </div>
+            </section>
 
             <div id="phaseSect">
                 <h2 class="sect">TORIC PHASE DATA</h2>
                 <div class="phase-head">
                     <div id="phasePills"></div>
+                    <div id="phaseJump" class="phase-jump hidden">
+                        <label for="phaseNumber">Phase</label>
+                        <button id="phasePrev" class="pill phase-step" type="button"
+                            aria-label="Previous phase">‹</button>
+                        <input id="phaseNumber" type="text" inputmode="numeric"
+                            pattern="[1-9][0-9]*" autocomplete="off"
+                            enterkeyhint="done" spellcheck="false"
+                            aria-label="Phase number" aria-describedby="phaseTotal">
+                        <span id="phaseTotal"></span>
+                        <button id="phaseNext" class="pill phase-step" type="button"
+                            aria-label="Next phase">›</button>
+                    </div>
                 </div>
                 <div class="phase-grid">
                     <div class="card">
@@ -586,11 +866,87 @@
             </div>
         </div>
 
-        <footer>BraneTilingDatabase — generated with the BraneTiling package.</footer>
+        <footer class="site-footer" aria-labelledby="footerAboutTitle">
+            <section class="footer-about">
+                <h2 id="footerAboutTitle">About the database</h2>
+                <p>
+                    The Brane Tiling Database is a searchable catalogue of four-dimensional
+                    N=1 quiver gauge theories engineered by D3-branes probing toric
+                    Calabi–Yau threefold singularities. Records bring together, where available,
+                    toric phases, quivers, superpotentials, R-charges, brane tilings,
+                    perfect matchings, and Seiberg-duality data.
+                </p>
+                <div class="footer-links">
+                    <a href="https://github.com/Tancredi-Schettini-Gherardini/DimerGNN"
+                        target="_blank" rel="noopener noreferrer">Built with dimerGNN</a>
+                    <a href="https://www.benterre.com/DimersWeb"
+                        target="_blank" rel="noopener noreferrer">DimersWeb</a>
+                </div>
+            </section>
+
+            <section class="citation-box" aria-labelledby="citationTitle">
+                <h2 id="citationTitle">Cite this work</h2>
+                <p>If this database supports your research, please cite both the paper and the database.</p>
+
+                <div class="citation-grid">
+                    <article class="citation-entry">
+                        <div class="citation-heading">
+                            <h3>Research paper</h3>
+                            <button class="copy-mini citation-copy" type="button"
+                                data-copy-target="paperCitation"
+                                aria-label="Copy research paper BibTeX">Copy BibTeX</button>
+                        </div>
+                        <p class="citation-record">
+                            R. Seong, and B. Suzzoni,
+                            <em>Classifying Brane Tilings: to infinity and beyond</em>,
+                            <a href="https://arxiv.org/abs/2610.xxxxx" target="_blank"
+                                rel="noopener noreferrer">arXiv:2610.xxxxx [hep-th]</a> (2026).
+                        </p>
+                        <details>
+                            <summary>View BibTeX</summary>
+                            <pre id="paperCitation" class="citation-code">@misc{Seong2026BraneTilingDatabase,
+  author        = {Seong, Rak-Kyeong and Suzzoni, Benjamin},
+  title         = {Classifying Brane Tilings: to infinity and beyond},
+  year          = {2026},
+  eprint        = {2610.xxxxx},
+  archivePrefix = {arXiv},
+  primaryClass  = {hep-th},
+  doi           = {10.48550/arXiv.2610.xxxxx}
+}</pre>
+                        </details>
+                    </article>
+
+                    <article class="citation-entry">
+                        <div class="citation-heading">
+                            <h3>Online database</h3>
+                            <button class="copy-mini citation-copy" type="button"
+                                data-copy-target="databaseCitation"
+                                aria-label="Copy online database BibTeX">Copy BibTeX</button>
+                        </div>
+                        <p class="citation-record">
+                            R. Seong, and B. Suzzoni,
+                            <em>Brane Tiling Database</em>, continuously updated online database.
+                        </p>
+                        <details>
+                            <summary>View BibTeX</summary>
+                            <pre id="databaseCitation" class="citation-code">@misc{BraneTilingDatabase,
+  author = {Seong, Rak-Kyeong and Suzzoni, Benjamin},
+  title  = {Brane Tiling Database},
+  year   = {2026},
+  url    = {https://www.benterre.com/BraneTilingDatabase},
+  note   = {A large database of brane tilings, fully classified up to 16 internal points}
+}</pre>
+                        </details>
+                    </article>
+                </div>
+                <div id="citationStatus" role="status" aria-live="polite"></div>
+                <p class="footer-note">Database contents are expanded continuously as additional phases are computed.</p>
+            </section>
+        </footer>
     </div>
 
-    <script src="db/index.js"></script>
-    <script src="app.js"></script>
+    <script src="toric_search.js?v=1"></script>
+    <script src="parquet_bundle.js?v=16"></script>
 </body>
 
 </html>
