@@ -1,0 +1,13 @@
+# Cooperative crawler preferences for the Brane Tiling Database only.
+# Public access and the CC BY 4.0 dataset license remain unchanged.
+User-agent: GPTBot
+Disallow: /BraneTilingDatabase/
+
+User-agent: ClaudeBot
+Disallow: /BraneTilingDatabase/
+
+User-agent: Google-Extended
+Disallow: /BraneTilingDatabase/
+
+User-agent: *
+Allow: /

@@ -45,7 +45,7 @@ function loadApplication() {
     if (applicationPromise) return applicationPromise;
     applicationPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "app.js?v=20";
+        script.src = "app.js?v=23";
         script.onload = resolve;
         script.onerror = () => reject(new Error("could not load app.js"));
         document.head.appendChild(script);
@@ -9833,6 +9833,7 @@ exports.toricMultiplicityInternals = toricMultiplicityInternals;
 const ITEM_SEPARATOR = "\u001f";
 const SECTION_SEPARATOR = "\u001e";
 const REMOVED_NAME_CHARACTERS = /[\^{}_\s(),\[\]\/\\-]+/g;
+const PERMANENT_ID = /^(?:0|[1-9]\d*)_(?:0|[1-9]\d*)_[1-9]\d*_[1-9]\d*$/;
 
 function normalizeNameSearch(value) {
     return String(value).toLowerCase()
@@ -9851,6 +9852,15 @@ function packedNames(entry) {
 
 function scoreSearchName(entry, normalizedQuery) {
     let best = -1;
+    // Permanent property IDs also identify named families such as F0. Keep
+    // family-name queries on the existing fast path; numeric queries may match
+    // the ID without polluting the visible family-name list.
+    if (/^\d/.test(normalizedQuery) && /^\d+_\d+_\d+_\d+$/.test(entry?.id || "")) {
+        const id = entry.id.replace(/_/g, "");
+        if (id === normalizedQuery) best = 100;
+        else if (id.startsWith(normalizedQuery)) best = 80 - (id.length - normalizedQuery.length);
+        else if (id.includes(normalizedQuery)) best = 50 - id.indexOf(normalizedQuery);
+    }
     if (Array.isArray(entry?._norms)) {
         for (const normalized of entry._norms) {
             let score = -1;
@@ -9908,10 +9918,13 @@ function insertTop(ranked, value, limit) {
 
 function searchNamesSynchronously(entries, query, limit = Infinity) {
     const normalizedQuery = normalizeNameSearch(query);
+    const raw = String(query).trim();
+    const exactId = PERMANENT_ID.test(raw) ? raw : null;
     if (!normalizedQuery) return [];
     const ranked = [];
     for (const entry of entries) {
-        const score = scoreSearchName(entry, normalizedQuery);
+        const score = exactId ? (entry.id === exactId ? 100 : -1)
+            : scoreSearchName(entry, normalizedQuery);
         if (score < 0) continue;
         const value = [score, entry];
         if (Number.isFinite(limit)) insertTop(ranked, value, limit);
@@ -10011,6 +10024,8 @@ function createNameSearchEngine(entries, options = {}) {
     async function search(query, { limit = Infinity, onProgress = null } = {}) {
         const token = ++generation;
         const normalizedQuery = normalizeNameSearch(query);
+        const raw = String(query).trim();
+        const exactId = PERMANENT_ID.test(raw) ? raw : null;
         const finiteLimit = Number.isFinite(limit)
             ? Math.max(0, Math.trunc(limit)) : Infinity;
         if (!normalizedQuery || finiteLimit === 0) {
@@ -10036,7 +10051,8 @@ function createNameSearchEngine(entries, options = {}) {
             let inSlice = 0;
             do {
                 const entry = source[scanned++];
-                const score = scoreSearchName(entry, normalizedQuery);
+                const score = exactId ? (entry.id === exactId ? 100 : -1)
+                    : scoreSearchName(entry, normalizedQuery);
                 if (score >= 0) {
                     matches++;
                     const value = [score, entry];

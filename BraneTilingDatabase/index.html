@@ -424,6 +424,35 @@
 
         #toricCanvas { background: #0d1220; border-radius: 10px; display: block; }
 
+        #toricCanvas, #tilingCanvas { max-width: 100%; }
+        .scientific-interactive { touch-action: none; cursor: grab; }
+        .scientific-interactive.is-dragging { cursor: grabbing; }
+        #toricCanvas:focus-visible, #tilingCanvas:focus-visible {
+            outline: 2px solid var(--accent); outline-offset: 3px;
+        }
+        .scientific-controls { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+        .scientific-controls[hidden] { display: none; }
+        .scientific-controls button {
+            min-width: 38px; min-height: 38px; padding: 5px 10px; border-radius: 8px;
+            background: #0d1220; border: 1px solid var(--panel-border); color: var(--text);
+            font-size: 15px; cursor: pointer;
+        }
+        .scientific-controls button:disabled { opacity: .4; cursor: default; }
+        .scientific-controls button:focus-visible { outline: 2px solid var(--accent); }
+        .scientific-zoom, .scientific-hint, .scientific-point-detail {
+            color: var(--muted); font-size: 11px; line-height: 1.5;
+        }
+        .scientific-hint { margin-top: 5px; max-width: 420px; }
+        .scientific-point-detail { color: var(--accent); overflow-wrap: anywhere; }
+        .scientific-values { max-width: 280px; }
+        .scientific-values summary { font-size: 11px; }
+        .scientific-value-list { max-height: 160px; overflow: auto; font: 11px/1.7 var(--mono); }
+        @media (max-width: 480px) {
+            .tgrid .card { min-width: 0; max-width: 100%; }
+            .phase-grid { grid-template-columns: minmax(0, 1fr); }
+            .scientific-controls button { min-width: 44px; min-height: 44px; }
+        }
+
         h2.sect { font-size: 16px; color: var(--accent); margin: 30px 0 10px; letter-spacing: 0.5px; }
 
         #seibergWrap { position: relative; height: 380px; border-radius: 14px; overflow: hidden; border: 1px solid var(--panel-border); }
@@ -806,6 +835,7 @@
                 <h2 class="sect">TORIC PHASE DATA</h2>
                 <div class="phase-head">
                     <div id="phasePills"></div>
+                    <button id="downloadPhaseData" class="pill" type="button">Download phase data</button>
                     <div id="phaseJump" class="phase-jump hidden">
                         <label for="phaseNumber">Phase</label>
                         <button id="phasePrev" class="pill phase-step" type="button"
@@ -819,6 +849,7 @@
                             aria-label="Next phase">›</button>
                     </div>
                 </div>
+                <div id="phaseExportStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:12px;margin-top:6px;"></div>
                 <div class="phase-grid">
                     <div class="card">
                         <h4>Quiver
@@ -946,7 +977,8 @@
     </div>
 
     <script src="toric_search.js?v=1"></script>
-    <script src="parquet_bundle.js?v=16"></script>
+    <script src="scientific_viewports.js?v=1"></script>
+    <script src="parquet_bundle.js?v=19"></script>
 </body>
 
 </html>

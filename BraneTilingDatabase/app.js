@@ -193,6 +193,9 @@ function entryToricKey(entry) {
 // TeX for theory names: dP3 -> \mathrm{dP}_3, C3/Z6 -> \mathbb{C}^3/\mathbb{Z}_6 ...
 function nameToTeX(name) {
     let t = name;
+    // Permanent property IDs are literal identifiers, not mathematics. Most
+    // search results are anonymous: avoid a MathJax job for each result/title.
+    if (/^(?:0|[1-9]\d*)_(?:0|[1-9]\d*)_(?:[3-9]|[1-9]\d+)_[1-9]\d*$/.test(t)) return null;
     if (t === "C") return "\\mathcal{C}";  // conifold shorthand
     if (/^[A-Za-z0-9_ .\-]+$/.test(t) && !/\d/.test(t)) return null;  // plain word
     // raw package ids -> pretty forms (before underscore escaping)
@@ -262,7 +265,7 @@ function typesetRawTeX(el, tex, fallback) {
 
 /* ======================= index preparation ============================== */
 
-let storedPhaseCount = 0;
+let knownPhaseCount = 0;
 for (const e of INDEX) {
     // Legacy JS indexes retain their eager compatibility fields.  Parquet
     // entries are already compact and must not materialize geometry or a second
@@ -272,16 +275,24 @@ for (const e of INDEX) {
         e._key = canonicalPolygonKey(e.points);
     }
     if (Number.isSafeInteger(e.n_phases) && e.n_phases > 0)
-        storedPhaseCount += e.n_phases;
+        knownPhaseCount += e.n_phases;
 }
 const databaseTheoryCount = DATABASE_METADATA?.theory_count ?? INDEX.length;
-storedPhaseCount = DATABASE_METADATA?.phase_count ?? storedPhaseCount;
+// API metadata counts available phase payloads. Native catalog n_phases instead
+// preserves the known enumeration, including phases omitted from a release.
+// The native manifest's phase_count counts external rows only, not all phases.
+const hasStoredPhaseCount = Number.isSafeInteger(DATABASE_METADATA?.phase_count)
+    && DATABASE_METADATA.phase_count >= 0;
+const displayedPhaseCount = hasStoredPhaseCount
+    ? DATABASE_METADATA.phase_count : knownPhaseCount;
 const theoryWord = databaseTheoryCount === 1 ? "theory" : "theories";
-const phaseWord = storedPhaseCount === 1 ? "phase" : "phases";
+const phaseWord = displayedPhaseCount === 1 ? "phase" : "phases";
 const dbCount = document.getElementById("dbCount");
 dbCount.textContent = `${databaseTheoryCount.toLocaleString("en-US")} ${theoryWord}`
-    + ` · ${storedPhaseCount.toLocaleString("en-US")} stored ${phaseWord}`;
-dbCount.title = "Sum of toric phases currently stored; some theories may not yet have complete phase enumeration.";
+    + ` · ${displayedPhaseCount.toLocaleString("en-US")} ${hasStoredPhaseCount ? "stored" : "known"} ${phaseWord}`;
+dbCount.title = hasStoredPhaseCount
+    ? "Toric phases available in this release; some theories may not yet have complete phase enumeration."
+    : "Known toric phases across all theories, including phases not retained in this release; enumeration may be incomplete.";
 
 const KEY_LOOKUP = new Map();
 for (const e of INDEX) if (e._key) KEY_LOOKUP.set(e._key, e.id);
@@ -423,6 +434,7 @@ function renderSuggestions() {
         return;
     }
     suggBox.innerHTML = "";
+    let needsTypesetting = false;
     suggEntries.forEach((e, i) => {
         const div = document.createElement("div");
         div.className = "sugg" + (i === suggActive ? " active" : "");
@@ -432,7 +444,7 @@ function renderSuggestions() {
             if (k) nm.appendChild(document.createTextNode("  =  "));
             const s = document.createElement("span");
             const tex = nameToTeX(n);
-            if (tex) s.innerHTML = "\\(" + tex + "\\)";
+            if (tex) { s.innerHTML = "\\(" + tex + "\\)"; needsTypesetting = true; }
             else s.textContent = n;
             nm.appendChild(s);
         });
@@ -451,7 +463,7 @@ function renderSuggestions() {
         suggBox.appendChild(div);
     });
     suggBox.style.display = "block";
-    typesetContainer(suggBox);
+    if (needsTypesetting) typesetContainer(suggBox);
 }
 
 function sameSuggestionEntries(left, right) {
@@ -1601,6 +1613,7 @@ function glsmToricLabels(t) {
 }
 
 function drawToricDiagram(canvas, toric, glsmLabels = null) {
+    if (window.BraneScientificViewports?.renderToric(canvas, toric, glsmLabels)) return;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const pts = toric.points;
@@ -2315,6 +2328,7 @@ function drawQuiver(canvas, nFaces, phase) {
 /* --------------------------- tiling drawing ----------------------------- */
 
 function drawTiling(canvas, tiling) {
+    if (window.BraneScientificViewports?.renderTiling(canvas, tiling)) return;
     // Mirrors QuiverGT.plot_dimer_torus: ONE fundamental cell (plus a small
     // margin), with every lattice-shifted copy of every edge/node that
     // intersects it (reach set by the edge windings), clipped to the cell.
@@ -2510,6 +2524,65 @@ function drawTiling(canvas, tiling) {
 
 const copyPayloads = {};
 
+// Attribution travels with selected-phase exports, including locally opened
+// datasets. This is provenance metadata, not a claim that the browser verified
+// the release signature or a restriction on scientifically legitimate reuse.
+const TRUSTED_DATASET_KEY_SHA256 = "66e2b3b3b60aae490756f4efeec4d6389de6b740430004c74b332d20befebd4e";
+function datasetProvenance(t = currentTheory, phaseIndex = currentPhase) {
+    const supplied = DATABASE_METADATA?._provenance || {};
+    const release = DATABASE_METADATA?.release || PARQUET_DATABASE?.manifest?.transaction_id || null;
+    const defaults = {
+        schema_version: 1, title: "Brane Tiling Dataset",
+        authors: ["Rak-Kyeong Seong", "Benjamin Suzzoni"],
+        attribution: "Rak-Kyeong Seong and Benjamin Suzzoni",
+        license: "CC-BY-4.0", license_url: "https://creativecommons.org/licenses/by/4.0/",
+        source: "https://www.benterre.com/BraneTilingDatabase", release,
+        citation: `Rak-Kyeong Seong and Benjamin Suzzoni. Brane Tiling Dataset. ${release ? "Release " + release + ". " : ""}https://www.benterre.com/BraneTilingDatabase. CC BY 4.0.`,
+        doi: null, doi_status: "pending", signature_status: "not-verified-by-webapp",
+    };
+    return { ...defaults, ...supplied, theory_id: t?.id || null, phase_index: phaseIndex,
+        trusted_signing_key_sha256: TRUSTED_DATASET_KEY_SHA256,
+        verification_notice: "The webapp has not cryptographically verified this subset. Verify the signed release manifest using the independently published public key. A response digest alone is not an authorship proof.",
+        reuse_notice: "When sharing, give appropriate credit, link the license, and indicate changes. No warranties are given. See the license for its scope and exceptions." };
+}
+
+function phaseExportPayload(t = currentTheory, phaseIndex = currentPhase) {
+    const phase = t?.phases?.[phaseIndex];
+    if (!phase) throw new Error("Select a loaded phase before exporting.");
+    const theory = {};
+    for (const key of ["id", "names", "params", "n_gauge", "n_phases", "a_charge", "glsm_R", "families", "orbifold_of"])
+        if (t[key] !== undefined) theory[key] = t[key];
+    theory.toric = phaseToric(t, phaseIndex);
+    return { format: "brane-tiling-selected-phase-v1", _provenance: datasetProvenance(t, phaseIndex),
+        phase_number: phaseIndex + 1, theory, phase };
+}
+
+function attributedCopyPayload(key, text) {
+    if (!text || !/_(?:py|m)$/.test(key || "")) return text;
+    const p = datasetProvenance();
+    const notice = `${p.title} — ${p.attribution}. ${p.license}: ${p.license_url} `
+        + `Source: ${p.source}. Theory ${p.theory_id}, phase ${p.phase_index + 1}.`
+        + (p.release ? ` Release ${p.release}.` : "");
+    return text + (key.endsWith("_py") ? "\n# " + notice.replace(/[\r\n]/g, " ")
+        : "\n(* " + notice.replace(/[\r\n]/g, " ").replace(/\*\)/g, "* )") + " *)");
+}
+
+document.getElementById("downloadPhaseData")?.addEventListener("click", () => {
+    const status = document.getElementById("phaseExportStatus");
+    try {
+        const payload = phaseExportPayload();
+        const text = JSON.stringify(payload, (_key, value) => typeof value === "bigint" ? value.toString() : value, 2) + "\n";
+        const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+        const link = document.createElement("a"); link.href = url;
+        link.download = `${currentTheory.id.replace(/[^A-Za-z0-9_-]/g, "_")}-phase-${currentPhase + 1}.json`;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        if (status) status.textContent = "Selected phase exported with source and attribution metadata.";
+    } catch (error) {
+        if (status) status.textContent = `Could not export: ${error.message || error}`;
+    }
+});
+
 function chiralSymbolsM(phase) {
     const E = phase.n_chirals;
     const pairCount = {}, pairSeen = {};
@@ -2631,7 +2704,7 @@ document.querySelectorAll(".copy-mini").forEach(btn => {
         const target = btn.dataset.copyTarget
             ? document.getElementById(btn.dataset.copyTarget) : null;
         const text = target ? target.textContent.trim()
-            : (copyPayloads[btn.dataset.copy] || "");
+            : attributedCopyPayload(btn.dataset.copy, copyPayloads[btn.dataset.copy] || "");
         const failed = () => {
             if (target) citationCopyStatus(target, false);
         };
@@ -2706,6 +2779,7 @@ function route() {
             phaseSelectionSerial++;
             currentTheory = null;
             destroySeibergGraph();
+            window.BraneScientificViewports?.disposeAll();
             document.getElementById("theoryPage").classList.add("hidden");
             document.getElementById("homePage").classList.remove("hidden");
             showResults([], String(err.message || err));
@@ -2717,6 +2791,7 @@ function route() {
         document.getElementById("theoryPage").classList.add("hidden");
         document.getElementById("homePage").classList.remove("hidden");
         destroySeibergGraph();
+        window.BraneScientificViewports?.disposeAll();
     }
 }
 
