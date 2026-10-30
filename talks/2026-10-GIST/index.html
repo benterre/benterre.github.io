@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Neural-Network Wess-Zumino-Witten, Duality and Machine Learning — Benjamin Suzzoni — GIST 2026</title>
+<link rel="stylesheet" href="vendor/reveal/reset.css">
+<link rel="stylesheet" href="vendor/reveal/reveal.css">
+<link rel="stylesheet" href="vendor/reveal/theme/white.css">
+<link rel="stylesheet" href="vendor/fonts/fonts.css">
+<link rel="stylesheet" href="template.css">
+<link rel="stylesheet" href="talk.css">
+<link rel="stylesheet" href="tt-heatmaps.css">
+<link rel="stylesheet" href="southampton-intro.css">
+<link rel="stylesheet" href="high-level.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]},chtml:{fontURL:'vendor/mathjax/output/chtml/fonts/woff-v2'},options:{enableMenu:false}};</script>
+<script defer src="vendor/mathjax/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wash-disk" aria-hidden="true"></div>
+<div class="reveal">
+<div class="footer"><span>Benjamin Suzzoni</span><span>NN-WZW, duality and ML</span><span>KMS Fall Meeting, GIST · 2026/10/31</span></div>
+<div class="slides">
+
+<section data-duration="25" id="title-slide">
+ <div class="orbs" aria-hidden="true"><div class="orb" style="width:420px;height:420px;right:-90px;top:-120px;background:radial-gradient(circle at 35% 35%,#a5b4fc,#6366f1)"></div><div class="orb" style="width:300px;height:300px;right:120px;bottom:-110px;background:radial-gradient(circle at 35% 35%,#99f6e4,#14b8a6)"></div><div class="orb" style="width:190px;height:190px;right:330px;top:170px;background:radial-gradient(circle at 35% 35%,#fde68a,#f59e0b);opacity:.26"></div></div>
+ <p class="kicker">KMS Fall Meeting, GIST</p>
+ <h1 class="title-main">Neural-Network Wess-Zumino-Witten,<br> Duality and Machine Learning</h1>
+ <div class="title-rule"></div>
+ <p class="title-meta"><span class="name">Benjamin Suzzoni</span><br><span class="muted">2026/10/31</span></p>
+ <div class="credits"><span class="credits-label">with</span><div class="people"><span class="person"><span class="mono" style="background:linear-gradient(140deg,#818cf8,#4f46e5)">PC</span>Pietro Capuozzo</span><span class="person"><span class="mono" style="background:linear-gradient(140deg,#5eead4,#0f766e)">BR</span>Brandon Robinson</span></div></div>
+ <aside class="notes">[0:00–0:25, 25 seconds] Introduce the talk and collaborators. The storyline is neural ensembles, existing NNFT physics, duality, and the consequences of choosing finite neural presentations. Metadata supplied by the speaker.</aside>
+</section>
+
+<section data-duration="50" id="nn-basics-slide" data-source="Southampton" class="southampton-intro">
+				<h2 class="slide-title">A neural network is a composable map</h2>
+				<div class="nn-layout">
+					<div>
+						<p style="font-size:0.78em;"><strong>Neural network:</strong><br /><br>
+							\(\Phi_{\Theta}:\mathbb R^D\rightarrow\mathbb R\)</p><br>
+						<p style="font-size:0.68em;"><strong>Operations:</strong> composition, addition and scalar multiplication.</p><br>
+						<p class="hl" style="font-size:0.61em;margin-top:0.7em;">Its functional form is the <strong>architecture</strong>; its weights and biases are the <strong>parameters</strong>.</p>
+					</div>
+					<div class="frame">
+						<span class="boxcap">one hidden layer</span>
+						<svg class="nn-svg" viewBox="0 0 680 330" role="img" aria-label="Animated feed-forward neural network">
+							<path class="nn-edge signal" d="M78 165 L280 72 M78 165 L280 130 M78 165 L280 200 M78 165 L280 258" />
+							<path class="nn-edge signal" d="M302 72 L555 165 M302 130 L555 165 M302 200 L555 165 M302 258 L555 165" />
+							<circle class="nn-node" cx="70" cy="165" r="25" />
+							<circle class="nn-node hidden" cx="290" cy="72" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="130" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="200" r="20" />
+							<circle class="nn-node hidden" cx="290" cy="258" r="20" />
+							<circle class="nn-node output" cx="565" cy="165" r="26" />
+							<text class="svg-label" x="70" y="172">x</text>
+							<text class="svg-label" x="565" y="172">Φ(x)</text>
+							<text class="svg-small" x="290" y="306">basis functions φᵢ</text>
+							<text class="svg-small" x="433" y="117">weights Θᵢ</text>
+						</svg>
+					</div>
+				</div>
+				<p class="eq" style="text-align:center;margin-top:0.35em;">\[
+					\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\Phi_{\Theta}(x)=\sum_i \Theta_i \varphi_i(x)
+				\]</p>
+			<aside class="notes">[0:25–1:15, 50 seconds] Reused from the Southampton nn-basics-slide, including its animated network. A network is a composable map. Architecture means its functional form; parameters mean its weights and biases. The hidden features combine into an output. This slide supplies the basic vocabulary used in the rest of the talk. Source: 2026-09-Southampton/index.html#nn-basics-slide.</aside>
+</section>
+
+<section data-duration="70" id="large-n-slide" data-source="Southampton" class="southampton-intro">
+				<h2 class="slide-title">The Universal Approximation Theorem (UAT)</h2>
+				<div class="frame uat-frame">
+					<span class="boxcap">one width parameter \(L\) controls both pictures</span>
+					<canvas id="uatCanvas" width="1100" height="350" aria-label="Network width grows while a schematic function approximation converges"></canvas>
+				</div>
+				<div class="uat-caption">
+					<div><strong id="uatNLabel" class="ambient">\(L=1\)</strong> &nbsp; width parameter; displayed nodes are schematic</div>
+					<div style="text-align:right;"><strong id="uatErrorLabel" class="defect">coarse approximation</strong> &nbsp; schematic error</div>
+				</div>
+				<div class="limit-clarifier">
+					<div class="mini"><strong>UAT:</strong> expressivity/density in a function space.</div>
+					<div class="mini"><strong>NNGP:</strong> a suitably normalized iid large-width limit can become Gaussian.</div>
+				</div>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<span class="fragment step-trigger" data-fragment-index="2"></span>
+				<span class="fragment step-trigger" data-fragment-index="3"></span>
+				<aside class="notes">[1:15–2:25, 70 seconds] Reused from the Southampton large-n-slide with its reversible Canvas animation. Advance through L=1,5,20,100 and the width-limit schematic. Width is called L here to reserve N for the WZW group. The target and partial-sum curves illustrate approximation, not this project's numerical results. Keep the source distinction between UAT expressivity and the suitably normalized iid Gaussian width limit. Source: 2026-09-Southampton/index.html#large-n-slide. References: arXiv:2008.08601, arXiv:2307.03223, arXiv:2409.12222, arXiv:2512.07946.</aside>
+			</section>
+
+<section data-duration="65" id="integral-slide" data-source="Southampton" class="step-0 southampton-intro">
+				<h2 class="slide-title">A functional integral through the UAT</h2>
+				<br>
+				<p class="hl finite-cft-note" style="font-size:0.6em;margin-top:0.65em;"><strong>Network at initialization:</strong> weights \(\Theta\) follow a distribution \(P\).</p>
+				<br>
+				<div class="integral-stage">
+					<div class="card ambient-card integral-card fields">
+						<div class="card-label">function space</div>
+						<p class="eq-s">\[
+							\int\mathcal D\phi\,\mu[\phi]\,\mathcal F[\phi]
+						\]</p>
+						<p class="muted" style="font-size:0.56em;">integrate over field configurations</p>
+					</div>
+					<div class="integral-bridge">
+						<span class="big-arrow">↔</span>
+						pushforward<br />through \(\Phi_\Theta\)
+					</div>
+					<div class="card defect-card integral-card parameters">
+						<div class="card-label">parameter space</div>
+						<p class="eq-s">\[
+							\lim_{L\to\infty}\int_{\Theta_L}
+							d\Theta\,P_L(\Theta)\,
+							\mathcal F[\Phi_\Theta]
+						\]</p>
+						<p class="muted" style="font-size:0.56em;">ordinary integrals over network parameters</p>
+					</div>
+				</div>
+				<br>
+				<p class="key-idea-box finite-cft-note" style="font-size:0.6em;margin-top:0.65em;"><strong>Key Idea:</strong> replace the functional integral with a statistical average.</p>
+				<p class="hl finite-cft-note" style="font-size:0.6em;margin-top:0.65em;"><strong>But:</strong> conformal correlators can already emerge at finite architecture—the UAT limit is not required to define an nn-CFT.</p>
+				<span class="fragment step-trigger" data-fragment-index="0"></span>
+				<span class="fragment step-trigger" data-fragment-index="1"></span>
+				<aside class="notes">[2:25–3:30, 65 seconds] Reused from the Southampton integral-slide, including the parameter-space emphasis and reversible notes. Average over initialized networks rather than selecting one fitted configuration. The pushforward of the parameter law supplies the field ensemble; UAT alone does not approximate a measure. The final state emphasizes the statistical-average interpretation and the possibility of finite-architecture conformal constructions. Width is L throughout this deck. Source: 2026-09-Southampton/index.html#integral-slide. References: arXiv:2409.12222, arXiv:2512.07946.</aside>
+			</section>
+
+<section id="nnft-achievements-slide" class="step-0" data-duration="90">
+ <h2 class="slide-title">What has NNFT achieved?</h2>
+ <div class="milestone-list">
+  <div class="milestone-row"><span class="milestone-dot"></span><p>Foundation of modern NNFT</p><a class="milestone-ref" href="https://arxiv.org/abs/2008.08601" target="_blank" rel="noopener">[Halverson, et al; 2021]</a></div>
+  <div class="milestone-row"><span class="milestone-dot"></span><p>Fermions and supersymmetry</p><a class="milestone-ref" href="https://arxiv.org/abs/2511.16741" target="_blank" rel="noopener">[Frank, et al; 2025]</a></div>
+  <div class="milestone-row"><span class="milestone-dot"></span><p>Virasoro symmetry using NNs</p><a class="milestone-ref" href="https://arxiv.org/abs/2512.24420" target="_blank" rel="noopener">[Robinson; 2025]</a></div>
+  <div class="milestone-row string-milestone"><span class="milestone-dot"></span><p>String-theory amplitudes</p><a class="milestone-ref" href="https://arxiv.org/abs/2601.06249" target="_blank" rel="noopener">[Frank, Halverson; 2026]</a></div>
+  <div class="milestone-row string-milestone"><span class="milestone-dot"></span><p>Topological effects: BKT and T-duality</p><a class="milestone-ref" href="https://arxiv.org/abs/2604.02313" target="_blank" rel="noopener">[Ferko, et al; 2026]</a></div>
+ </div>
+ <div class="duality-highlight appear" data-show="1"><p><strong>T-duality identified in the bosonic-string setting</strong></p><div class="momentum-winding"><span>momentum</span><span class="duality-arrow">↔</span><span>winding</span></div></div>
+ <span class="fragment step-trigger" data-fragment-index="0"></span>
+ <aside class="notes">[3:30–5:00, 90 seconds] Condensed from APCTP slide #/11: retain only the five findings requested by the speaker. The source timeline's 2008 foundation date is a typo; use the cited 2021 publication of arXiv:2008.08601. Advance to emphasize the string/topology rows and the identification of T-duality in the neural bosonic-string setting. This provides the motivation for asking about other dualities. The topology paper verifies momentum/winding exchange on a circle; do not describe that result as evidence for a finite-width level-rank parameter map. Sources: 2026-05-APCTP/index.html, NNFT Timeline and Superstrings slides. Primary references: arXiv:2008.08601, 2511.16741, 2512.24420, 2601.06249, 2604.02313.</aside>
+</section>
+
+<section id="other-dualities-slide" class="question-slide" data-duration="15" data-wash="#6366f1" data-wash-pos="50% 50%"><div class="question-content"><h1>What about other dualities?</h1></div><aside class="notes">[5:00–5:15, 15 seconds] Pause on the question. Move from the established string T-duality example to level-rank as a controlled setting for comparing neural presentations. Transition text requested by the speaker.</aside></section>
+
+<section id="wzw-overview-slide" class="step-0" data-duration="95">
+ <h2 class="slide-title">WZW and level-rank duality <a class="title-ref" href="https://arxiv.org/abs/1208.5131" target="_blank" rel="noopener">[Ostrik, Sun; 2014]</a></h2>
+ <div class="wzw-row"><div class="wzw-row-label">A 2d sigma model</div><div><p class="eq-l">\[g:\Sigma\longrightarrow SU(N)\]</p><p class="small muted center">worldsheet &nbsp; to &nbsp; group manifold</p></div></div>
+ <div class="wzw-row appear" data-show="1"><div class="wzw-row-label">Affine current algebra</div><div><p class="eq-l">\[J^a(z)J^b(w)\sim\frac{K\delta^{ab}}{2(z-w)^2}+\frac{if^{ab}{}_{c}J^c(w)}{z-w}\]</p></div></div>
+ <div class="wzw-row appear" data-show="2"><div class="wzw-row-label">Direct / coset</div><div><p class="eq-l">\[SU(N)_K\simeq\frac{SU(NK)_1}{SU(K)_N}\]</p><p class="small muted center">a common chiral current sector</p></div></div>
+ <span class="fragment step-trigger" data-fragment-index="0"></span><span class="fragment step-trigger" data-fragment-index="1"></span>
+ <aside class="notes">[5:15–6:50, 95 seconds] WZW is an interacting two-dimensional conformal sigma model with group-valued fields. Show only the map, as requested, without the action. Advance 1: the holomorphic current OPE has the Lie-algebra simple pole and a double pole at level K. The displayed normalization is tr(t^a t^b)=delta^{ab}/2, as in the draft. Advance 2: the conformal embedding of SU(N)_K and SU(K)_N in SU(NK)_1 supplies a direct/coset presentation of the same chiral current sector. This does not identify all the auxiliary Wakimoto fields, finite neural ensembles, or the full SU(N)_K and SU(K)_N theories. The example used next is SU(2)_3 and SU(6)_1/SU(3)_2. Sources: draft.tex, target-current-ope, fw_conformal_embedding, fw_same_sector_coset; APCTP WZW slide. Reference: Ostrik and Sun, arXiv:1208.5131.</aside>
+</section>
+
+<section id="wakimoto-slide" class="step-0" data-duration="110">
+ <h2 class="slide-title">Level-rank for neural networks <a class="title-ref" href="https://doi.org/10.1007/BF01211068" target="_blank" rel="noopener">[Wakimoto; 1986]</a></h2>
+ <p class="wakimoto-subtitle">The Wakimoto representation builds WZW currents from free fields.</p>
+ <div class="wakimoto-flow">
+  <div class="card ambient-card"><div class="card-label">neural free fields</div><p class="field-symbols">\(\phi\) &nbsp; and &nbsp; \((\beta,\gamma)\)</p><p class="small">one scalar, one commuting pair</p></div>
+  <svg viewBox="0 0 90 50" aria-hidden="true"><path d="M5 25H80m-12-9 12 9-12 9"/></svg>
+  <div class="card amber-card appear" data-show="1"><div class="card-label">Wakimoto readout</div><p>Polynomials and derivatives</p><p class="small muted">with normal ordering</p></div>
+  <svg class="appear" data-show="1" viewBox="0 0 90 50" aria-hidden="true"><path d="M5 25H80m-12-9 12 9-12 9"/></svg>
+  <div class="card defect-card appear" data-show="1"><div class="card-label">WZW observables</div><p class="field-symbols">\(J^1,\ J^2,\ J^3\)</p><p class="small">and the stress tensor \(T\)</p></div>
+ </div>
+ <div class="wakimoto-example appear" data-show="1"><span class="small muted">One current, for example:</span><p class="eq-l">\[J^3=i\sqrt{\frac{K+2}{2}}\,\partial\phi+:\!\beta\gamma\!:\]</p></div>
+ <p class="hl appear" data-show="2">The prescribed readouts reproduce the affine algebra in the ordered continuum limit.</p>
+ <span class="fragment step-trigger" data-fragment-index="0"></span><span class="fragment step-trigger" data-fragment-index="1"></span>
+ <aside class="notes">[6:50–8:40, 110 seconds] Ask what level-rank looks like when the fields are neural networks. Use the bosonic Wakimoto representation throughout this comparison. Random Fourier-feature networks provide the scalar and the coupled commuting beta/gamma fields. Advance 1: fixed nonlinear and derivative readouts produce the currents and the stress tensor; show only J3 as a representative formula. Normal ordering, derivative corrections and the level-dependent coefficients are part of the prescribed construction, not learned parameters. Advance 2: the elementary neural contractions and Gaussian Wick limit reproduce the affine OPE after the ordered width and regulator limits. Finite networks retain presentation-dependent corrections. Sources: draft.tex sec:bosonicsubstrate, bosonic-scalar-architecture, bosonic-ghost-architecture, wakimoto-su2-currents and su2-wakimoto-stress-tensor. References: Wakimoto, DOI 10.1007/BF01211068; de Boer and Feher, arXiv:hep-th/9611083.</aside>
+</section>
+
+<section id="coset-slide" class="step-0" data-duration="90">
+ <h2 class="slide-title">One current sector, two neural presentations</h2>
+ <p class="comparison-subtitle">The same limiting \(SU(2)_3\) sector, at the same feature width \(L\).</p>
+ <table class="resource-table"><thead><tr><th></th><th class="ambient">Direct W<br><span>\(SU(2)_3\)</span></th><th class="defect">Coset C<br><span>\(SU(6)_1/SU(3)_2\)</span></th></tr></thead><tbody>
+ <tr><th>Scalar fields</th><td>1</td><td>5</td></tr>
+ <tr><th>Commuting \(\beta\gamma\) pairs</th><td>1</td><td>15</td></tr>
+ <tr><th>Gaussian output amplitudes</th><td>\(3L\)</td><td>\(35L\)</td></tr>
+ <tr class="total-parameters"><th>Real sampled parameters</th><td>\(6L\)</td><td>\(38L\)</td></tr>
+ <tr><th>Observables retained</th><td colspan="2">Three currents and the stress tensor</td></tr>
+ </tbody></table>
+ <p class="tiny muted parameter-convention">Baseline shared frequencies and scalar phases. Count each complex frequency as two real parameters; fixed hyperparameters are excluded.</p>
+ <p class="hl appear" data-show="1">The continuum relation leaves different finite architectures and readouts.</p>
+ <span class="fragment step-trigger" data-fragment-index="0"></span>
+ <aside class="notes">[8:40–10:10, 90 seconds] Compare direct SU(2)_3 Wakimoto fields with the bosonic SU(6)_1/SU(3)_2 parent-based presentation. Field counts are one versus five scalars and one versus fifteen commuting pairs. There are 3L versus 35L Gaussian amplitudes. With the draft's shared frequency/phase law, add 2L real frequency coordinates and L scalar phases to each: 6L versus 38L real sampled parameters. These counts exclude fixed global hyperparameters and prescribed coefficients, and are not numbers of trained weights. Both retain three currents and a stress tensor. The coset stress is the same-parent subtraction T_P-T_D, with affine corrections retained; the denominator is not a separately sampled network. Advance highlights the different parameter counts and concludes that the continuum identification does not choose a finite architecture. Sources: draft.tex bosonic-scalar-architecture, bosonic-ghost-architecture, fw_parent_neural_fields, fw_coset_stresses and the field/amplitude comparison in sec:finite_width_regulator_design.</aside>
+</section>
+
+<section id="finite-width-question-slide" class="question-slide" data-duration="15" data-wash="#14b8a6" data-wash-pos="50% 50%"><div class="question-content"><h1>Real life neural networks are not infinite...<br> what happens there?</h1></div><aside class="notes">[10:10–10:25, 15 seconds] Pause. Shift from a shared continuum sector to the finite-width approximation. Transition text requested by the speaker.</aside></section>
+
+<section data-duration="130" id="finite-width-slide" class="step-0">
+ <h2 class="slide-title">Finite-width accuracy depends on the presentation</h2>
+ <div class="finite-width-intro"><p>Compare stress-tensor correlations with the common CFT reference.</p><p class="small muted">\(L\): feature width. &nbsp; \(\alpha\): spectral tilt at fixed elementary covariance.</p></div>
+ <div class="panel-stack heatmap-stack"><div class="panel active" data-panel="0"><p class="plot-profile">UV damping (R¹)</p><div class="heatmap-row"><figure><figcaption class="ambient">Direct W</figcaption><canvas class="tt-heatmap" data-panel-key="W_R1" tabindex="0" role="img" aria-describedby="tt-heatmap-help" aria-label="Interactive direct Wakimoto TT RMS-error heatmap, regulator R1. Hover or focus and use arrow keys to inspect the original evaluated L and alpha nodes.">Interactive TT error heatmap. Full-precision numerical data are bundled in data/tt-heatmaps.js.</canvas></figure><figure><figcaption class="defect">Coset C</figcaption><canvas class="tt-heatmap" data-panel-key="C_R1" tabindex="0" role="img" aria-describedby="tt-heatmap-help" aria-label="Interactive coset TT RMS-error heatmap, regulator R1. Hover or focus and use arrow keys to inspect the original evaluated L and alpha nodes.">Interactive TT error heatmap. Full-precision numerical data are bundled in data/tt-heatmaps.js.</canvas></figure></div></div>
+ <div class="panel" data-panel="1"><p class="plot-profile">IR and UV damping (R³)</p><div class="heatmap-row"><figure><figcaption class="ambient">Direct W</figcaption><canvas class="tt-heatmap" data-panel-key="W_R3" tabindex="0" role="img" aria-describedby="tt-heatmap-help" aria-label="Interactive direct Wakimoto TT RMS-error heatmap, regulator R3. Hover or focus and use arrow keys to inspect the original evaluated L and alpha nodes.">Interactive TT error heatmap. Full-precision numerical data are bundled in data/tt-heatmaps.js.</canvas></figure><figure><figcaption class="defect">Coset C</figcaption><canvas class="tt-heatmap" data-panel-key="C_R3" tabindex="0" role="img" aria-describedby="tt-heatmap-help" aria-label="Interactive coset TT RMS-error heatmap, regulator R3. Hover or focus and use arrow keys to inspect the original evaluated L and alpha nodes.">Interactive TT error heatmap. Full-precision numerical data are bundled in data/tt-heatmaps.js.</canvas></figure></div></div></div>
+ <div class="color-scale"><span>\(\log_{10}E_X^{TT}\)</span><div class="color-scale-body"><div class="heatmap-gradient" role="img" aria-label="Original common viridis scale from log10 error minus 1 to 80"></div><div class="scale-ticks"><span>−1</span><span>15.2</span><span>31.4</span><span>47.6</span><span>63.8</span><span>80</span></div></div><span class="tiny muted">white: resolved minimum<br>hatched: within 5%</span></div>
+ <p id="tt-heatmap-help" class="tiny muted center heatmap-hint">Hover to inspect \(L\), \(\alpha\) and \(E^{TT}\). Same 64 pairs, \(p_-=.01\), \(p_+=1000\). Sampling uncertainty is separate.</p>
+ <span class="fragment step-trigger" data-fragment-index="0"></span>
+ <aside class="notes">[10:25–12:35, 130 seconds] L is sampled feature width; alpha redistributes frequencies with compensated amplitudes, preserving elementary covariances. The displayed color is log10 of the relative population RMS error of the stress two-point function against the common continuum target. The exact formula remains in the bundled data and the draft, rather than on this high-level slide. These are interactive Canvas plots of the active draft's TT numerical protocol. The deleted source grid archives were regenerated with the unchanged CPU evaluator, original saved alpha/width nodes and original 64-pair seed. The recovery matched all 16 retained compact audit values. No values were digitized from images or interpolated. We show R1, then advance to R3, with the draft's common full-range color scale. The fixed bank contains 64 ordered disk pairs, with no minimum-separation cut. Damping is selected once per regulator by minimizing the larger direct/coset Gaussian relative RMS error, then held fixed for all L and alpha. The 91 alpha values span [-1.5,1.5]; 301 distinct integer widths span 1 to 2^18. White curves mark sampled per-width minimizers; hatching is within 5% in RMS. The full common log scale extends from -1 to 80, so the dark region is visually compressed; do not infer equal errors from similar colors. The draft captions give direct alpha*=7/15, coset R1 alpha* in [13/30,1/2] and coset R3 alpha* in [2/5,1/2]. This E compares the population expectation to the continuum target and contains both regulator and finite-width bias. It is not Monte Carlo variance. Finite-width terms can partly cancel regulator bias, so increasing width need not reduce this total error monotonically. Source: fw_finite_width_tt_ratio, fw_finite_width_tt_error, fw_optimal_spectral_exponent, fw_near_optimal_spectral_region, fig:fw_tt_alpha_width and tab:tt-relative-gaussian-main. All plots use the original common color scale. On entry and each regulator change, evaluated cells are revealed in increasing width over one second. Hover gives the cell's L, alpha, population RMS and deterministic numerical sensitivity. The matching cell is highlighted in both presentations. Focus a plot and use arrow keys for neighboring cells, then Escape to return to slide navigation. Reduced-motion preferences disable the reveal animation.</aside>
+</section>
+
+<section data-duration="120" id="cost-slide" class="step-0">
+ <h2 class="slide-title">Computational cost depends on the task</h2>
+ <p class="small muted cost-subtitle">Coset / direct median CPU time, at \(L=256\), \(\alpha=0\), \(R^3\).</p>
+ <div class="cost-chart"><div class="cost-chart-head"><span>Ensemble-correlation workload</span><span>Time ratio (log scale)</span></div><div class="cost-row"><div class="cost-label">Production + calibration</div><div class="cost-track"><div class="cost-bar" data-ratio="10.2481"></div><span class="cost-value" data-value="10.2481">10.25×</span></div></div><div class="cost-row appear" data-show="1"><div class="cost-label">1000 amplitude-dependent calls</div><div class="cost-track"><div class="cost-bar amber-bar" data-ratio="72.0258"></div><span class="cost-value" data-value="72.0258">72.03×</span></div></div><div class="cost-row appear" data-show="2"><div class="cost-label">1000 fixed-amplitude calls</div><div class="cost-track"><div class="cost-bar teal-bar" data-ratio="1.2743"></div><span class="cost-value" data-value="1.2743">1.27×</span></div></div><div class="cost-axis"><span></span><div><span style="left:0">1</span><span style="left:23.856%">3</span><span style="left:50%">10</span><span style="left:73.856%">30</span><span style="left:100%">100</span></div></div></div>
+ <p class="small muted">Fixed coefficients allow more reuse. New insertion points require integration again.</p>
+ <p class="hl appear" data-show="2">A continuum identification does not select the most economical finite network.</p>
+ <p class="tiny muted">These workloads evaluate ensemble correlations. Neither complete task reached the prescribed 1% full-vector accuracy target.</p>
+ <span class="fragment step-trigger" data-fragment-index="0"></span><span class="fragment step-trigger" data-fragment-index="1"></span>
+ <aside class="notes">[12:35–14:35, 120 seconds] Equal feature widths do not mean equal resources: the direct and parent presentations have 3L versus 35L Gaussian amplitudes, plus shared frequency/phase parameters. Here the active draft reports ensemble-correlation evaluation costs, not forward milliseconds per sampled network. The baseline direct time is one for each workload. First: complete production and calibration gives 10.2481. Advance 1: retaining amplitude dependence for 1000 repeated calls gives 72.0258. Advance 2: combining fixed-amplitude coefficients in advance reduces the ratio to 1.2743. The three tasks have different construction, integration and reuse costs. Ratios alone do not establish matched-accuracy savings: neither complete task attained the prescribed 1% target for the full correlation vector. The finite-width bias, estimator variance and calibration generalization are separate questions. The practical conclusion is to choose a presentation and prior for a declared observable, error measure and workload. Source: sec:local_calibration_dependence, Dependence on the computational task, fig:calibration_resources. Exact displayed raw ratios: 10.2481, 72.0258, 1.2743.</aside>
+</section>
+
+<section data-duration="25" id="thanks-slide">
+ <div class="orbs" aria-hidden="true"><div class="orb" style="width:380px;height:380px;right:-70px;bottom:-120px;background:radial-gradient(circle at 35% 35%,#a5b4fc,#6366f1)"></div><div class="orb" style="width:260px;height:260px;right:250px;top:-90px;background:radial-gradient(circle at 35% 35%,#99f6e4,#14b8a6)"></div></div>
+ <h1 class="title-main">Thank you</h1><div class="title-rule"></div>
+ <p class="title-meta muted">Benjamin Suzzoni</p><p class="title-meta">with Pietro Capuozzo and Brandon Robinson</p>
+ <aside class="notes">[14:35–15:00, 25 seconds] Thank the audience and invite discussion. Metadata supplied by the speaker. No extra scientific claims or publication identifiers added.</aside>
+</section>
+</div></div>
+<script src="vendor/reveal/reveal.js"></script>
+<script src="vendor/reveal/plugin/notes.js"></script>
+<script src="vendor/reveal/plugin/zoom.js"></script>
+<script src="vendor/reveal/plugin/search.js"></script>
+<script src="vendor/reveal/slidecontrol.js?v=1.1.0"></script>
+<script src="data/viridis.js"></script>
+<script src="data/tt-heatmaps.js"></script>
+<script src="tt-heatmaps.js"></script>
+<script src="southampton-intro.js"></script>
+<script src="talk.js"></script>
+</body></html>

@@ -1,0 +1,158 @@
+/* ---------------- neural-network slides ---------------- */
+		.nn-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
+			gap: 24px;
+			align-items: center;
+		}
+
+		.nn-svg {
+			width: 100%;
+			height: 330px;
+			display: block;
+		}
+
+		.nn-edge {
+			stroke: #cbd5e1;
+			stroke-width: 2.3;
+			fill: none;
+		}
+
+		.nn-node {
+			fill: #fff;
+			stroke: var(--ambient);
+			stroke-width: 3;
+		}
+
+		.nn-node.hidden { fill: var(--pale-indigo); }
+		.nn-node.output { stroke: var(--defect); }
+
+		.present .signal {
+			stroke-dasharray: 9 10;
+			animation: signal-flow 1.6s linear infinite;
+		}
+
+		@keyframes signal-flow {
+			to { stroke-dashoffset: -38; }
+		}
+
+		.uat-frame {
+			height: 385px;
+			padding-top: 34px;
+		}
+
+		#uatCanvas {
+			width: 100%;
+			height: 350px;
+			display: block;
+		}
+
+		.uat-caption {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 18px;
+			margin-top: 0.42em;
+		}
+
+		.uat-caption > div {
+			font-size: 0.57em;
+			color: var(--muted);
+		}
+
+		.limit-clarifier {
+			display: flex;
+			gap: 18px;
+			margin-top: 0.48em;
+		}
+
+		.limit-clarifier .mini {
+			flex: 1;
+			border-left: 3px solid var(--ml);
+			padding-left: 0.65em;
+			font-size: 0.55em;
+			color: var(--muted);
+		}
+
+		.limit-clarifier .mini:last-child { border-left-color: var(--defect); }
+
+		.integral-stage {
+			display: grid;
+			grid-template-columns: 1fr 105px 1fr;
+			gap: 20px;
+			align-items: center;
+			margin-top: 0.25em;
+		}
+
+		.integral-card {
+			min-height: 245px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.45s ease;
+		}
+
+		.integral-card.parameters {
+			opacity: 0.26;
+			transform: translateX(-8px);
+		}
+
+		.integral-bridge {
+			text-align: center;
+			color: var(--muted);
+			font-size: 0.52em;
+			transition: color 0.45s ease, transform 0.45s ease;
+		}
+
+		.integral-bridge .big-arrow {
+			display: block;
+			font-size: 2.1em;
+			line-height: 1;
+			margin-bottom: 0.2em;
+		}
+
+		#integral-slide.step-1 .parameters,
+		#integral-slide.step-2 .parameters {
+			opacity: 1;
+			transform: translateX(0);
+			border-color: rgba(20, 184, 166, 0.65);
+		}
+
+		#integral-slide.step-1 .fields { opacity: 0.36; transform: translateX(-8px); }
+		#integral-slide.step-1 .integral-bridge,
+		#integral-slide.step-2 .integral-bridge { color: var(--accent); transform: scale(1.06); }
+
+		.finite-cft-note {
+			opacity: 0;
+			transform: translateY(10px);
+			transition: opacity 0.45s ease, transform 0.45s ease;
+		}
+
+		#integral-slide.step-2 .finite-cft-note {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		
+.svg-label {
+			font: 600 18px Inter, sans-serif;
+			fill: var(--ink);
+			text-anchor: middle;
+		}
+
+		.svg-small {
+			font: 500 14px Inter, sans-serif;
+			fill: var(--muted);
+			text-anchor: middle;
+		}
+
+		
+.key-idea-box {
+			background: linear-gradient(90deg, rgba(225, 29, 72, 0.17), rgba(251, 113, 133, 0.09));
+			border: 1px solid rgba(225, 29, 72, 0.28);
+			border-left: 5px solid var(--rose);
+			border-radius: 0 11px 11px 0;
+			padding: 0.46em 0.82em;
+			color: #881337;
+		}
+
+		
