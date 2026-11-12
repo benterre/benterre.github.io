@@ -9,6 +9,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
     "use strict";
     const active = new Map();
+    const color = (name, fallback) => typeof window !== "undefined" ? window.BraneUI?.color(name, fallback) || fallback : fallback;
     const clamp = (value, lo, hi) => Math.max(lo, Math.min(hi, value));
 
     class Camera {
@@ -20,6 +21,9 @@
             if (this.bounded) {
                 this.x = clamp(this.x, this.width * (1 - this.scale), 0);
                 this.y = clamp(this.y, this.height * (1 - this.scale), 0);
+            } else if (this.panLimit) {
+                this.x = clamp(this.x, -this.width * this.scale * this.panLimit, this.width * this.scale * this.panLimit);
+                this.y = clamp(this.y, -this.height * this.scale * this.panLimit, this.height * this.scale * this.panLimit);
             }
         }
         zoom(value, x = this.width / 2, y = this.height / 2) {
@@ -216,8 +220,8 @@
                 const budget = Math.max(120000, periodicCost(this.geometry, this.camera) * 2);
                 this.camera.scale = .2;
                 while (this.camera.scale < 1 && periodicCost(this.geometry, this.camera) > budget) this.camera.scale *= 1.25;
-                this.camera.min = Math.min(1, this.camera.scale); this.camera.reset();
-                hint = "Scroll or pinch to zoom · drag to explore the repeated tiling · pink outline: original torus cell";
+                this.camera.min = Math.min(1, this.camera.scale); this.camera.panLimit = 4; this.camera.reset();
+                hint = "Scroll or pinch to zoom · drag to explore the repeated tiling · dashed outline: original torus cell";
             }
             this.ui = controls(canvas); this.ui.hint.textContent = hint;
             this.ui.box.hidden = !this.interactive;
@@ -346,7 +350,7 @@
             const xmax = Math.min(g.maxX, Math.floor((baseBR[0] - zero[0]) / g.cell));
             const ymin = Math.max(g.minY, Math.ceil((zero[1] - baseBR[1]) / g.cell));
             const ymax = Math.min(g.maxY, Math.floor((zero[1] - baseTL[1]) / g.cell));
-            ctx.fillStyle = "#273049";
+            ctx.fillStyle = color("grid", "#273049");
             if ((xmax - xmin + 1) * (ymax - ymin + 1) <= 30000) {
                 for (let x = xmin; x <= xmax; x++) for (let y = ymin; y <= ymax; y++) {
                     const p = P([x, y]); ctx.beginPath(); ctx.arc(...p, Math.min(2, spacing * .12), 0, 7); ctx.fill();
@@ -354,14 +358,14 @@
             }
             ctx.beginPath();
             data.hull.forEach((p, i) => { const q = P(p); i ? ctx.lineTo(...q) : ctx.moveTo(...q); });
-            ctx.closePath(); ctx.fillStyle = "rgba(94,234,212,0.08)"; ctx.strokeStyle = "#5eead4";
+            ctx.closePath(); ctx.fillStyle = color("fill", "rgba(94,234,212,0.08)"); ctx.strokeStyle = color("face", "#5eead4");
             ctx.lineWidth = 1.6; ctx.fill(); ctx.stroke();
             const occupied = [];
             for (const p of data.points) {
                 const [x, y] = P(p);
                 if (x < -8 || y < -8 || x > this.width + 8 || y > this.height + 8) continue;
                 const radius = Math.min(5.5, spacing * .17);
-                ctx.beginPath(); ctx.arc(x, y, radius, 0, 7); ctx.fillStyle = "#e8ecf5"; ctx.fill();
+                ctx.beginPath(); ctx.arc(x, y, radius, 0, 7); ctx.fillStyle = color("point", "#e8ecf5"); ctx.fill();
                 if (p[2] == null || g.corners.has(`${p[0]},${p[1]}`)) continue;
                 const text = String(p[2]); ctx.font = "bold 12px sans-serif";
                 const naturalWidth = ctx.measureText(text).width;
@@ -374,11 +378,11 @@
                 ctx.font = `bold ${font}px sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
                 const width = ctx.measureText(text).width, box = [x + dx, y + dy - font, x + dx + width, y + dy + 1];
                 if (occupied.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
-                occupied.push(box); ctx.fillStyle = "#f9a8d4"; ctx.fillText(text, x + dx, y + dy);
+                occupied.push(box); ctx.fillStyle = color("label", "#f9a8d4"); ctx.fillText(text, x + dx, y + dy);
             }
             this.labelBoxes = occupied;
             if (this.glsmLabels) {
-                ctx.font = "italic bold 12px serif"; ctx.fillStyle = "#5eead4";
+                ctx.font = "italic bold 12px serif"; ctx.fillStyle = color("face", "#5eead4");
                 for (const label of this.glsmLabels) { const p = P([label.x, label.y]); ctx.fillText(label.label, p[0] + 8, p[1] + 14); }
             }
         }
@@ -390,7 +394,7 @@
                 const r = translations(bounds, a, b);
                 for (let i = r[0]; i <= r[1]; i++) for (let j = r[2]; j <= r[3]; j++) { fn(g.xy(i, j)); copies++; }
             };
-            ctx.lineWidth = 1.5; ctx.strokeStyle = "#cbd5f0";
+            ctx.lineWidth = 1.5; ctx.strokeStyle = color("line", "#cbd5f0");
             ctx.beginPath();
             for (const s of g.segments) visit(s.aUV, s.bUV, shift => {
                 const a = P([s.a[0] + shift[0], s.a[1] + shift[1]]), b = P([s.b[0] + shift[0], s.b[1] + shift[1]]);
@@ -403,20 +407,20 @@
             for (let i = 0; i < g.nodes.length; i++) visit(g.uvNodes[i], g.uvNodes[i], shift => {
                 const n = g.nodes[i], p = P([n[0] + shift[0], n[1] + shift[1]]);
                 if (p[0] < -8 || p[0] > this.width + 8 || p[1] < -8 || p[1] > this.height + 8) return;
-                ctx.beginPath(); ctx.arc(...p, radius, 0, 7); ctx.fillStyle = n[2] === 1 ? "#0d1220" : "#e8ecf5";
-                ctx.fill(); ctx.strokeStyle = "#e8ecf5"; ctx.lineWidth = Math.min(1.4, radius); ctx.stroke();
+                ctx.beginPath(); ctx.arc(...p, radius, 0, 7); ctx.fillStyle = n[2] === 1 ? color("black", "#0d1220") : color("white", "#e8ecf5");
+                ctx.fill(); ctx.strokeStyle = color("point", "#e8ecf5"); ctx.lineWidth = Math.min(1.4, radius); ctx.stroke();
             });
-            ctx.strokeStyle = "#f9a8d4"; ctx.setLineDash([6, 5]); ctx.lineWidth = 1.2; ctx.beginPath();
+            ctx.strokeStyle = color("label", "#f9a8d4"); ctx.setLineDash([6, 5]); ctx.lineWidth = 1.2; ctx.beginPath();
             g.cell.forEach((p, i) => { const q = P(p); i ? ctx.lineTo(...q) : ctx.moveTo(...q); });
             ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
             const font = Math.min(14, Math.max(2, g.baseEdge * c.scale * .55));
             ctx.font = `bold ${font}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillStyle = "#5eead4";
+            ctx.fillStyle = color("face", "#5eead4");
             for (const face of g.faces) visit(face.uv, face.uv, shift => {
                 const p = P([face.p[0] + shift[0], face.p[1] + shift[1]]);
                 if (p[0] < -8 || p[0] > this.width + 8 || p[1] < -8 || p[1] > this.height + 8) return;
                 // Dark halo keeps numbers readable across nearby light edges.
-                ctx.strokeStyle = "#0d1220"; ctx.lineWidth = 2.5; ctx.strokeText(String(face.id + 1), ...p);
+                ctx.strokeStyle = color("black", "#0d1220"); ctx.lineWidth = 2.5; ctx.strokeText(String(face.id + 1), ...p);
                 ctx.fillText(String(face.id + 1), ...p); faces++;
             });
             this.canvas.dataset.visibleCopies = String(copies); this.canvas.dataset.visibleFaces = String(faces);

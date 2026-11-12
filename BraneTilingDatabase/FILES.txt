@@ -1,0 +1,34 @@
+GitHub Pages frontend update
+
+Copy the following 26 files to the same directory as your existing index.html.
+Keep the assets/ directory and its file names intact. Overwrite matching files.
+No build step is required. FILES.txt is an upload checklist; uploading it is optional.
+
+index.html
+app.js
+family_definitions.js
+toric_search.js
+scientific_viewports.js
+parquet_bundle.js
+mist-ui.js
+perfect_matchings.js
+mist-base.css
+mist-common.css
+mist-catalogue.css
+mist-theory.css
+frontend.css
+favicon.svg
+favicon.ico
+favicon-32x32.png
+apple-touch-icon.png
+android-chrome-192x192.png
+android-chrome-512x512.png
+android-chrome-maskable-512x512.png
+site.webmanifest
+assets/interface-regular.woff
+assets/interface-semibold.woff
+assets/interface-bold.woff
+assets/math-mono.woff
+THIRD_PARTY_NOTICES.md
+
+The API, database files and server configuration are unchanged.

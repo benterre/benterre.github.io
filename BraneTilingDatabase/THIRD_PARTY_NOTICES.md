@@ -29,8 +29,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Mist interface assets
+
+The Interface and MathMono WOFF files in `assets/`, and the Mist design styles,
+were supplied in the user-provided `webapp-revamp.zip`. Font binaries are retained
+verbatim. Mathematical formulas continue to use the original MathJax SVG output;
+MathMono is used for code and identifiers.
+
 ## External browser libraries
 
 MathJax, Three.js and 3d-force-graph are loaded from the CDN URLs configured in
-`index.html`, not copied into the four local runtime assets. Their distributions
+`index.html`. Their distributions
 retain their own notices. No database files are included in the browser bundle.

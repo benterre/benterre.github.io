@@ -54,7 +54,7 @@ const { canonicalPolygonKey, convexHull } = toricSearch;
 
 // normalized string for name matching: "Y^{2,1}" -> "y21", "C/Z2 x Z2" -> "cz2xz2"
 function normName(s) {
-    return String(s).toLowerCase()
+    return String(s).normalize("NFKC").toLowerCase()
         .replace(/×/g, "x")
         .replace(/[\^{}_\s(),\[\]\/\\-]+/g, "")
         .replace(/\*/g, "x");
@@ -428,9 +428,14 @@ function displayNames(names, max) {
 }
 
 function renderSuggestions() {
+    if(typeof window!=="undefined" && window.BraneUI && document.activeElement!==searchInput){
+        suggBox.style.display="none";searchInput.setAttribute?.("aria-expanded","false");return;
+    }
     if (!suggEntries.length) {
         suggBox.innerHTML = "";
         suggBox.style.display = "none";
+        searchInput.setAttribute?.("aria-expanded", "false");
+        searchInput.removeAttribute?.("aria-activedescendant");
         return;
     }
     suggBox.innerHTML = "";
@@ -438,6 +443,9 @@ function renderSuggestions() {
     suggEntries.forEach((e, i) => {
         const div = document.createElement("div");
         div.className = "sugg" + (i === suggActive ? " active" : "");
+        div.id = `suggestion-${i}`;
+        div.setAttribute("role", "option");
+        div.setAttribute("aria-selected", String(i === suggActive));
         const nm = document.createElement("span");
         // render each name in LaTeX where possible
         displayNames(namesOf(e), 3).forEach((n, k) => {
@@ -452,7 +460,7 @@ function renderSuggestions() {
         meta.className = "meta";
         meta.textContent = `${e.n_gauge} gauge · ${e.n_phases} phase${e.n_phases > 1 ? "s" : ""}`;
         div.append(nm, meta);
-        div.addEventListener("mousedown", ev => { ev.preventDefault(); openTheory(e.id); });
+        div.addEventListener("click", () => openTheory(e.id));
         div.addEventListener("mousemove", () => {
             if (suggActive !== i) {
                 suggActive = i;
@@ -463,6 +471,9 @@ function renderSuggestions() {
         suggBox.appendChild(div);
     });
     suggBox.style.display = "block";
+    searchInput.setAttribute?.("aria-expanded", "true");
+    if (suggActive >= 0) searchInput.setAttribute?.("aria-activedescendant", `suggestion-${suggActive}`);
+    else searchInput.removeAttribute?.("aria-activedescendant");
     if (needsTypesetting) typesetContainer(suggBox);
 }
 
@@ -481,7 +492,7 @@ function updateSuggestionEntries(entries) {
 }
 
 function beginSuggestionSearch() {
-    const query = searchInput.value;
+    const query = searchInput.value.normalize("NFKC");
     const serial = ++nameSearchSerial;
     NAME_SEARCH.cancel();
     if (nameSearchTimer != null) clearTimeout(nameSearchTimer);
@@ -514,6 +525,10 @@ function beginSuggestionSearch() {
 }
 
 async function submitNameSearch(query) {
+    query = query.normalize("NFKC");
+    if(window.BraneUI && CRITERIA.some(c=>c.type==="range"
+        ? document.getElementById(`prop_${c.key}_lo`).value!=="" || document.getElementById(`prop_${c.key}_hi`).value!==""
+        : document.getElementById(`prop_${c.key}`).value!==""))return runPropSearch();
     const serial = ++nameSearchSerial;
     NAME_SEARCH.cancel();
     if (nameSearchTimer != null) {
@@ -593,7 +608,11 @@ searchInput.addEventListener("keydown", ev => {
     }
 });
 
-searchInput.addEventListener("blur", () => setTimeout(() => { suggBox.style.display = "none"; }, 150));
+searchInput.addEventListener("blur", () => {
+    // Existing options remain alive through their click. renderSuggestions
+    // also checks focus, so late responses cannot reopen a blurred input.
+    setTimeout(()=>{if(document.activeElement===searchInput)return;suggBox.style.display="none";searchInput.setAttribute?.("aria-expanded","false");},150);
+});
 
 /* ======================= property search ================================ */
 // Config-driven criteria: add entries here (and matching fields in the index)
@@ -610,6 +629,10 @@ const FAMILY_LABELS = {
     zpq: { text: "Z^{p,q}", tex: "Z^{p,q}" },
     habcd: { text: "H^{a,b,c,d}", tex: "H^{a,b,c,d}" },
     kabcd: { text: "K^{a,b,c,d}", tex: "K^{a,b,c,d}" },
+    m_polygon: { text: "M — complete pentagons", tex: "M^{\\ell,r,h,x,y,z,w}" },
+    n_polygon: { text: "N — complete hexagons", tex: "N^{\\ell,r,h,x,y,z,w,u,v}" },
+    m_polygon_orbifold: { text: "Orbifolds of M", tex: "\\text{Orbifolds of } M" },
+    n_polygon_orbifold: { text: "Orbifolds of N", tex: "\\text{Orbifolds of } N" },
     delpezzo: { text: "del Pezzo", tex: "\\text{del Pezzo}" },
     pseudo_delpezzo: { text: "pseudo del Pezzo", tex: "\\text{pseudo del Pezzo}" },
     reflexive: { text: "reflexive polygon", tex: "\\text{reflexive polygon}" },
@@ -647,6 +670,8 @@ const FAMILY_NAME_TESTS = {
     zpq: n => /^Z\^\{\d+,\d+\}$/.test(n),
     habcd: n => /^H\^\{\d+,\d+,\d+,\d+\}$/.test(n),
     kabcd: n => /^K\^\{\d+,\d+,\d+,\d+\}$/.test(n),
+    m_polygon: n => /^M\^\{-?\d+(?:,-?\d+){6}\}$/.test(n),
+    n_polygon: n => /^N\^\{-?\d+(?:,-?\d+){8}\}$/.test(n),
     delpezzo: n => /^dP\d+$/.test(n),
     pseudo_delpezzo: n => /^PdP/.test(n),
     orbifold: n => /\/Z\d+/.test(n),
@@ -660,10 +685,15 @@ const FAMILY_NAME_TESTS = {
     zpq_orbifold: n => /^Z\^\{\d+,\d+\}\//.test(n),
     habcd_orbifold: n => /^H\^\{\d+,\d+,\d+,\d+\}\//.test(n),
     kabcd_orbifold: n => /^K\^\{\d+,\d+,\d+,\d+\}\//.test(n),
+    m_polygon_orbifold: n => /^M\^\{-?\d+(?:,-?\d+){6}\}\//.test(n),
+    n_polygon_orbifold: n => /^N\^\{-?\d+(?:,-?\d+){8}\}\//.test(n),
 };
 
 // reorder names so those belonging to `famId` come first (stable otherwise)
 function namesFamilyFirst(names, famId) {
+    // Complete normal-form labels never displace established display names,
+    // even when browsing the M/N family filter.
+    if (["m_polygon", "n_polygon", "m_polygon_orbifold", "n_polygon_orbifold"].includes(famId)) return names;
     const test = famId && FAMILY_NAME_TESTS[famId];
     if (!test) return names;
     const match = names.filter(test), rest = names.filter(n => !test(n));
@@ -772,11 +802,17 @@ function buildPropForm() {
             lo.type = "number"; lo.placeholder = "min"; lo.id = `prop_${c.key}_lo`;
             const hi = document.createElement("input");
             hi.type = "number"; hi.placeholder = "max"; hi.id = `prop_${c.key}_hi`;
+            lo.min = hi.min = "0";
+            lo.setAttribute("aria-label", `Minimum ${c.label}`);
+            hi.setAttribute("aria-label", `Maximum ${c.label}`);
+            lo.inputMode = hi.inputMode = "numeric";
             row.append(lo, hi);
             div.appendChild(row);
         } else if (c.type === "value") {
             const inp = document.createElement("input");
             inp.type = "number"; inp.step = "any"; inp.placeholder = "value"; inp.id = `prop_${c.key}`;
+            lab.htmlFor = inp.id;
+            inp.min = "0"; inp.inputMode = "decimal";
             div.appendChild(inp);
         } else if (c.type === "select" && c.mathjax) {
             div.appendChild(buildMathSelect(c));
@@ -808,6 +844,7 @@ function buildMathSelect(c) {
     val.type = "hidden"; val.id = `prop_${c.key}`; val.value = "";
     const btn = document.createElement("div");
     btn.className = "ms-btn"; btn.tabIndex = 0; btn.textContent = "any";
+    btn.setAttribute("role", "button"); btn.setAttribute("aria-label", c.label); btn.setAttribute("aria-expanded", "false");
     const panel = document.createElement("div");
     panel.className = "ms-panel hidden";
 
@@ -817,19 +854,21 @@ function buildMathSelect(c) {
 
     for (const [value, text, tex] of items) {
         const opt = document.createElement("div");
-        opt.className = "ms-opt";
+        opt.className = "ms-opt"; opt.tabIndex = 0; opt.setAttribute("role", "button"); opt.setAttribute("aria-label",text);
         if (tex) typesetRawTeX(opt, tex, text); else opt.textContent = text;
-        opt.addEventListener("mousedown", (ev) => {
+        opt.addEventListener("click", (ev) => {
             ev.preventDefault();
             val.value = value;
             btn.innerHTML = "";
             if (tex && value) typesetRawTeX(btn, tex, text);
             else btn.textContent = text;
             panel.classList.add("hidden");
+            btn.setAttribute("aria-expanded","false");btn.setAttribute("aria-label",`${c.label}: ${text}`);
         });
+        opt.addEventListener("keydown", ev => {if (ev.key === "Enter" || ev.key === " ") {ev.preventDefault(); opt.click(); btn.focus();}});
         panel.appendChild(opt);
     }
-    btn.addEventListener("click", () => panel.classList.toggle("hidden"));
+    btn.addEventListener("click", () => {panel.classList.toggle("hidden");btn.setAttribute("aria-expanded", String(!panel.classList.contains("hidden")));});
     btn.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); panel.classList.toggle("hidden"); }
         if (e.key === "Escape") panel.classList.add("hidden");
@@ -842,6 +881,13 @@ function buildMathSelect(c) {
 }
 
 function runPropSearch() {
+    for (const c of CRITERIA.filter(c => c.type === "range")) {
+        const lo = document.getElementById(`prop_${c.key}_lo`), hi = document.getElementById(`prop_${c.key}_hi`);
+        if (lo.value !== "" && hi.value !== "" && Number(lo.value) > Number(hi.value)) {
+            hi.setCustomValidity?.("Maximum must be greater than or equal to minimum."); hi.reportValidity?.(); return;
+        }
+        hi.setCustomValidity?.("");
+    }
     let entries = INDEX;
     const parts = [];
     let famFilter = null;
@@ -873,6 +919,9 @@ function runPropSearch() {
             }
         }
     }
+    const nameQuery=searchInput.value.normalize("NFKC").trim();
+    if(nameQuery){parts.push(`name “${nameQuery}”`);remoteFilters.q=nameQuery;if(!REMOTE_DATABASE)entries=entries.filter(e=>scoreName(e,normName(nameQuery))>=0);}
+    const badge=document.getElementById("filterCount");if(badge){badge.hidden=!parts.length;badge.textContent=parts.length;}
     if (!parts.length) { showResults([], "Set at least one criterion."); return; }
     if (REMOTE_DATABASE) {
         void showRemoteResults(remoteFilters, count => count
@@ -888,25 +937,28 @@ function runPropSearch() {
 
 /* ===================== toric drawing search ============================= */
 
-const drawState = { points: new Set(), N: 8 };
+const drawState = { points: new Set(), N: 8, focus: [0, 0] };
 let drawingSearchSerial = 0;
 const drawCanvas = document.getElementById("drawCanvas");
 
 function drawCellGeometry() {
-    const N = drawState.N, w = drawCanvas.width;
+    const N = drawState.N, w = 360;
     const step = w / N;
     return { N, step, off: step / 2 };
 }
 
 function renderDrawCanvas() {
+    const dpr=Math.min(3,window.devicePixelRatio || 1);
+    drawCanvas.width=Math.round(360*dpr);drawCanvas.height=Math.round(360*dpr);
     const ctx = drawCanvas.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
     const { N, step, off } = drawCellGeometry();
     ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    ctx.fillStyle = "#20283e";
+    ctx.fillStyle = (window.BraneUI?.color("grid", "#20283e") || "#20283e");
     for (let i = 0; i < N; i++)
         for (let j = 0; j < N; j++) {
             ctx.beginPath();
-            ctx.arc(off + i * step, drawCanvas.height - (off + j * step), 2.4, 0, 7);
+            ctx.arc(off + i * step, 360 - (off + j * step), 2.4, 0, 7);
             ctx.fill();
         }
     const pts = [...drawState.points].map(s => s.split(",").map(Number));
@@ -914,20 +966,21 @@ function renderDrawCanvas() {
         const hull = convexHull(pts);
         ctx.beginPath();
         hull.forEach((p, i) => {
-            const X = off + p[0] * step, Y = drawCanvas.height - (off + p[1] * step);
+            const X = off + p[0] * step, Y = 360 - (off + p[1] * step);
             i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
         });
         ctx.closePath();
-        ctx.fillStyle = "rgba(94,234,212,0.10)";
-        ctx.strokeStyle = "#5eead4";
+        ctx.fillStyle = (window.BraneUI?.color("fill", "rgba(94,234,212,0.10)") || "rgba(94,234,212,0.10)");
+        ctx.strokeStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
         ctx.lineWidth = 1.5;
         ctx.fill();
         ctx.stroke();
     }
-    ctx.fillStyle = "#5eead4";
+    if(document.activeElement===drawCanvas){const [x,y]=drawState.focus;ctx.strokeStyle=window.BraneUI?.color("edge","#5eead4")||"#5eead4";ctx.lineWidth=1.5;ctx.strokeRect(off+x*step-10,360-off-y*step-10,20,20);}
+    ctx.fillStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
     for (const p of pts) {
         ctx.beginPath();
-        ctx.arc(off + p[0] * step, drawCanvas.height - (off + p[1] * step), 6, 0, 7);
+        ctx.arc(off + p[0] * step, 360 - (off + p[1] * step), 6, 0, 7);
         ctx.fill();
     }
 }
@@ -937,25 +990,21 @@ function updateDrawMatch() {
     const box = document.getElementById("drawMatch");
     const pts = [...drawState.points].map(s => s.split(",").map(Number));
     drawState.matchId = null;
+    drawState.matchEntry = null;
     REMOTE_DATABASE?.cancelSearch("drawing");
-    document.getElementById("drawSearchBtn").disabled = false;
     if (pts.length < 3) {
-        box.innerHTML = '<span class="none">— draw at least 3 points —</span>';
+        box.innerHTML = '<span class="none">Select at least three non-collinear points.</span>';
         return;
     }
     const key = canonicalPolygonKey(pts);
     if (REMOTE_DATABASE && key) {
         box.textContent = "Looking up this toric diagram…";
-        document.getElementById("drawSearchBtn").disabled = true;
         REMOTE_DATABASE.lookupToric(key).then(entry => {
             if (serial !== drawingSearchSerial) return;
             displayDrawMatch(entry);
         }).catch(error => {
             if (serial !== drawingSearchSerial || error.name === "AbortError") return;
             box.textContent = `Diagram lookup unavailable: ${error.message}`;
-        }).finally(() => {
-            if (serial === drawingSearchSerial)
-                document.getElementById("drawSearchBtn").disabled = false;
         });
         return;
     }
@@ -964,39 +1013,33 @@ function updateDrawMatch() {
 }
 
 function displayDrawMatch(e) {
+    drawState.matchEntry=e;
     const box = document.getElementById("drawMatch");
-    if (e) {
-        drawState.matchId = e.id;
-        box.innerHTML = "";
-        const disp = displayNames(namesOf(e), 3);
-        const span = document.createElement("span");
-        box.appendChild(span);
-        typeset(span, disp[0]);
-        if (disp.length > 1) {
-            const rest = document.createElement("span");
-            rest.style.cssText = "color:var(--muted);font-size:13px;margin-left:10px;";
-            disp.slice(1).forEach((n, i) => {
-                if (i) rest.appendChild(document.createTextNode("  =  "));
-                const s = document.createElement("span");
-                typeset(s, n);
-                rest.appendChild(s);
-            });
-            box.appendChild(rest);
-        }
-    } else {
-        box.innerHTML = '<span class="none">no match in the database</span>';
-    }
+    box.innerHTML = "";
+    if (e) {drawState.matchId = e.id; box.appendChild(createTheoryCard(e));}
+    else {const text=document.createElement("span");text.className="none";text.textContent="No matching theory in this database.";box.appendChild(text);}
 }
 
-drawCanvas.addEventListener("pointerdown", ev => {
+let drawTap=null;
+drawCanvas.addEventListener("pointerdown",ev=>{
+    if(ev.button && ev.button!==0)return;
+    if(ev.isPrimary===false){drawTap=null;return;}
+    drawTap={id:ev.pointerId,x:ev.clientX,y:ev.clientY};
+});
+drawCanvas.addEventListener("pointercancel",()=>{drawTap=null;});
+drawCanvas.addEventListener("pointerup", ev => {
+    if(!drawTap || ev.pointerId!==drawTap.id)return;
+    const tap=drawTap;drawTap=null;
+    if(Math.hypot(ev.clientX-tap.x,ev.clientY-tap.y)>8)return;
     const r = drawCanvas.getBoundingClientRect();
     const { N, step, off } = drawCellGeometry();
-    const x = (ev.clientX - r.left) * (drawCanvas.width / r.width);
-    const y = (ev.clientY - r.top) * (drawCanvas.height / r.height);
+    const x = (ev.clientX - r.left) * (360 / r.width);
+    const y = (ev.clientY - r.top) * (360 / r.height);
     const i = Math.round((x - off) / step);
-    const j = Math.round((drawCanvas.height - y - off) / step);
+    const j = Math.round((360 - y - off) / step);
     if (i < 0 || i >= N || j < 0 || j >= N) return;
     const k = `${i},${j}`;
+    drawState.focus=[i,j];
     drawState.points.has(k) ? drawState.points.delete(k) : drawState.points.add(k);
     renderDrawCanvas();
     updateDrawMatch();
@@ -1006,11 +1049,6 @@ document.getElementById("drawClearBtn").addEventListener("click", () => {
     drawState.points.clear();
     renderDrawCanvas();
     updateDrawMatch();
-});
-
-document.getElementById("drawSearchBtn").addEventListener("click", () => {
-    if (drawState.matchId) openTheory(drawState.matchId);
-    else showResults([], "The drawn toric diagram matches no database entry.");
 });
 
 /* ========================== results grid ================================ */
@@ -1046,11 +1084,11 @@ function miniToric(canvas, entry, size = 86) {
     ctx.beginPath();
     hull.forEach((p, i) => { const [X, Y] = P(p); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
     ctx.closePath();
-    ctx.fillStyle = "rgba(167,139,250,0.14)";
-    ctx.strokeStyle = "#a78bfa";
+    ctx.fillStyle = (window.BraneUI?.color("fill", "rgba(167,139,250,0.14)") || "rgba(167,139,250,0.14)");
+    ctx.strokeStyle = (window.BraneUI?.color("edge", "#a78bfa") || "#a78bfa");
     ctx.lineWidth = 1.2;
     ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#e8ecf5";
+    ctx.fillStyle = (window.BraneUI?.color("point", "#e8ecf5") || "#e8ecf5");
     for (const p of points) {
         const [X, Y] = P(p);
         ctx.beginPath();
@@ -1112,6 +1150,7 @@ function gotoResultsPage(p) {
 }
 
 function renderResultsPage() {
+    const heading=document.getElementById("resultsHeading"); if(heading) heading.hidden = !resultState.msg;
     const { entries, msg, fam, page } = resultState;
     const box = document.getElementById("results");
     const m = document.getElementById("resultsMsg");
@@ -1119,6 +1158,9 @@ function renderResultsPage() {
     const pages = Math.max(1, Math.ceil(count / RESULTS_PER_PAGE));
     const from = page * RESULTS_PER_PAGE;
     const shown = resultState.remote ? entries : entries.slice(from, from + RESULTS_PER_PAGE);
+    const sort=document.getElementById("sortResults")?.value;
+    if(sort)shown.sort((a,b)=>sort==="name"?(namesOf(a)[0]||a.id).localeCompare(namesOf(b)[0]||b.id):
+        sort==="phases"?b.n_phases-a.n_phases:sort==="charge"?(a.a_charge??Infinity)-(b.a_charge??Infinity):a.n_gauge-b.n_gauge);
     m.textContent = (msg || "") + (count > RESULTS_PER_PAGE
         ? `  —  showing ${from + 1}–${from + shown.length} of ${count}`
         : "");
@@ -1126,13 +1168,36 @@ function renderResultsPage() {
     box.innerHTML = "";
     const highlightFamily = fam;
     for (const e of shown) {
-        const card = document.createElement("div");
+        const card = createTheoryCard(e, highlightFamily);
+        box.appendChild(card);
+    }
+    renderResultsPager(pages);
+}
+
+function presentationEntry(e) {
+    const geometry=entryToricGeometry(e);
+    const hull = geometry.hull;
+    const points = geometry.points;
+    const area = area2(hull);
+    const boundary = hull.reduce((total, a, i) => {
+        const b = hull[(i + 1) % hull.length];
+        let x=Math.abs(b[0]-a[0]), y=Math.abs(b[1]-a[1]);
+        while(y){const next=x%y;x=y;y=next;}return total+x;
+    },0);
+    const internal = e.n_internal ?? Math.round((area-boundary+2)/2);
+    return {id:e.id,names:namesOf(e),families:familiesOf(e),n_gauge:e.n_gauge,n_phases:e.n_phases,
+        n_internal:internal,n_edge:e.n_edge ?? boundary-hull.length,n_vertices:hull.length,a_charge:e.a_charge,
+        phases_computed:e.phases_computed,hull:geometry.hull,points:geometry.points};
+}
+
+function createTheoryCard(e, highlightFamily = null) {
+        const card = document.createElement("article");
         card.className = "card rcard";
         const info = document.createElement("div");
         info.className = "tinfo";
         const chips = document.createElement("div");
         chips.className = "chips";
-        for (const f of familiesOf(e)) {
+        for (const f of familiesOf(e).slice(0, 2)) {
             const chip = document.createElement("span");
             chip.className = "chip";
             typesetRawTeX(chip, famTeX(f), famText(f));
@@ -1154,15 +1219,23 @@ function renderResultsPage() {
             (e.phases_computed === false ? " (not computed)" : "") + "<br>" +
             (e.a_charge != null ? `a = ${(+e.a_charge).toFixed(5)}<br>` : "") +
             `${e.n_internal} internal · ${edgePoints(e)} edge · ${vertexPoints(e)} external`;
-        info.append(chips, h, stats);
+        const link = document.createElement("a"); link.className = "card-link";
+        link.href = "#/theory/" + encodeURIComponent(e.id);
+        link.setAttribute("aria-label", `Open ${namesOf(e)[0] || e.id} · ${e.id}`);
+        while (h.firstChild) link.appendChild(h.firstChild); h.appendChild(link);
+        const identity = document.createElement("span"); identity.className = "card-id"; identity.textContent = e.id;
+        info.append(chips, h, identity, stats);
         const cv = document.createElement("canvas");
         cv.className = "rtoric";
         miniToric(cv, e);
         card.append(info, cv);
-        card.addEventListener("click", () => openTheory(e.id));
-        box.appendChild(card);
-    }
-    renderResultsPager(pages);
+        cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Toric diagram for " + (namesOf(e)[0] || e.id));
+        if (window.BraneUI) {
+            card.appendChild(window.BraneUI.button(presentationEntry(e)));
+            const arrow=document.createElement("span");arrow.className="card-arrow";arrow.innerHTML=window.BraneUI.icon("arrowRight");card.appendChild(arrow);
+        }
+
+    return card;
 }
 
 function renderResultsPager(pages) {
@@ -1445,9 +1518,14 @@ function openTheory(id, phase = 0) {
 /* ====================== theory page: rendering ========================== */
 
 function renderTheory(t) {
+    window.BraneUI?.closeResource();
+    window.BraneUI?.setTheory(presentationEntry({...t, hull:t.toric.hull, points:t.toric.points}));
+    const breadcrumb=document.getElementById("breadcrumbId");if(breadcrumb)breadcrumb.textContent=t.id;
+    document.title=(t.names[0] || t.id)+" · Brane Tiling Database";
     phaseSelectionSerial++;
     currentTheory = t;
     currentPhase = 0;
+    window.BraneFamilyDefinitions?.render(document.getElementById("familyDefinitions"), t, typesetContainer);
     document.getElementById("homePage").classList.add("hidden");
     document.getElementById("theoryPage").classList.remove("hidden");
 
@@ -1493,7 +1571,10 @@ function renderTheory(t) {
     for (const [k, v, id] of rows) {
         const dk = document.createElement("div"); dk.className = "k"; dk.textContent = k;
         const dv = document.createElement("div"); dv.className = "v";
-        if (v && typeof v === "object" && v.tex) typesetRawTeX(dv, v.tex, v.text);
+        if (k === "families" && familiesOf(t).length) {
+            dv.classList.add("family-values");
+            for (const family of familiesOf(t)) {const span=document.createElement("span");span.className="chip";typesetRawTeX(span,famTeX(family),famText(family));dv.appendChild(span);}
+        } else if (v && typeof v === "object" && v.tex) typesetRawTeX(dv, v.tex, v.text);
         else dv.textContent = v;
         if (id) { dk.id = id + "K"; dv.id = id + "V"; }
         kv.append(dk, dv);
@@ -1522,7 +1603,8 @@ function renderTheory(t) {
         gl.ontoggle = null;
     }
 
-    prepareSeibergGraph(t);
+    if (window.BraneUI) {destroySeibergGraph(); ++seibergViewSerial;document.getElementById("seibergSection").classList.toggle("hidden",availablePhaseCount(t)<2||t._graph_available===false);}
+    else prepareSeibergGraph(t);
     buildPhaseSelector(t);
     renderPhase(0);
     window.scrollTo(0, 0);
@@ -1621,7 +1703,7 @@ function drawToricDiagram(canvas, toric, glsmLabels = null) {
         canvas, pts, 30, 60,
     );
     // ambient lattice
-    ctx.fillStyle = "#273049";
+    ctx.fillStyle = (window.BraneUI?.color("grid", "#273049") || "#273049");
     for (let x = minX; x <= maxX; x++)
         for (let y = minY; y <= maxY; y++) {
             const [X, Y] = P([x, y]);
@@ -1631,7 +1713,7 @@ function drawToricDiagram(canvas, toric, glsmLabels = null) {
     toric.hull.forEach((p, i) => { const [X, Y] = P(p); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
     ctx.closePath();
     ctx.fillStyle = "rgba(94,234,212,0.08)";
-    ctx.strokeStyle = "#5eead4";
+    ctx.strokeStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
     ctx.lineWidth = 1.6;
     ctx.fill(); ctx.stroke();
     // Corner (extremal/external) perfect matchings always have multiplicity
@@ -1643,17 +1725,17 @@ function drawToricDiagram(canvas, toric, glsmLabels = null) {
         const [X, Y] = P(p);
         ctx.beginPath();
         ctx.arc(X, Y, 5.5, 0, 7);
-        ctx.fillStyle = "#e8ecf5";
+        ctx.fillStyle = (window.BraneUI?.color("point", "#e8ecf5") || "#e8ecf5");
         ctx.fill();
         if (p[2] != null && !hullVertices.has(`${p[0]},${p[1]}`)) {
-            ctx.fillStyle = "#f9a8d4";
+            ctx.fillStyle = (window.BraneUI?.color("label", "#f9a8d4") || "#f9a8d4");
             ctx.font = "bold 12px sans-serif";
             ctx.fillText(String(p[2]), X + 8, Y - 7);
         }
     }
     if (glsmLabels) {
         ctx.font = "italic bold 12px serif";
-        ctx.fillStyle = "#5eead4";
+        ctx.fillStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
         for (const g of glsmLabels) {
             const [X, Y] = P([g.x, g.y]);
             ctx.fillText(g.label, X + 8, Y + 14);
@@ -1854,10 +1936,10 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
             .backgroundColor("rgba(0,0,0,0)")
             .showNavInfo(false)
             .nodeLabel(n => `phase ${n.id + 1}`)
-            .linkColor(() => "#a78bfa")
+            .linkColor(() => (window.BraneUI?.color("label", "#a78bfa") || "#a78bfa"))
             .linkOpacity(big ? 0.45 : 0.7)
             .linkWidth(big ? 0.6 : 1.2)
-            .onNodeClick(node => selectPhase(node.id))
+            .onNodeClick(node => {selectPhase(node.id);window.BraneUI?.closeResource();})
             .graphData({ nodes: [], links: [] });
     } catch (error) {
         console.error(error);
@@ -1865,6 +1947,12 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
         return;
     }
     seibergGraph = graph;
+    if(window.BraneUI && nodes.length<=20)graph.cameraPosition?.({x:0,y:0,z:180});
+    if (window.BraneUI) {
+        const edges=t.seiberg.links.map(edge=>Array.isArray(edge)?edge:[edge.source,edge.target]);
+        copyPayloads.seiberg_py="seiberg = "+JSON.stringify(edges);
+        copyPayloads.seiberg_m="{"+edges.map(edge=>"{"+edge.join(", ")+"}").join(", ")+"}";
+    }
     if (optedIn) {
         const button = document.getElementById("seibergShowButton");
         button.disabled = true;
@@ -1882,19 +1970,18 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
                 const group = new THREE.Group();
                 const size = 9;
                 const mat = new THREE.MeshLambertMaterial({
-                    color: node.id === currentPhase ? 0x5eead4 : 0x8b93b5,
+                    color: node.id === currentPhase ? (window.BraneUI?.color("edge", "#5eead4") || 0x5eead4) : (window.BraneUI?.color("line", "#8b93b5") || 0x8b93b5),
                     transparent: true, opacity: 0.95
                 });
                 const cube = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mat);
                 group.add(cube);
-                const sprite = makeTextSprite(String(node.id + 1),
-                    node.id === currentPhase ? "#031412" : "#0b0e17", 40);
+                const sprite = makeTextSprite(String(node.id + 1), "#102018", 40);
                 sprite.position.set(0, 0, size / 2 + 0.6);
                 group.add(sprite);
                 return group;
             });
     } else {
-        graph.nodeColor(n => n.id === currentPhase ? "#5eead4" : "#8b93b5");
+        graph.nodeColor(n => n.id === currentPhase ? (window.BraneUI?.color("edge", "#5eead4") || "#5eead4") : (window.BraneUI?.color("line", "#8b93b5") || "#8b93b5"));
     }
 
     if (big) {
@@ -2072,6 +2159,11 @@ function selectPhase(i) {
 function renderPhase(i) {
     const t = currentTheory;
     const p = t.phases[i];
+    const announcement=document.getElementById("phaseAnnouncement");if(announcement)announcement.textContent=`Phase ${i+1} of ${availablePhaseCount(t)}`;
+    const zzResource=document.querySelector?.('[data-resource="zzDetails"]');if(zzResource)zzResource.disabled=!p.zigzags;
+    const pmResource=document.querySelector?.('[data-resource="pmDetails"]');if(pmResource)pmResource.disabled=!p.pm_matrix && !p.tiling;
+    const graphResource=document.querySelector?.('[data-resource="seibergSection"]');if(graphResource)graphResource.disabled=availablePhaseCount(t)<2 || t._graph_available===false;
+    const compact=document.getElementById("compactPhase");if(compact)compact.value=String(i);
     const selectedToric = phaseToric(t, i);
     buildCopyPayloads(t, p, i, selectedToric);
 
@@ -2117,6 +2209,9 @@ function renderPhase(i) {
     const matchingCount = sumExactNonnegativeIntegers(
         selectedToric.points.map(point => point[2]),
     );
+    const matchingSummary=document.getElementById("matchingsSummary");if(matchingSummary)matchingSummary.textContent=matchingCount==null?"Open matching matrix":`${matchingCount} perfect matchings · open matrix`;
+    const zigzagSummary=document.getElementById("zigzagsSummary");if(zigzagSummary)zigzagSummary.textContent=`${p.zigzags?.length || 0} paths · chiral field sequences`;
+    const dualitySummary=document.getElementById("dualitySummary");if(dualitySummary)dualitySummary.textContent=`${availablePhaseCount(t)} toric phases · open graph`;
     document.getElementById("phaseStats").textContent =
         `${p.n_chirals} chiral multiplets · ${p.n_W_terms} superpotential terms` +
         (p.zigzags ? ` · ${p.zigzags.length} zigzag paths` : "") +
@@ -2135,7 +2230,7 @@ function renderPhase(i) {
         rBox.appendChild(tbl);
         typesetContainer(rBox);
         document.getElementById("rDetails").classList.remove("hidden");
-    } else document.getElementById("rDetails").classList.add("hidden");
+    } else {rBox.textContent="R-charges unavailable for this phase.";document.getElementById("rDetails").classList.remove("hidden");}
 
     // zigzag paths: table of chiral-field products in LaTeX
     if (p.zigzags) {
@@ -2254,8 +2349,8 @@ function drawQuiver(canvas, nFaces, phase) {
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key).push(a);
     }
-    ctx.strokeStyle = "#9aa7c7";
-    ctx.fillStyle = "#9aa7c7";
+    ctx.strokeStyle = (window.BraneUI?.color("line", "#9aa7c7") || "#9aa7c7");
+    ctx.fillStyle = (window.BraneUI?.color("line", "#9aa7c7") || "#9aa7c7");
     ctx.lineWidth = 1.3;
 
     function arrowHead(x, y, ang) {
@@ -2310,17 +2405,17 @@ function drawQuiver(canvas, nFaces, phase) {
     pos.forEach((p, i) => {
         ctx.beginPath();
         ctx.arc(p[0], p[1], NR, 0, 7);
-        ctx.fillStyle = "#131a2e";
+        ctx.fillStyle = window.BraneUI?.color("fill", "#131a2e") || "#131a2e";
         ctx.fill();
-        ctx.strokeStyle = "#5eead4";
+        ctx.strokeStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
         ctx.lineWidth = 1.6;
         ctx.stroke();
-        ctx.fillStyle = "#5eead4";
+        ctx.fillStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
         ctx.font = "bold 12px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(i + 1), p[0], p[1]);
-        ctx.strokeStyle = "#9aa7c7";
+        ctx.strokeStyle = (window.BraneUI?.color("line", "#9aa7c7") || "#9aa7c7");
         ctx.lineWidth = 1.3;
     });
 }
@@ -2335,7 +2430,7 @@ function drawTiling(canvas, tiling) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!tiling) {
-        ctx.fillStyle = "#93a0b8";
+        ctx.fillStyle = (window.BraneUI?.color("line", "#93a0b8") || "#93a0b8");
         ctx.font = "13px sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("no tiling data for this phase", canvas.width / 2, canvas.height / 2);
@@ -2403,7 +2498,7 @@ function drawTiling(canvas, tiling) {
     ctx.closePath();
     ctx.clip();
 
-    ctx.strokeStyle = "#cbd5f0";
+    ctx.strokeStyle = (window.BraneUI?.color("line", "#cbd5f0") || "#cbd5f0");
     ctx.lineWidth = 1.5;
     for (let si = -reach; si <= reach; si++)
         for (let sj = -reach; sj <= reach; sj++) {
@@ -2431,9 +2526,9 @@ function drawTiling(canvas, tiling) {
                     continue;
                 ctx.beginPath();
                 ctx.arc(X, Y, 5, 0, 7);
-                ctx.fillStyle = n[2] === 1 ? "#0d1220" : "#e8ecf5";
+                ctx.fillStyle = n[2] === 1 ? (window.BraneUI?.color("black", "#0d1220") || "#0d1220") : (window.BraneUI?.color("point", "#e8ecf5") || "#e8ecf5");
                 ctx.fill();
-                ctx.strokeStyle = "#e8ecf5";
+                ctx.strokeStyle = (window.BraneUI?.color("point", "#e8ecf5") || "#e8ecf5");
                 ctx.lineWidth = 1.4;
                 ctx.stroke();
             }
@@ -2441,7 +2536,7 @@ function drawTiling(canvas, tiling) {
     ctx.restore();
 
     // fundamental-domain outline
-    ctx.strokeStyle = "#f9a8d4";
+    ctx.strokeStyle = (window.BraneUI?.color("label", "#f9a8d4") || "#f9a8d4");
     ctx.setLineDash([6, 5]);
     ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -2499,7 +2594,7 @@ function drawTiling(canvas, tiling) {
     ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "#5eead4";
+    ctx.fillStyle = (window.BraneUI?.color("edge", "#5eead4") || "#5eead4");
     for (const [f, fx, fy] of tiling.faces) {
         const c = faceCentroid(f) || [fx, fy];
         let u = (c[0] * L[1][1] - c[1] * L[1][0]) / det;
@@ -2636,6 +2731,12 @@ function buildCopyPayloads(t, phase, phaseIndex = null, selectedToric = null) {
         copyPayloads.pm_py = "P = [" + phase.pm_matrix.map(r =>
             `[${r.join(", ")}]`).join(", ") + "]";
     } else copyPayloads.pm_m = copyPayloads.pm_py = "";
+    copyPayloads.r_py = phase.R ? "R = " + JSON.stringify(phase.R) : "";
+    copyPayloads.r_m = phase.R ? "{" + phase.R.join(", ") + "}" : "";
+    const py = value => value == null ? "None" : typeof value === "boolean" ? (value ? "True" : "False") : Array.isArray(value) ? "["+value.map(py).join(", ")+"]" : typeof value === "object" ? "{"+Object.entries(value).map(([k,v])=>JSON.stringify(k)+": "+py(v)).join(", ")+"}" : JSON.stringify(value);
+    copyPayloads.tiling_py = phase.tiling ? "tiling = " + py(phase.tiling) : "";
+    const mma = value => value == null ? "Null" : typeof value === "boolean" ? (value ? "True" : "False") : Array.isArray(value) ? "{"+value.map(mma).join(", ")+"}" : typeof value === "object" ? "<|"+Object.entries(value).map(([k,v])=>JSON.stringify(k)+" -> "+mma(v)).join(", ")+"|>" : JSON.stringify(value);
+    copyPayloads.tiling_m = phase.tiling ? mma(phase.tiling) : "";
     // GLSM R-charges (common data)
     if (t.glsm_R) {
         copyPayloads.glsm_m = "{" + t.glsm_R.map((r, i) =>
@@ -2692,9 +2793,11 @@ function showCopySuccess(btn, target) {
     setTimeout(() => {
         if (copyFeedbackSerials.get(btn) !== serial) return;
         if (target) btn.classList.remove("copied");
+        else if (btn.dataset.icon && window.BraneUI) btn.innerHTML=window.BraneUI.icon(btn.dataset.icon);
         else btn.textContent = copyButtonLabels.get(btn);
     }, 700);
     if (target) citationCopyStatus(target, true);
+    else window.BraneUI?.toast("Copied to clipboard");
 }
 
 document.querySelectorAll(".copy-mini").forEach(btn => {
@@ -2707,6 +2810,7 @@ document.querySelectorAll(".copy-mini").forEach(btn => {
             : attributedCopyPayload(btn.dataset.copy, copyPayloads[btn.dataset.copy] || "");
         const failed = () => {
             if (target) citationCopyStatus(target, false);
+            else window.BraneUI?.toast(text ? "Copy unavailable. Download the phase data instead." : "No data available for this phase.");
         };
         const fallback = () => fallbackCopy(text)
             ? showCopySuccess(btn, target) : failed();
@@ -2728,25 +2832,18 @@ document.querySelectorAll(".copy-mini").forEach(btn => {
 const MODES = ["name", "props", "draw"];
 document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const mode = btn.dataset.mode;
-        document.querySelectorAll(".mode-panel").forEach(p => p.classList.remove("active"));
-        if (mode === "props") document.getElementById("panel-props").classList.add("active");
-        if (mode === "draw") {
-            document.getElementById("panel-draw").classList.add("active");
-            renderDrawCanvas();
-        }
+        const mode=btn.dataset.mode, panel=document.getElementById("panel-"+mode), open=panel.hidden;
+        panel.hidden=!open;panel.classList.toggle("active",open);btn.classList.toggle("active",open);btn.setAttribute("aria-expanded",String(open));
+        if(mode==="draw"&&open)renderDrawCanvas();
     });
 });
-
-document.getElementById("propSearchBtn").addEventListener("click", runPropSearch);
-document.getElementById("propClearBtn").addEventListener("click", () => {
-    buildPropForm();
-    showResults([], "");
-});
+document.getElementById("propertyForm")?.addEventListener("submit", event => {event.preventDefault(); runPropSearch();});
+document.getElementById("propertyForm")?.addEventListener("input",event=>event.target.setCustomValidity?.(""));
+document.getElementById("propClearBtn").addEventListener("click", () => {buildPropForm();showResults([], "");const b=document.getElementById("filterCount");if(b)b.hidden=true;});
+document.getElementById("clearSearch")?.addEventListener("click",()=>{searchInput.value="";++nameSearchSerial;NAME_SEARCH.cancel();suggEntries=[];renderSuggestions();buildPropForm();const b=document.getElementById("filterCount");if(b)b.hidden=true;showResults([],"");searchInput.focus();});
 
 function route() {
+    window.BraneUI?.closeResource();
     const serial = ++routeSerial;
     const h = location.hash;
     const m = /^#\/theory\/(.+)$/.exec(h);
@@ -2765,7 +2862,7 @@ function route() {
         }
         const loading = document.getElementById("theoryLoadStatus");
         if (loading) {
-            loading.textContent = `Loading ${id} from the Parquet database…`;
+            loading.textContent = `Loading ${id}…`;
             loading.classList.remove("hidden");
         }
         loadTheory(id).then(t => {
@@ -2778,6 +2875,9 @@ function route() {
             loading && loading.classList.add("hidden");
             phaseSelectionSerial++;
             currentTheory = null;
+        window.BraneUI?.setTheory(null);
+        document.title="The Brane Tiling Database";
+            window.BraneFamilyDefinitions?.render(document.getElementById("familyDefinitions"), null);
             destroySeibergGraph();
             window.BraneScientificViewports?.disposeAll();
             document.getElementById("theoryPage").classList.add("hidden");
@@ -2788,6 +2888,9 @@ function route() {
         document.getElementById("theoryLoadStatus")?.classList.add("hidden");
         phaseSelectionSerial++;
         currentTheory = null;
+        window.BraneUI?.setTheory(null);
+        document.title="The Brane Tiling Database";
+        window.BraneFamilyDefinitions?.render(document.getElementById("familyDefinitions"), null);
         document.getElementById("theoryPage").classList.add("hidden");
         document.getElementById("homePage").classList.remove("hidden");
         destroySeibergGraph();
@@ -2802,3 +2905,64 @@ window.addEventListener("hashchange", route);
 buildPropForm();
 renderDrawCanvas();
 route();
+
+if (window.BraneUI) {
+document.getElementById("sortResults").addEventListener("change",renderResultsPage);
+window.BraneUI.configure(createTheoryCard, async id => {
+    const t=await loadTheory(id);return presentationEntry({...t,hull:t.toric.hull,points:t.toric.points});
+});
+window.addEventListener("brane:theme-changed", () => {
+    renderDrawCanvas();
+    for(const view of window.BraneScientificViewports?.internals.active.values() || [])view.schedule();
+    if(currentTheory) {drawQuiver(document.getElementById("quiverCanvas"),currentTheory.n_gauge,currentTheory.phases[currentPhase]);refreshSeibergColors();if(seibergGraph)seibergGraph.linkColor(()=>window.BraneUI.color("label"));}
+    if(resultState.entries.length)renderResultsPage();
+    if(drawState.matchEntry)displayDrawMatch(drawState.matchEntry);
+});
+window.addEventListener("brane:resource-opened",event=>{
+    if(!currentTheory)return;
+    if(event.detail==="pmDetails") {
+        const p=currentTheory.phases[currentPhase];
+        if(p.pm_matrix)return;
+        const expected=sumExactNonnegativeIntegers(phaseToric(currentTheory,currentPhase).points.map(p=>p[2]));
+        const matrix=window.BranePerfectMatchings?.derive(p,{expected});
+        const box=document.getElementById("pmBox");box.replaceChildren();
+        if(!matrix){box.textContent="The matrix is not stored for this phase and cannot be reconstructed within the interactive limit. Exact available multiplicities remain in the toric diagram.";copyPayloads.pm_m=copyPayloads.pm_py="";return;}
+        const table=document.createElement("table");table.className="matching-table";
+        const header=document.createElement("tr");const first=document.createElement("th");first.textContent="Field";header.append(first);
+        for(let k=0;k<matrix[0].length;k++){const th=document.createElement("th");th.textContent=`p${k+1}`;header.append(th);}table.append(header);
+        const labels=chiralTeXLabels(p);
+        matrix.forEach((row,i)=>{const tr=document.createElement("tr"),th=document.createElement("th");th.textContent="\\("+labels[i]+"\\)";tr.append(th);row.forEach(v=>{const td=document.createElement("td");td.textContent=v;td.className=v?"one":"zero";tr.append(td);});table.append(tr);});box.append(table);typesetContainer(box);
+        const note=document.createElement("p");note.className="matching-note";note.textContent="Reconstructed exactly from the published bipartite tiling; rows retain its edge order.";box.insertAdjacentElement("afterend",note);document.querySelectorAll(".matching-note").forEach(e=>{if(e!==note)e.remove();});
+        copyPayloads.pm_py="P = "+JSON.stringify(matrix)+"\n# Reconstructed from the published bipartite tiling.";
+        copyPayloads.pm_m="{"+matrix.map(row=>"{"+row.join(", ")+"}").join(", ")+"}\n(* Reconstructed from the published bipartite tiling. *)";
+        return;
+    }
+    if(event.detail!=="seibergSection")return;
+    if(!seibergGraph)prepareSeibergGraph(currentTheory);
+    if(seibergGraph){seibergGraph.width(document.getElementById("seibergGraph").clientWidth);seibergGraph.resumeAnimation?.();}
+});
+window.addEventListener("brane:resource-closed",()=>seibergGraph?.pauseAnimation?.());
+window.addEventListener("resize",()=>{if(seibergGraph && document.getElementById("resourceDialog")?.open)seibergGraph.width(document.getElementById("seibergGraph").clientWidth);});
+document.getElementById("compactPhase")?.addEventListener("change",event=>selectPhase(Number(event.target.value)));
+function syncCompactPhases() {
+    if(!currentTheory)return;
+    const count=availablePhaseCount(currentTheory), wrap=document.getElementById("compactPhaseWrap");
+    if(!wrap)return;
+    wrap.hidden=count<5 || count>100;
+    document.getElementById("phasePills").classList.toggle("compact-hidden",count>=5);
+    const select=document.getElementById("compactPhase");select.replaceChildren();
+    for(let i=0;i<Math.min(count,100);i++){const o=document.createElement("option");o.value=String(i);o.textContent=`Phase ${i+1} of ${count}`;select.append(o);}select.value=String(currentPhase);
+}
+const theoryObserver=new MutationObserver(syncCompactPhases);theoryObserver.observe(document.getElementById("phasePills"),{childList:true});
+for(const [id,delta] of [["drawZoomOut",2],["drawZoomIn",-2]])document.getElementById(id)?.addEventListener("click",()=>{
+    const min= Math.max(4,...[...drawState.points].flatMap(k=>k.split(",").map(Number)).map(v=>v+1));
+    drawState.N=Math.max(min,Math.min(24,drawState.N+delta));drawState.focus=drawState.focus.map(v=>Math.min(v,drawState.N-1));document.getElementById("latticeScale").textContent=`${drawState.N} × ${drawState.N} lattice`;renderDrawCanvas();
+});
+drawCanvas.addEventListener("keydown",event=>{
+    const p=drawState.focus;
+    if(event.key==="ArrowLeft")p[0]=Math.max(0,p[0]-1);else if(event.key==="ArrowRight")p[0]=Math.min(drawState.N-1,p[0]+1);else if(event.key==="ArrowUp")p[1]=Math.min(drawState.N-1,p[1]+1);else if(event.key==="ArrowDown")p[1]=Math.max(0,p[1]-1);else if(event.key===" "||event.key==="Enter"){const k=p.join(",");drawState.points.has(k)?drawState.points.delete(k):drawState.points.add(k);updateDrawMatch();}else return;
+    event.preventDefault();renderDrawCanvas();drawCanvas.setAttribute("aria-label",`Toric lattice. Point ${p.join(", ")} ${drawState.points.has(p.join(","))?"selected":"unselected"}. Arrow keys move; Enter toggles.`);
+});
+drawCanvas.addEventListener("focus",renderDrawCanvas);drawCanvas.addEventListener("blur",renderDrawCanvas);
+const countLabel=document.getElementById("dbCount"), footerStats=document.createElement("div");footerStats.className="footer-stats";footerStats.textContent=countLabel.textContent;document.querySelector(".site-footer").prepend(footerStats);
+}

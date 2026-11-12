@@ -45,7 +45,7 @@ function loadApplication() {
     if (applicationPromise) return applicationPromise;
     applicationPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "app.js?v=23";
+        script.src = "app.js?v=25";
         script.onload = resolve;
         script.onerror = () => reject(new Error("could not load app.js"));
         document.head.appendChild(script);
@@ -9834,6 +9834,18 @@ const ITEM_SEPARATOR = "\u001f";
 const SECTION_SEPARATOR = "\u001e";
 const REMOVED_NAME_CHARACTERS = /[\^{}_\s(),\[\]\/\\-]+/g;
 const PERMANENT_ID = /^(?:0|[1-9]\d*)_(?:0|[1-9]\d*)_[1-9]\d*_[1-9]\d*$/;
+const COMPLETE_POLYGON_NAME = /^(?:M\^\{-?\d+(?:,-?\d+){6}\}|N\^\{-?\d+(?:,-?\d+){8}\})$/i;
+
+function polygonQuery(query) {
+    const raw=String(query).replace(/\s/g, "").toLowerCase();
+    return COMPLETE_POLYGON_NAME.test(raw) ? raw : null;
+}
+
+function exactPolygonBonus(entry, score, query) {
+    if (score !== 100 || !query) return score;
+    return packedNames(entry).split(/[\u001f\u001e]/).some(name=>name.replace(/\s/g, "").toLowerCase()===query)
+        ? 200 : score;
+}
 
 function normalizeNameSearch(value) {
     return String(value).toLowerCase()
@@ -9850,7 +9862,7 @@ function packedNames(entry) {
         + legacy.join(ITEM_SEPARATOR);
 }
 
-function scoreSearchName(entry, normalizedQuery) {
+function scoreSearchName(entry, normalizedQuery, exactPolygon = null) {
     let best = -1;
     // Permanent property IDs also identify named families such as F0. Keep
     // family-name queries on the existing fast path; numeric queries may match
@@ -9871,7 +9883,7 @@ function scoreSearchName(entry, normalizedQuery) {
                 score = 50 - normalized.indexOf(normalizedQuery);
             if (score > best) best = score;
         }
-        return best;
+        return exactPolygonBonus(entry, best, exactPolygon);
     }
 
     // Normalize the packed scalar once.  The reserved separators survive the
@@ -9896,7 +9908,7 @@ function scoreSearchName(entry, normalizedQuery) {
         if (end === packed.length) break;
         start = end + 1;
     }
-    return best;
+    return exactPolygonBonus(entry, best, exactPolygon);
 }
 
 function compareRanked(left, right) {
@@ -9920,11 +9932,12 @@ function searchNamesSynchronously(entries, query, limit = Infinity) {
     const normalizedQuery = normalizeNameSearch(query);
     const raw = String(query).trim();
     const exactId = PERMANENT_ID.test(raw) ? raw : null;
+    const exactPolygon = polygonQuery(query);
     if (!normalizedQuery) return [];
     const ranked = [];
     for (const entry of entries) {
         const score = exactId ? (entry.id === exactId ? 100 : -1)
-            : scoreSearchName(entry, normalizedQuery);
+            : scoreSearchName(entry, normalizedQuery, exactPolygon);
         if (score < 0) continue;
         const value = [score, entry];
         if (Number.isFinite(limit)) insertTop(ranked, value, limit);
@@ -10026,6 +10039,7 @@ function createNameSearchEngine(entries, options = {}) {
         const normalizedQuery = normalizeNameSearch(query);
         const raw = String(query).trim();
         const exactId = PERMANENT_ID.test(raw) ? raw : null;
+        const exactPolygon = polygonQuery(query);
         const finiteLimit = Number.isFinite(limit)
             ? Math.max(0, Math.trunc(limit)) : Infinity;
         if (!normalizedQuery || finiteLimit === 0) {
@@ -10052,7 +10066,7 @@ function createNameSearchEngine(entries, options = {}) {
             do {
                 const entry = source[scanned++];
                 const score = exactId ? (entry.id === exactId ? 100 : -1)
-                    : scoreSearchName(entry, normalizedQuery);
+                    : scoreSearchName(entry, normalizedQuery, exactPolygon);
                 if (score >= 0) {
                     matches++;
                     const value = [score, entry];
