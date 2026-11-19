@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="mist-common.css?v=1">
     <link rel="stylesheet" href="mist-catalogue.css?v=1">
     <link rel="stylesheet" href="mist-theory.css?v=1">
-    <link rel="stylesheet" href="frontend.css?v=1">
+    <link rel="stylesheet" href="frontend.css?v=2">
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('brane-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch { document.documentElement.dataset.theme = 'light'; }</script>
 </head>
 <body>
@@ -79,6 +79,7 @@
                 <article class="surface theory-panel tiling-panel"><div class="panel-heading"><h2>Brane tiling</h2><span class="copy-group"><button type="button" class="copy-mini" data-copy="tiling_m" title="Copy as Mathematica" aria-label="Copy tiling as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="tiling_py" title="Copy as Python" aria-label="Copy tiling as Python" data-icon="python"></button></span></div><canvas id="tilingCanvas" width="420" height="330"></canvas><div id="tilingNote" class="panel-caption"></div></article>
                 <article class="surface theory-panel properties-panel"><div class="panel-heading"><h2>Theory properties</h2></div><div class="kv" id="tCommon"></div><details id="glsmDetails" class="hidden"><summary>GLSM R-charges <span class="copy-group"><button type="button" class="copy-mini" data-copy="glsm_m" title="Copy as Mathematica" aria-label="Copy glsm as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="glsm_py" title="Copy as Python" aria-label="Copy glsm as Python" data-icon="python"></button></span></summary><div id="glsmBox" class="rt-wrap"></div><div id="glsmNote" class="panel-caption"></div></details><button id="downloadPhaseData" class="btn download-phase" type="button">Download phase data<span data-icon="download"></span></button><div id="phaseExportStatus" role="status" aria-live="polite"></div></article>
             </div>
+            <p class="panel-caption" id="phaseUnavailable" hidden>No phase data is available in this release.</p>
             <div id="phaseSect" class="algebra-grid">
                 <article class="surface theory-panel quiver-panel"><div class="panel-heading"><h2>Quiver</h2><span class="copy-group"><button type="button" class="copy-mini" data-copy="quiver_m" title="Copy as Mathematica" aria-label="Copy quiver as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="quiver_py" title="Copy as Python" aria-label="Copy quiver as Python" data-icon="python"></button></span></div><canvas id="quiverCanvas" width="420" height="330"></canvas></article>
                 <article class="surface theory-panel superpotential-panel"><div class="panel-heading"><h2>Superpotential</h2><span class="copy-group"><button type="button" class="copy-mini" data-copy="w_m" title="Copy as Mathematica" aria-label="Copy w as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="w_py" title="Copy as Python" aria-label="Copy w as Python" data-icon="python"></button></span></div><div id="wBox" class="superpotential-formula"></div><div id="phaseStats" class="panel-caption"></div></article>
@@ -89,10 +90,10 @@
                 <button type="button" class="surface resource-panel" data-resource="seibergSection"><span class="resource-icon" data-icon="nodes"></span><span><strong>Seiberg duality</strong><small id="dualitySummary">Explore toric phase connections</small></span><span class="resource-arrow" data-icon="arrowRight"></span></button>
                 <button type="button" class="surface resource-panel" data-resource="zzDetails"><span class="resource-icon" data-icon="zigzag"></span><span><strong>Zigzag paths</strong><small id="zigzagsSummary">Chiral field sequences</small></span><span class="resource-arrow" data-icon="arrowRight"></span></button>
             </section>
-            <div id="resourceStorage" hidden>
-                <section id="seibergSection"><h2 class="sect seiberg-title">Seiberg duality graph <button id="seibergShowButton" class="btn seiberg-optin hidden" type="button" aria-controls="seibergGraph" aria-expanded="false">Display graph</button><span class="copy-group"><button type="button" class="copy-mini" data-copy="seiberg_m" aria-label="Copy Seiberg graph as Mathematica" title="Copy as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="seiberg_py" aria-label="Copy Seiberg graph as Python" title="Copy as Python" data-icon="python"></button></span></h2><p class="resource-description">Select a node to inspect its phase. Drag to rotate; scroll or pinch to zoom.</p><div id="seibergWrap"><div id="seibergGraph"></div><div id="seibergHint" class="panel-caption"></div></div></section>
-                <details id="zzDetails"><summary>Zigzag paths <span class="copy-group"><button type="button" class="copy-mini" data-copy="zz_m" title="Copy as Mathematica" aria-label="Copy zz as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="zz_py" title="Copy as Python" aria-label="Copy zz as Python" data-icon="python"></button></span></summary><div id="zzBox" class="rt-wrap"></div></details>
-                <details id="pmDetails"><summary>Perfect matching matrix <span class="copy-group"><button type="button" class="copy-mini" data-copy="pm_m" title="Copy as Mathematica" aria-label="Copy pm as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="pm_py" title="Copy as Python" aria-label="Copy pm as Python" data-icon="python"></button></span></summary><div id="pmBox" class="rt-wrap"></div></details>
+            <div class="resource-expansions">
+                <div class="resource-expansion" id="seibergSectionPanel" inert><div><div class="surface inline-resource"><section id="seibergSection"><h2 class="sect seiberg-title">Seiberg duality graph <button id="seibergShowButton" class="btn seiberg-optin hidden" type="button" aria-controls="seibergGraph" aria-expanded="false">Display graph</button><span class="copy-group"><button type="button" class="copy-mini" data-copy="seiberg_m" aria-label="Copy Seiberg graph as Mathematica" title="Copy as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="seiberg_py" aria-label="Copy Seiberg graph as Python" title="Copy as Python" data-icon="python"></button></span></h2><p class="resource-description">Select a node to inspect its phase. Drag to rotate; scroll or pinch to zoom.</p><div id="seibergWrap"><div id="seibergGraph"></div><div id="seibergHint" class="panel-caption"></div></div></section></div></div></div>
+                <div class="resource-expansion" id="zzDetailsPanel" inert><div><div class="surface inline-resource"><section id="zzDetails"><h2 class="inline-resource-title">Zigzag paths <span class="copy-group"><button type="button" class="copy-mini" data-copy="zz_m" title="Copy as Mathematica" aria-label="Copy zz as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="zz_py" title="Copy as Python" aria-label="Copy zz as Python" data-icon="python"></button></span></h2><div id="zzBox" class="rt-wrap"></div></section></div></div></div>
+                <div class="resource-expansion" id="pmDetailsPanel" inert><div><div class="surface inline-resource"><section id="pmDetails"><h2 class="inline-resource-title">Perfect matching matrix <span class="copy-group"><button type="button" class="copy-mini" data-copy="pm_m" title="Copy as Mathematica" aria-label="Copy pm as Mathematica" data-icon="mathematica"></button><button type="button" class="copy-mini" data-copy="pm_py" title="Copy as Python" aria-label="Copy pm as Python" data-icon="python"></button></span></h2><div id="pmBox" class="rt-wrap"></div></section></div></div></div>
             </div>
         </div>
         </main>
@@ -177,12 +178,11 @@
         </footer>
     </div>
     <dialog class="favorites-drawer" id="favorites-drawer" aria-labelledby="favorites-title"><div class="favorites-heading"><div><span class="drawer-eyebrow">Your collection</span><h2 id="favorites-title">Saved theories</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Close saved theories" data-icon="close"></button></div><div class="favorites-body"></div><div class="favorites-footnote">Saved in this browser.</div></dialog>
-    <dialog class="mist-modal" id="resourceDialog" aria-labelledby="resourceTitle"><div class="modal-heading"><h2 id="resourceTitle"></h2><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog" data-icon="close"></button></div><div class="modal-body" id="resourceBody"></div></dialog>
-    <script src="mist-ui.js?v=1"></script>
+    <script src="mist-ui.js?v=2"></script>
     <script src="perfect_matchings.js?v=1"></script>
-    <script src="family_definitions.js?v=1"></script>
+    <script src="family_definitions.js?v=2"></script>
     <script src="toric_search.js?v=1"></script>
-    <script src="scientific_viewports.js?v=2"></script>
-    <script src="parquet_bundle.js?v=21"></script>
+    <script src="scientific_viewports.js?v=3"></script>
+    <script src="parquet_bundle.js?v=22"></script>
 </body>
 </html>

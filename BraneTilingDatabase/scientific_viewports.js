@@ -82,20 +82,48 @@
 
     function tilingGeometry(tiling, width, height) {
         let lattice = tiling.lattice.map(p => p.slice()), nodes = tiling.nodes.map(p => p.slice());
-        let sx = 1, sy = 1, mxx = 0, myy = 0;
+        let sx = 1, sy = 1, mxx = 0, myy = 0, mxy = 0;
         // Preserve the previous strip-isotropization and initial framing.
         for (const [b, w, u, v] of tiling.edges) {
             const dx = nodes[w][0] + u * lattice[0][0] + v * lattice[1][0] - nodes[b][0];
             const dy = nodes[w][1] + u * lattice[0][1] + v * lattice[1][1] - nodes[b][1];
-            mxx += dx * dx; myy += dy * dy;
+            mxx += dx * dx; myy += dy * dy; mxy += dx * dy;
+        }
+        // Some harmonic embeddings place almost every edge along one very
+        // narrow diagonal (Y^{8,6} is an example). Undo that shear in the
+        // view only, applying the same affine map to nodes and periodic edges.
+        let shearX = 0, shearY = 0;
+        const skewed = mxy * mxy > .90 * mxx * myy;
+        if (skewed && myy >= mxx) {
+            shearX = mxy / myy;
+            mxx = Math.max(0, mxx - shearX * mxy);
+        } else if (skewed) {
+            shearY = mxy / mxx;
+            myy = Math.max(0, myy - shearY * mxy);
         }
         if (mxx > 1e-12 && myy > 1e-12) {
             const q = Math.sqrt(myy / mxx);
             if (q > 2) sx = Math.min(q, 24);
             else if (q < 0.5) sy = Math.min(1 / q, 24);
         }
-        nodes = nodes.map(p => [p[0] * sx, p[1] * sy, p[2]]);
-        lattice = lattice.map(p => [p[0] * sx, p[1] * sy]);
+        const transform = ([x,y]) => [(x - shearX*y)*sx, (y - shearY*x)*sy];
+        nodes = nodes.map(p => [...transform(p), p[2]]);
+        const windingBasis = lattice.map(transform);
+        lattice = windingBasis;
+        if (skewed) {
+            // A shorter basis spans the same lattice and makes the new cell
+            // fit the canvas. The stored winding integers still use their
+            // original basis, so compute edge endpoints in that basis below.
+            let [a,b] = windingBasis;
+            const norm = v => v[0]*v[0]+v[1]*v[1];
+            for (let i=0; i<8; i++) {
+                if (norm(a) > norm(b)) [a,b] = [b, [-a[0], -a[1]]];
+                const multiple = Math.round((a[0]*b[0]+a[1]*b[1])/norm(a));
+                if (!multiple) break;
+                b = [b[0]-multiple*a[0], b[1]-multiple*a[1]];
+            }
+            lattice = [a,b];
+        }
         const det = lattice[0][0] * lattice[1][1] - lattice[0][1] * lattice[1][0];
         if (!Number.isFinite(det) || Math.abs(det) < 1e-15) throw new Error("singular tiling lattice");
         const xy = (u, v) => [u * lattice[0][0] + v * lattice[1][0], u * lattice[0][1] + v * lattice[1][1]];
@@ -109,8 +137,8 @@
         const point = p => [ox + p[0] * scale, oy - p[1] * scale];
         const world = p => [(p[0] - ox) / scale, (oy - p[1]) / scale];
         const segments = tiling.edges.map(([b, w, u, v]) => {
-            const a = nodes[b].slice(0, 2), bPoint = [nodes[w][0] + u * lattice[0][0] + v * lattice[1][0],
-                nodes[w][1] + u * lattice[0][1] + v * lattice[1][1]];
+            const a = nodes[b].slice(0, 2), bPoint = [nodes[w][0] + u * windingBasis[0][0] + v * windingBasis[1][0],
+                nodes[w][1] + u * windingBasis[0][1] + v * windingBasis[1][1]];
             return { a, b: bPoint, delta: [bPoint[0] - a[0], bPoint[1] - a[1]],
                 aUV: uv(a), bUV: uv(bPoint) };
         });
@@ -141,7 +169,7 @@
                 const p = lift.get(tiling.edges[i][0]), d = segments[i].delta;
                 if (p) { x += p[0] + d[0] / 2; y += p[1] + d[1] / 2; count++; }
             }
-            let [u, v] = uv(count ? [x / count, y / count] : [fx * sx, fy * sy]);
+            let [u, v] = uv(count ? [x / count, y / count] : transform([fx, fy]));
             u -= Math.floor(u); v -= Math.floor(v);
             return { id: f, p: xy(u, v), uv: [u, v] };
         });
@@ -221,7 +249,7 @@
                 this.camera.scale = .2;
                 while (this.camera.scale < 1 && periodicCost(this.geometry, this.camera) > budget) this.camera.scale *= 1.25;
                 this.camera.min = Math.min(1, this.camera.scale); this.camera.panLimit = 4; this.camera.reset();
-                hint = "Scroll or pinch to zoom · drag to explore the repeated tiling · dashed outline: original torus cell";
+                hint = "Scroll or pinch to zoom · drag to explore the repeated tiling · dashed outline: periodic unit cell";
             }
             this.ui = controls(canvas); this.ui.hint.textContent = hint;
             this.ui.box.hidden = !this.interactive;
@@ -419,8 +447,9 @@
             for (const face of g.faces) visit(face.uv, face.uv, shift => {
                 const p = P([face.p[0] + shift[0], face.p[1] + shift[1]]);
                 if (p[0] < -8 || p[0] > this.width + 8 || p[1] < -8 || p[1] > this.height + 8) return;
-                // Dark halo keeps numbers readable across nearby light edges.
-                ctx.strokeStyle = color("black", "#0d1220"); ctx.lineWidth = 2.5; ctx.strokeText(String(face.id + 1), ...p);
+                ctx.strokeStyle = color("face-halo", "#0d1220");
+                ctx.lineWidth = Math.min(1.5, font * .18);
+                ctx.strokeText(String(face.id + 1), ...p);
                 ctx.fillText(String(face.id + 1), ...p); faces++;
             });
             this.canvas.dataset.visibleCopies = String(copies); this.canvas.dataset.visibleFaces = String(faces);

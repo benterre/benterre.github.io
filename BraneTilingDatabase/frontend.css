@@ -5,7 +5,7 @@
   --mono:MathMono,Consolas,monospace; --input:#f4f7f5; --hover:#e4ece7;
   --plot-grid:#b8c7be; --plot-fill:#edf3ef; --plot-edge:#829c91;
   --plot-point:#6d8b7e; --plot-label:#8b6e9b; --plot-line:#94a99e;
-  --plot-black:#3e4c46; --plot-white:#fff; --plot-face:#526e60;
+  --plot-black:#3e4c46; --plot-white:#fff; --plot-face:#526e60; --plot-face-halo:#fff;
 }
 :root[data-theme=dark] {
   color-scheme:dark; --bg:#171d1c; --surface:#202826; --paper:#202826;
@@ -14,7 +14,7 @@
   --accent2:#b6a5cb; --danger:#efa2a2; --plot-grid:#52665b;
   --plot-fill:#293e33; --plot-edge:#9ab8a7; --plot-point:#b1d1bd;
   --plot-label:#d3b4e4; --plot-line:#a3b9ad; --plot-black:#121b17;
-  --plot-white:#e2ece5; --plot-face:#bad7c5;
+  --plot-white:#e2ece5; --plot-face:#bad7c5; --plot-face-halo:#121b17;
 }
 html{scrollbar-gutter:stable}body{min-width:280px}button{min-height:32px}
 .hidden{display:none!important}#app{padding-bottom:34px}main{min-height:190px}
@@ -30,6 +30,24 @@ html{scrollbar-gutter:stable}body{min-width:280px}button{min-height:32px}
 .modal-body>details>summary{font-size:0}.modal-body #seibergSection h2{font-size:0}.modal-body #seibergSection h2 button{font-size:12px}
 .matching-note{font-size:11px;color:var(--muted);margin:15px 0 4px}.matching-table{font:11px/1.8 var(--mono);border-collapse:collapse}.matching-table td,.matching-table th{padding:7px 9px;text-align:center}.matching-table th{position:sticky;top:0;background:var(--surface);color:var(--muted);font:10px Interface,sans-serif}.matching-table th:first-child{position:sticky;left:0;z-index:1}.matching-table td{border-top:1px solid var(--line)}.matching-table .one{color:var(--accent)}.matching-table .zero{color:var(--plot-grid)}
 #hero{max-width:850px}.query-line{align-items:stretch}#searchWrap{position:relative;flex:1;min-width:0}
+.query-line{--query-control-height:54px}
+.query-line .search,.query-line>.mode-btn{height:var(--query-control-height);min-height:var(--query-control-height)}
+.query-line>.draw-toggle{width:var(--query-control-height)}
+.query-line>.draw-toggle .icon{width:22px;height:22px}
+.sugg{color:var(--ink);text-decoration:none;touch-action:manipulation}
+.sugg>*{pointer-events:none}
+.rtoric polygon{fill:var(--plot-fill);stroke:var(--plot-edge);stroke-width:1.2;stroke-linejoin:round}
+.rtoric circle{fill:var(--plot-point)}
+.resource-expansion{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .26s ease,opacity .2s ease}
+.resource-expansion.expanded{grid-template-rows:1fr;opacity:1}
+.resource-expansion>div{min-height:0;overflow:hidden}
+.inline-resource{padding:clamp(12px,3vw,26px);margin-bottom:1.2rem}
+.inline-resource-title{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.75rem}
+.resource-panel[aria-expanded=true]{background:var(--tint)}
+.resource-panel[aria-expanded=true] .resource-arrow{transform:rotate(90deg)}
+.resource-expansions .rt-wrap{max-height:28rem;overflow:auto}
+.resources-grid:has(.resource-panel[aria-expanded=true]){margin-bottom:12px}
+.family-definition a{color:var(--accent);text-decoration:underline;text-underline-offset:.16em}
 .search{height:100%}#nameSearch{padding:0;min-height:24px}.query-line>.btn{font-size:12px}
 .mode-panel{text-align:left;margin-top:13px;animation:mist-in .25s ease}.mode-panel.active{display:block}
 .filter-surface,.draw-surface{transform:none}.mode-btn.active,.mode-btn[aria-expanded=true]{background:var(--hover)}

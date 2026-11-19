@@ -1,8 +1,9 @@
 /* EDIT FAMILY DEFINITIONS AND REFERENCES HERE.
  * Frontend-only editorial content: never serialized into the scientific data.
  * paragraphs accept MathJax \(...\) and \[...\], not HTML. Add reference keys
- * to an entry's references array; use citationElement for the forthcoming paper
- * so changing the existing BibTeX/citation box updates its link automatically.
+ * to an entry's references array. For a published paper, add
+ * myPaper: { label: "Author — Paper title", arxiv: "2501.01234" } below.
+ * Use citationElement for the forthcoming paper until it has an arXiv ID.
  */
 (function (root, factory) {
     const api = factory();
@@ -22,6 +23,7 @@
         conifold: { label: "I. R. Klebanov and E. Witten — Superconformal Field Theory on Threebranes at a Calabi-Yau Singularity (hep-th/9807080)", url: "https://arxiv.org/abs/hep-th/9807080" },
         dimers: { label: "A. Hanany and K. D. Kennaway — Dimer Models and Toric Diagrams (hep-th/0503149)", url: "https://arxiv.org/abs/hep-th/0503149" },
         reflexive: { label: "A. Hanany and R.-K. Seong — Brane Tilings and Reflexive Polygons (1201.2614)", url: "https://arxiv.org/abs/1201.2614" },
+        phaseLabels: { label: "S. Franco, A. Hanany, K. D. Kennaway, D. Vegh and B. Wecht — Brane Dimers and Quiver Gauge Theories", arxiv: "hep-th/0504110" },
         surfaces: { label: "B. Feng, A. Hanany and Y.-H. He — D-Brane Gauge Theories from Toric Singularities and Toric Duality (hep-th/0003085)", url: "https://arxiv.org/abs/hep-th/0003085" },
     };
     const definitions = {
@@ -83,7 +85,7 @@
         },
         spp: { title: "Suspended pinch point (SPP)", paragraphs: [String.raw`The hypersurface \(uv=xy^2\), also \(L^{1,2,1}\). This is a four-corner toric diagram with a non-corner boundary lattice point, not a generic pentagon.`], references: ["labc"] },
         pseudo_delpezzo: { title: "Pseudo del Pezzo", paragraphs: ["Toric degenerations related to del Pezzo configurations, distinguished by their exact stored lattice polygons. A pseudo-del-Pezzo label is not interchangeable with the corresponding generic del Pezzo surface."], references: ["reflexive"], instancePolygon: true },
-        reflexive: { title: "Reflexive polygon", paragraphs: [String.raw`A lattice polygon with a single interior lattice point. Translating that point to the origin gives a lattice polar dual. There are sixteen equivalence classes in two dimensions; a polygon can carry other family names at the same time.`], references: ["reflexive"] },
+        reflexive: { title: "Reflexive polygon", paragraphs: [String.raw`A lattice polygon with a single interior lattice point. Translating that point to the origin gives a lattice polar dual. There are sixteen equivalence classes in two dimensions; a polygon can carry other family names at the same time.`], references: ["reflexive", "phaseLabels"] },
         orbifold: { title: "Finite abelian toric orbifold", paragraphs: [String.raw`A finite-index lattice quotient of the stated parent toric cone, displayed as parent/group followed by its action tuple(s). The database keeps the ambient lattice and the action certificate. The facet-monomial generator ordering and action convention are described in the database paper; an action tuple is not an arbitrary independent weight on every chiral field.`], references: ["dimers", "database"] },
     };
     const nameTests = {
@@ -144,11 +146,19 @@
                 if (!reference) continue;
                 const li = document.createElement("li"), a = document.createElement("a");
                 const citation = reference.citationElement && document.getElementById(reference.citationElement);
-                const href = reference.url || citation?.closest("article")?.querySelector(".citation-record a")?.href
-                    || (reference.citationElement ? "#" + reference.citationElement : "");
+                const citationLink = citation?.closest("article")?.querySelector(".citation-record a")?.href;
+                const href = reference.arxiv ? `https://arxiv.org/abs/${reference.arxiv}`
+                    : reference.url || (citationLink && !citationLink.includes("xxxxx") ? citationLink : "")
+                        || (reference.citationElement ? "#" + reference.citationElement : "");
                 if (!/^https:\/\//.test(href) && !href.startsWith("#")) continue;
-                a.href = href; a.textContent = reference.label;
+                a.href = href;
+                a.textContent = reference.label + (reference.arxiv ? ` (${reference.arxiv})` : "");
                 if (!href.startsWith("#")) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+                else if (citation) a.addEventListener("click", event => {
+                    event.preventDefault();
+                    citation.closest("details").open = true;
+                    citation.closest("article").scrollIntoView({ block:"center" });
+                });
                 li.append(a); list.append(li);
             }
             article.append(list); container.append(article);

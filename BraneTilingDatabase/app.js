@@ -390,6 +390,8 @@ let suggEntries = [];
 let suggActive = -1;
 let nameSearchSerial = 0;
 let nameSearchTimer = null;
+let suggestionPointer = null;
+let deferredSuggestions = false;
 
 // The v3 bootstrap supplies a time-sliced exact-search engine.  Keep a tiny
 // asynchronous fallback for isolated presentation tests, but production never
@@ -428,6 +430,10 @@ function displayNames(names, max) {
 }
 
 function renderSuggestions() {
+    if (typeof suggestionPointer !== "undefined" && suggestionPointer !== null) {
+        deferredSuggestions = true;
+        return;
+    }
     if(typeof window!=="undefined" && window.BraneUI && document.activeElement!==searchInput){
         suggBox.style.display="none";searchInput.setAttribute?.("aria-expanded","false");return;
     }
@@ -441,8 +447,10 @@ function renderSuggestions() {
     suggBox.innerHTML = "";
     let needsTypesetting = false;
     suggEntries.forEach((e, i) => {
-        const div = document.createElement("div");
+        const div = document.createElement("a");
         div.className = "sugg" + (i === suggActive ? " active" : "");
+        div.href = `#/theory/${encodeURIComponent(e.id)}`;
+        div.tabIndex = -1;
         div.id = `suggestion-${i}`;
         div.setAttribute("role", "option");
         div.setAttribute("aria-selected", String(i === suggActive));
@@ -460,8 +468,13 @@ function renderSuggestions() {
         meta.className = "meta";
         meta.textContent = `${e.n_gauge} gauge · ${e.n_phases} phase${e.n_phases > 1 ? "s" : ""}`;
         div.append(nm, meta);
-        div.addEventListener("click", () => openTheory(e.id));
-        div.addEventListener("mousemove", () => {
+        div.addEventListener("mousedown", event => {if (event.button === 0) event.preventDefault();});
+        div.addEventListener("click", event => {
+            if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            openTheory(e.id);
+        });
+        div.addEventListener("pointerenter", () => {
             if (suggActive !== i) {
                 suggActive = i;
                 [...suggBox.children].forEach((c, k) =>
@@ -611,8 +624,24 @@ searchInput.addEventListener("keydown", ev => {
 searchInput.addEventListener("blur", () => {
     // Existing options remain alive through their click. renderSuggestions
     // also checks focus, so late responses cannot reopen a blurred input.
-    setTimeout(()=>{if(document.activeElement===searchInput)return;suggBox.style.display="none";searchInput.setAttribute?.("aria-expanded","false");},150);
+    setTimeout(()=>{if(document.activeElement===searchInput||suggestionPointer!==null)return;suggBox.style.display="none";searchInput.setAttribute?.("aria-expanded","false");},0);
 });
+suggBox.addEventListener("pointerdown", event => {
+    if (event.target.closest?.(".sugg")) suggestionPointer = event.pointerId;
+});
+for (const type of ["pointerup", "pointercancel"]) {
+    document.addEventListener(type, event => {
+        if (event.pointerId !== suggestionPointer) return;
+        setTimeout(() => {
+            if (event.pointerId !== suggestionPointer) return;
+            suggestionPointer = null;
+            if (deferredSuggestions || document.activeElement !== searchInput) {
+                deferredSuggestions = false;
+                renderSuggestions();
+            }
+        }, 0);
+    });
+}
 
 /* ======================= property search ================================ */
 // Config-driven criteria: add entries here (and matching fields in the index)
@@ -704,8 +733,6 @@ function namesFamilyFirst(names, famId) {
 // with a single known phase and no Seiberg-duality enumeration at all (quiver
 // catalogs); `phases_truncated` marks an enumeration that was cut short.  In
 // both cases the stored count is a lower bound, not the number of phases.
-function phasesComputed(t) { return t.phases_computed !== false && !t.phases_truncated; }
-function phasesNote(t) { return phasesComputed(t) ? "" : "  (not computed)"; }
 
 // toric point classification (index carries precomputed counts; fall back to
 // hull/points for any older index that predates them)
@@ -1076,25 +1103,28 @@ function toricCanvasProjection(canvas, points, pad, maxCell = Infinity) {
     };
 }
 
-function miniToric(canvas, entry, size = 86) {
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext("2d");
+function miniToric(entry) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 86 86");
+    svg.setAttribute("class", "rtoric");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Toric diagram for " + (namesOf(entry)[0] || entry.id));
     const { hull, points } = displayFrameToric(entryToricGeometry(entry));
-    const { point: P } = toricCanvasProjection(canvas, points, 12);
-    ctx.beginPath();
-    hull.forEach((p, i) => { const [X, Y] = P(p); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
-    ctx.closePath();
-    ctx.fillStyle = (window.BraneUI?.color("fill", "rgba(167,139,250,0.14)") || "rgba(167,139,250,0.14)");
-    ctx.strokeStyle = (window.BraneUI?.color("edge", "#a78bfa") || "#a78bfa");
-    ctx.lineWidth = 1.2;
-    ctx.fill(); ctx.stroke();
-    ctx.fillStyle = (window.BraneUI?.color("point", "#e8ecf5") || "#e8ecf5");
+    if (!points.length) return svg;
+    const { point: project, cell } = toricCanvasProjection({width:86,height:86}, points, 12);
+    const polygon = document.createElementNS(ns, "polygon");
+    polygon.setAttribute("points", hull.map(p => project(p).join(",")).join(" "));
+    svg.append(polygon);
     for (const p of points) {
-        const [X, Y] = P(p);
-        ctx.beginPath();
-        ctx.arc(X, Y, 2.6, 0, 7);
-        ctx.fill();
+        const [x, y] = project(p);
+        const dot = document.createElementNS(ns, "circle");
+        dot.setAttribute("cx", x);
+        dot.setAttribute("cy", y);
+        dot.setAttribute("r", Math.min(2.6, cell * .27));
+        svg.append(dot);
     }
+    return svg;
 }
 
 /* results are paged: the database has tens of thousands of theories, so a
@@ -1102,9 +1132,49 @@ function miniToric(canvas, entry, size = 86) {
 const RESULTS_PER_PAGE = 60;
 let resultState = { entries: [], msg: "", fam: null, page: 0 };
 let resultSearchSerial = 0;
+let phaseTotalRequest = null;
+
+function sumSearchPhases(entries) {
+    let count = 0;
+    for (const entry of entries) {
+        if (!Number.isSafeInteger(entry.n_phases) || entry.n_phases < 0) return null;
+        count += entry.n_phases;
+    }
+    return Number.isSafeInteger(count) ? count : null;
+}
+
+async function countRemoteSearchPhases(params, data, serial) {
+    if (data.items.length === data.total) return sumSearchPhases(data.items);
+    if (params.n_phases_min != null && params.n_phases_min === params.n_phases_max) {
+        const total = Number(params.n_phases_min) * data.total;
+        return Number.isSafeInteger(total) ? total : null;
+    }
+    // The public API has no aggregate for arbitrary searches. Bound the extra
+    // reads so wide searches never stream the catalogue in the background.
+    if (data.total > 600) return null;
+    const controller = new AbortController();
+    phaseTotalRequest = controller;
+    try {
+        let total = 0;
+        let offset = 0;
+        while (offset < data.total) {
+            const page = offset === data.offset ? data : await REMOTE_DATABASE.search({ ...params, offset, limit: 100 },
+                { channel: "phase-total", signal: controller.signal });
+            const subtotal = sumSearchPhases(page.items);
+            if (serial !== resultSearchSerial || page.total !== data.total || !page.items.length || subtotal == null) return null;
+            total += subtotal;
+            offset += page.items.length;
+        }
+        return Number.isSafeInteger(total) ? total : null;
+    } finally {
+        if (phaseTotalRequest === controller) phaseTotalRequest = null;
+    }
+}
 
 async function showRemoteResults(params, describe, fam = null, openSingle = false, page = 0) {
     const serial = ++resultSearchSerial;
+    phaseTotalRequest?.abort();
+    const previous = resultState.remote;
     const message = document.getElementById("resultsMsg");
     message.textContent = "Searching the database…";
     message.className = "";
@@ -1114,12 +1184,24 @@ async function showRemoteResults(params, describe, fam = null, openSingle = fals
             offset: page * RESULTS_PER_PAGE, limit: RESULTS_PER_PAGE });
         if (serial !== resultSearchSerial) return;
         if (openSingle && data.total === 1 && data.items.length === 1) {
+            message.textContent = "";
             openTheory(data.items[0].id);
             return;
         }
+        const allTheories = Object.entries(params).every(([key, value]) => key === "q" && !String(value).trim());
+        const storedTotal = allTheories ? (DATABASE_METADATA?.stored_phase_count ?? DATABASE_METADATA?.phase_count) : null;
         resultState = { entries: data.items, msg: describe(data.total), fam, page,
-            remote: { params, describe, total: data.total } };
+            remote: { params, describe, total: data.total,
+                phaseUnit: storedTotal != null ? "stored" : "known",
+                phaseTotal: storedTotal ?? (previous?.params === params && previous.total === data.total ? previous.phaseTotal : null) } };
         renderResultsPage();
+        if (resultState.remote.phaseTotal == null) {
+            const phaseTotal = await countRemoteSearchPhases(params, data, serial).catch(() => null);
+            if (serial === resultSearchSerial && phaseTotal != null) {
+                resultState.remote.phaseTotal = phaseTotal;
+                updateResultsMessage();
+            }
+        }
     } catch (error) {
         if (serial !== resultSearchSerial || error.name === "AbortError") return;
         message.textContent = `Search unavailable: ${error.message}`;
@@ -1129,8 +1211,9 @@ async function showRemoteResults(params, describe, fam = null, openSingle = fals
 
 function showResults(entries, msg, highlightFamily = null) {
     ++resultSearchSerial;
+    phaseTotalRequest?.abort();
     REMOTE_DATABASE?.cancelSearch("results");
-    resultState = { entries, msg: msg || "", fam: highlightFamily, page: 0 };
+    resultState = { entries, msg: msg || "", fam: highlightFamily, page: 0, phaseTotal: sumSearchPhases(entries) };
     renderResultsPage();
 }
 
@@ -1149,11 +1232,26 @@ function gotoResultsPage(p) {
     if (box.scrollIntoView) box.scrollIntoView({ block: "start" });
 }
 
+function updateResultsMessage() {
+    const { entries, msg, page, remote, phaseTotal } = resultState;
+    const heading = document.getElementById("resultsHeading");
+    if (heading) heading.hidden = !msg;
+    const count = remote?.total ?? entries.length;
+    const from = page * RESULTS_PER_PAGE;
+    const shown = remote ? entries : entries.slice(from, from + RESULTS_PER_PAGE);
+    const total = remote ? remote.phaseTotal : phaseTotal;
+    const subtotal = total == null ? sumSearchPhases(shown) : null;
+    const phases = total != null ? ` · ${total.toLocaleString("en-US")} ${remote?.phaseUnit || "known"} ${total === 1 ? "phase" : "phases"}`
+        : subtotal != null ? ` · ${subtotal.toLocaleString("en-US")} known phases on this page` : "";
+    const pagination = count > RESULTS_PER_PAGE ? ` · showing ${from + 1}–${from + shown.length} of ${count}` : "";
+    const message = document.getElementById("resultsMsg");
+    message.textContent = msg ? msg + (count ? phases : "") + pagination : "";
+    message.className = entries.length ? "" : "error";
+}
+
 function renderResultsPage() {
-    const heading=document.getElementById("resultsHeading"); if(heading) heading.hidden = !resultState.msg;
-    const { entries, msg, fam, page } = resultState;
+    const { entries, fam, page } = resultState;
     const box = document.getElementById("results");
-    const m = document.getElementById("resultsMsg");
     const count = resultState.remote ? resultState.remote.total : entries.length;
     const pages = Math.max(1, Math.ceil(count / RESULTS_PER_PAGE));
     const from = page * RESULTS_PER_PAGE;
@@ -1161,10 +1259,7 @@ function renderResultsPage() {
     const sort=document.getElementById("sortResults")?.value;
     if(sort)shown.sort((a,b)=>sort==="name"?(namesOf(a)[0]||a.id).localeCompare(namesOf(b)[0]||b.id):
         sort==="phases"?b.n_phases-a.n_phases:sort==="charge"?(a.a_charge??Infinity)-(b.a_charge??Infinity):a.n_gauge-b.n_gauge);
-    m.textContent = (msg || "") + (count > RESULTS_PER_PAGE
-        ? `  —  showing ${from + 1}–${from + shown.length} of ${count}`
-        : "");
-    m.className = entries.length ? "" : "error";
+    updateResultsMessage();
     box.innerHTML = "";
     const highlightFamily = fam;
     for (const e of shown) {
@@ -1216,7 +1311,7 @@ function createTheoryCard(e, highlightFamily = null) {
         stats.className = "stats";
         stats.innerHTML =
             `${e.n_gauge} gauge groups · ${e.n_phases} phase${e.n_phases > 1 ? "s" : ""}` +
-            (e.phases_computed === false ? " (not computed)" : "") + "<br>" +
+            "<br>" +
             (e.a_charge != null ? `a = ${(+e.a_charge).toFixed(5)}<br>` : "") +
             `${e.n_internal} internal · ${edgePoints(e)} edge · ${vertexPoints(e)} external`;
         const link = document.createElement("a"); link.className = "card-link";
@@ -1225,11 +1320,7 @@ function createTheoryCard(e, highlightFamily = null) {
         while (h.firstChild) link.appendChild(h.firstChild); h.appendChild(link);
         const identity = document.createElement("span"); identity.className = "card-id"; identity.textContent = e.id;
         info.append(chips, h, identity, stats);
-        const cv = document.createElement("canvas");
-        cv.className = "rtoric";
-        miniToric(cv, e);
-        card.append(info, cv);
-        cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Toric diagram for " + (namesOf(e)[0] || e.id));
+        card.append(info, miniToric(e));
         if (window.BraneUI) {
             card.appendChild(window.BraneUI.button(presentationEntry(e)));
             const arrow=document.createElement("span");arrow.className="card-arrow";arrow.innerHTML=window.BraneUI.icon("arrowRight");card.appendChild(arrow);
@@ -1508,7 +1599,16 @@ function loadTheory(id) {
     }
     // renderTheory remains synchronous and always starts at phase 1.  For a
     // split record, fetch only the chunk containing that phase before render.
-    return pending.then(t => ensurePhase(t, 0).then(() => t));
+    return pending.then(async t => {
+        if (!availablePhaseCount(t)) return t;
+        await ensurePhase(t, 0);
+        const signatures = literaturePhaseSignatures(t);
+        if (window.BraneUI && signatures) {
+            const count = Math.min(availablePhaseCount(t), signatures.length);
+            await Promise.allSettled(Array.from({length:count-1}, (_, i) => ensurePhase(t, i+1)));
+        }
+        return t;
+    });
 }
 
 function openTheory(id, phase = 0) {
@@ -1524,7 +1624,15 @@ function renderTheory(t) {
     document.title=(t.names[0] || t.id)+" · Brane Tiling Database";
     phaseSelectionSerial++;
     currentTheory = t;
-    currentPhase = 0;
+    currentPhase = phaseDisplayOrder(t)[0] ?? 0;
+    for (const key of Object.keys(copyPayloads)) delete copyPayloads[key];
+    const hasPayload = Boolean(t.phases?.[currentPhase]);
+    const phaseNotice = document.getElementById("phaseUnavailable");
+    if (phaseNotice) {
+        phaseNotice.hidden = hasPayload;
+        document.getElementById("phaseSect").hidden = !hasPayload;
+        document.getElementById("downloadPhaseData").disabled = !hasPayload;
+    }
     window.BraneFamilyDefinitions?.render(document.getElementById("familyDefinitions"), t, typesetContainer);
     document.getElementById("homePage").classList.add("hidden");
     document.getElementById("theoryPage").classList.remove("hidden");
@@ -1562,11 +1670,11 @@ function renderTheory(t) {
             text: familiesOf(t).map(famText).join(", ")
         } : "—"],
         ["gauge groups", t.n_gauge],
-        ["toric phases", t.n_phases + phasesNote(t)],
+        ["known toric phases", t.n_phases],
         ["a-central charge", t.a_charge != null ? (+t.a_charge).toFixed(8) : "—"],
         ["toric points", toricPointBreakdown(t)],
-        ["chirals (phase 1)", t.phases[0].n_chirals, "kvChirals"],
-        ["W terms (phase 1)", t.phases[0].n_W_terms, "kvWterms"],
+        ["chirals", t.phases?.[currentPhase]?.n_chirals ?? "—", "kvChirals"],
+        ["W terms", t.phases?.[currentPhase]?.n_W_terms ?? "—", "kvWterms"],
     ];
     for (const [k, v, id] of rows) {
         const dk = document.createElement("div"); dk.className = "k"; dk.textContent = k;
@@ -1603,10 +1711,20 @@ function renderTheory(t) {
         gl.ontoggle = null;
     }
 
-    if (window.BraneUI) {destroySeibergGraph(); ++seibergViewSerial;document.getElementById("seibergSection").classList.toggle("hidden",availablePhaseCount(t)<2||t._graph_available===false);}
+    if (window.BraneUI) {destroySeibergGraph(); ++seibergViewSerial;document.getElementById("seibergSection").classList.toggle("hidden", !canShowSeibergGraph(t));}
     else prepareSeibergGraph(t);
     buildPhaseSelector(t);
-    renderPhase(0);
+    if (hasPayload) renderPhase(currentPhase);
+    else {
+        for (const button of document.querySelectorAll("[data-resource]")) button.disabled = true;
+        document.getElementById("dualitySummary").textContent = "Not available";
+        document.getElementById("matchingsSummary").textContent = "Not available";
+        document.getElementById("zigzagsSummary").textContent = "Not available";
+        buildToricCopyPayloads(t.toric);
+        drawToricDiagram(document.getElementById("toricCanvas"), t.toric);
+        drawTiling(document.getElementById("tilingCanvas"), null);
+        document.getElementById("tilingNote").textContent = "Tiling data unavailable for this theory";
+    }
     window.scrollTo(0, 0);
 }
 
@@ -1795,7 +1913,7 @@ function seibergViewIsCurrent(t, serial) {
 function availablePhaseCount(t) {
     const declared = Number(t && t.n_phases);
     const total = Number.isSafeInteger(declared) && declared > 0 ? declared : 0;
-    const annotated = Number(t && t._available_phase_count);
+    const annotated = t?._available_phase_count;
     if (Number.isSafeInteger(annotated) && annotated >= 0)
         return Math.min(total, annotated);
     if (t && t.phases_truncated === true && Array.isArray(t.phases))
@@ -1803,11 +1921,67 @@ function availablePhaseCount(t) {
     return total;
 }
 
+// Entries are [chiral field count, interior multiplicity] in literature order.
+// For models 3, 4, 6, 8 and 9, Roman numerals denote Hanany–Seong's a–d order
+// (arXiv:1201.2614). dP2 and dP3 use the Roman labels in hep-th/0504110.
+const REFLEXIVE_PHASE_SIGNATURES = {
+    "1_4_4_1": [[20,12], [22,14]],
+    "1_4_4_2": [[16,12], [20,12], [20,14], [24,21]],
+    "1_2_5_1": [[15,9], [17,9], [19,12]],
+    "1_2_4_1": [[14,6], [16,7]],
+    "1_1_5_1": [[14,6], [14,7], [16,8]],
+    "1_0_6_1": [[12,6], [14,7], [14,8], [18,11]],
+    "1_0_5_1": [[13,6], [11,5]],
+    "1_0_4_2": [[8,4], [12,5]],
+};
+const LEGACY_REFLEXIVE_IDS = { F0:"1_0_4_2", dP2:"1_0_5_1", dP3:"1_0_6_1",
+    PdP3b:"1_1_5_1", PdP3c:"1_2_4_1", PdP4a:"1_2_5_1", PdP5:"1_4_4_2" };
+
+function literaturePhaseSignatures(theory) {
+    const id = Object.hasOwn(LEGACY_REFLEXIVE_IDS, theory.id) ? LEGACY_REFLEXIVE_IDS[theory.id] : theory.id;
+    return Object.hasOwn(REFLEXIVE_PHASE_SIGNATURES, id) ? REFLEXIVE_PHASE_SIGNATURES[id] : null;
+}
+
+function literaturePhaseNumber(theory, index) {
+    const signatures = literaturePhaseSignatures(theory);
+    const phase = theory.phases?.[index];
+    if (!signatures || !phase || !theory.toric?.hull?.length) return 0;
+    const hull = convexHull(theory.toric.hull);
+    const interior = theory.toric.points.find(([x,y]) => hull.every(([ax,ay], i) => {
+        const [bx,by] = hull[(i+1)%hull.length];
+        return (bx-ax)*(y-ay)-(by-ay)*(x-ax) > 0;
+    }));
+    if (!interior) return 0;
+    const multiplicity = phase.glsm_mult?.[interior.slice(0,2).join(",")] ?? (index===0 ? interior[2] : null);
+    return signatures.findIndex(([fields, center]) => fields===phase.n_chirals && center===Number(multiplicity))+1;
+}
+
+function phaseDisplayOrder(theory) {
+    const count = availablePhaseCount(theory);
+    // Large collections use a direct numeric input and never build a list.
+    if (count > 100) return [];
+    const indices = Array.from({length:count}, (_, i) => i);
+    if (!literaturePhaseSignatures(theory)) return indices;
+    const order = indices.map(i => ({index:i, number:literaturePhaseNumber(theory, i) || Infinity}));
+    return order.sort((a,b) => a.number-b.number).map(p => p.index);
+}
+
+function phaseLabel(theory, index) {
+    const number = literaturePhaseNumber(theory, index);
+    if (number) return `Phase ${["I", "II", "III", "IV"][number-1]}`;
+    if (!literaturePhaseSignatures(theory) && familiesOf(theory).includes("reflexive") && availablePhaseCount(theory) === 1) return "Phase I";
+    return `Phase ${index+1}`;
+}
+
 function setSeibergButtonExpanded(button, expanded) {
     if (button.setAttribute)
         button.setAttribute("aria-expanded", expanded ? "true" : "false");
     else
         button.ariaExpanded = expanded ? "true" : "false";
+}
+
+function canShowSeibergGraph(theory) {
+    return theory.phases_computed !== false && availablePhaseCount(theory) > 1 && theory._graph_available !== false;
 }
 
 function seibergGraphSize(t) {
@@ -1852,7 +2026,7 @@ function prepareSeibergGraph(t) {
     button.classList.add("hidden");
     setSeibergButtonExpanded(button, false);
 
-    const hasMultiplePhases = availablePhaseCount(t) > 1 && t._graph_available !== false;
+    const hasMultiplePhases = canShowSeibergGraph(t);
     section.classList.toggle("hidden", !hasMultiplePhases);
     if (!hasMultiplePhases) return;
 
@@ -1935,11 +2109,11 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
             .height(el.clientHeight || 378)
             .backgroundColor("rgba(0,0,0,0)")
             .showNavInfo(false)
-            .nodeLabel(n => `phase ${n.id + 1}`)
+            .nodeLabel(n => phaseLabel(t, n.id))
             .linkColor(() => (window.BraneUI?.color("label", "#a78bfa") || "#a78bfa"))
             .linkOpacity(big ? 0.45 : 0.7)
             .linkWidth(big ? 0.6 : 1.2)
-            .onNodeClick(node => {selectPhase(node.id);window.BraneUI?.closeResource();})
+            .onNodeClick(node => selectPhase(node.id))
             .graphData({ nodes: [], links: [] });
     } catch (error) {
         console.error(error);
@@ -1947,7 +2121,7 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
         return;
     }
     seibergGraph = graph;
-    if(window.BraneUI && nodes.length<=20)graph.cameraPosition?.({x:0,y:0,z:180});
+    if (window.BraneUI && window.BraneUI.openResourceId() !== "seibergSection") graph.pauseAnimation?.();
     if (window.BraneUI) {
         const edges=t.seiberg.links.map(edge=>Array.isArray(edge)?edge:[edge.source,edge.target]);
         copyPayloads.seiberg_py="seiberg = "+JSON.stringify(edges);
@@ -1963,6 +2137,16 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
         graph.cooldownTicks(200).warmupTicks(50)
             .nodeResolution(4).enableNodeDrag(false);
     graph.__big = big;
+    if (window.BraneUI && nodes.length <= 20) {
+        let framed = false;
+        graph.cooldownTicks(120);
+        graph.onEngineStop?.(() => {
+            if (framed || graph.graphData().nodes.length !== nodes.length) return;
+            framed = true;
+            const padding = Math.min(graph.width(), graph.height()) * 0.24;
+            graph.zoomToFit?.(300, padding);
+        });
+    }
 
     if (hasTHREE) {
         graph
@@ -1975,7 +2159,7 @@ function buildSeibergGraph(t, serial = seibergViewSerial, optedIn = false) {
                 });
                 const cube = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mat);
                 group.add(cube);
-                const sprite = makeTextSprite(String(node.id + 1), "#102018", 40);
+                const sprite = makeTextSprite(phaseLabel(t, node.id).replace(/^Phase /,""), "#102018", 40);
                 sprite.position.set(0, 0, size / 2 + 0.6);
                 group.add(sprite);
                 return group;
@@ -2047,6 +2231,11 @@ function buildPhaseSelector(t) {
     const phaseCount = availablePhaseCount(t);
     clearPhaseInputTimer();
     box.innerHTML = "";
+    if (phaseCount <= 1) {
+        box.classList.add("hidden");
+        jump.classList.add("hidden");
+        return;
+    }
     if (phaseCount > 100) {
         box.classList.add("hidden");
         jump.classList.remove("hidden");
@@ -2097,10 +2286,11 @@ function buildPhaseSelector(t) {
     jump.classList.add("hidden");
     input.oninput = null;
     input.onkeydown = null;
-    for (let i = 0; i < phaseCount; i++) {
+    for (const i of phaseDisplayOrder(t)) {
         const b = document.createElement("button");
         b.className = "pill" + (i === currentPhase ? " active" : "");
-        b.textContent = `phase ${i + 1}`;
+        b.setAttribute("aria-pressed", String(i === currentPhase));
+        b.textContent = phaseLabel(t, i);
         b.dataset.phase = String(i);
         b.addEventListener("click", () => selectPhase(i));
         box.appendChild(b);
@@ -2122,8 +2312,11 @@ function syncPhaseSelector(t, i) {
         document.getElementById("phaseNext").disabled = i >= phaseCount - 1;
         return;
     }
-    [...document.getElementById("phasePills").children].forEach(b =>
-        b.classList.toggle("active", Number(b.dataset.phase) === i));
+    for (const button of document.getElementById("phasePills").children) {
+        const selected = Number(button.dataset.phase) === i;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-pressed", String(selected));
+    }
 }
 
 function selectPhase(i) {
@@ -2159,10 +2352,11 @@ function selectPhase(i) {
 function renderPhase(i) {
     const t = currentTheory;
     const p = t.phases[i];
-    const announcement=document.getElementById("phaseAnnouncement");if(announcement)announcement.textContent=`Phase ${i+1} of ${availablePhaseCount(t)}`;
+    const label = phaseLabel(t, i);
+    const announcement=document.getElementById("phaseAnnouncement");if(announcement)announcement.textContent=label;
     const zzResource=document.querySelector?.('[data-resource="zzDetails"]');if(zzResource)zzResource.disabled=!p.zigzags;
     const pmResource=document.querySelector?.('[data-resource="pmDetails"]');if(pmResource)pmResource.disabled=!p.pm_matrix && !p.tiling;
-    const graphResource=document.querySelector?.('[data-resource="seibergSection"]');if(graphResource)graphResource.disabled=availablePhaseCount(t)<2 || t._graph_available===false;
+    const graphResource=document.querySelector?.('[data-resource="seibergSection"]');if(graphResource)graphResource.disabled=!canShowSeibergGraph(t);
     const compact=document.getElementById("compactPhase");if(compact)compact.value=String(i);
     const selectedToric = phaseToric(t, i);
     buildCopyPayloads(t, p, i, selectedToric);
@@ -2175,9 +2369,9 @@ function renderPhase(i) {
             ? glsmToricLabels(t) : null);
     const ck = document.getElementById("kvChiralsK");
     if (ck) {
-        ck.textContent = `chirals (phase ${i + 1})`;
+        ck.textContent = `chirals (${label})`;
         document.getElementById("kvChiralsV").textContent = p.n_chirals;
-        document.getElementById("kvWtermsK").textContent = `W terms (phase ${i + 1})`;
+        document.getElementById("kvWtermsK").textContent = `W terms (${label})`;
         document.getElementById("kvWtermsV").textContent = p.n_W_terms;
     }
 
@@ -2211,7 +2405,8 @@ function renderPhase(i) {
     );
     const matchingSummary=document.getElementById("matchingsSummary");if(matchingSummary)matchingSummary.textContent=matchingCount==null?"Open matching matrix":`${matchingCount} perfect matchings · open matrix`;
     const zigzagSummary=document.getElementById("zigzagsSummary");if(zigzagSummary)zigzagSummary.textContent=`${p.zigzags?.length || 0} paths · chiral field sequences`;
-    const dualitySummary=document.getElementById("dualitySummary");if(dualitySummary)dualitySummary.textContent=`${availablePhaseCount(t)} toric phases · open graph`;
+    const dualitySummary=document.getElementById("dualitySummary");
+    if (dualitySummary) dualitySummary.textContent = graphResource?.disabled ? "Not available" : `${availablePhaseCount(t)} toric phases`;
     document.getElementById("phaseStats").textContent =
         `${p.n_chirals} chiral multiplets · ${p.n_W_terms} superpotential terms` +
         (p.zigzags ? ` · ${p.zigzags.length} zigzag paths` : "") +
@@ -2250,6 +2445,8 @@ function renderPhase(i) {
 
     // PM matrix as a LaTeX matrix (array environment: no column limit)
     const pmBox = document.getElementById("pmBox");
+    pmBox.innerHTML = "";
+    document.getElementById("derivedMatchingNote")?.remove?.();
     if (p.pm_matrix) {
         const rows = p.pm_matrix.length, cols = p.pm_matrix[0].length;
         if (cols <= 40) {
@@ -2267,7 +2464,57 @@ function renderPhase(i) {
             pmBox.appendChild(pre);
         }
         document.getElementById("pmDetails").classList.remove("hidden");
-    } else document.getElementById("pmDetails").classList.add("hidden");
+    } else if (window.BraneUI?.openResourceId() === "pmDetails" && p.tiling) {
+        renderDerivedMatchings(t, i);
+    }
+    const resourceId = window.BraneUI?.openResourceId();
+    if ((resourceId === "pmDetails" && pmResource?.disabled) || (resourceId === "zzDetails" && zzResource?.disabled)) {
+        window.BraneUI.closeResource();
+    }
+}
+
+function renderDerivedMatchings(theory, index) {
+    const phase = theory.phases[index];
+    if (phase.pm_matrix) return;
+    const expected = sumExactNonnegativeIntegers(phaseToric(theory, index).points.map(point => point[2]));
+    const matrix = window.BranePerfectMatchings?.derive(phase, { expected });
+    const box = document.getElementById("pmBox");
+    box.replaceChildren();
+    document.getElementById("derivedMatchingNote")?.remove();
+    if (!matrix) {
+        box.textContent = "The matrix is not stored for this phase and cannot be reconstructed within the interactive limit. Exact available multiplicities remain in the toric diagram.";
+        copyPayloads.pm_m = copyPayloads.pm_py = "";
+        return;
+    }
+    const table = document.createElement("table");
+    table.className = "matching-table";
+    const header = table.insertRow();
+    for (const title of ["Field", ...matrix[0].map((_, k) => `p${k + 1}`)]) {
+        const cell = document.createElement("th");
+        cell.textContent = title;
+        header.append(cell);
+    }
+    const labels = chiralTeXLabels(phase);
+    matrix.forEach((values, i) => {
+        const row = table.insertRow();
+        const label = document.createElement("th");
+        label.textContent = `\\(${labels[i]}\\)`;
+        row.append(label);
+        for (const value of values) {
+            const cell = row.insertCell();
+            cell.textContent = value;
+            cell.className = value ? "one" : "zero";
+        }
+    });
+    box.append(table);
+    typesetContainer(box);
+    const note = document.createElement("p");
+    note.className = "matching-note";
+    note.id = "derivedMatchingNote";
+    note.textContent = "Reconstructed exactly from the published bipartite tiling. The rows follow its edge order.";
+    box.insertAdjacentElement("afterend", note);
+    copyPayloads.pm_py = "P = " + JSON.stringify(matrix);
+    copyPayloads.pm_m = "{" + matrix.map(row => "{" + row.join(", ") + "}").join(", ") + "}";
 }
 
 // LaTeX labels for the chiral fields of a phase: X_{i,j}, with a superscript
@@ -2652,16 +2899,6 @@ function phaseExportPayload(t = currentTheory, phaseIndex = currentPhase) {
         phase_number: phaseIndex + 1, theory, phase };
 }
 
-function attributedCopyPayload(key, text) {
-    if (!text || !/_(?:py|m)$/.test(key || "")) return text;
-    const p = datasetProvenance();
-    const notice = `${p.title} — ${p.attribution}. ${p.license}: ${p.license_url} `
-        + `Source: ${p.source}. Theory ${p.theory_id}, phase ${p.phase_index + 1}.`
-        + (p.release ? ` Release ${p.release}.` : "");
-    return text + (key.endsWith("_py") ? "\n# " + notice.replace(/[\r\n]/g, " ")
-        : "\n(* " + notice.replace(/[\r\n]/g, " ").replace(/\*\)/g, "* )") + " *)");
-}
-
 document.getElementById("downloadPhaseData")?.addEventListener("click", () => {
     const status = document.getElementById("phaseExportStatus");
     try {
@@ -2697,15 +2934,18 @@ function chiralSymbolsM(phase) {
     return syms;
 }
 
-function buildCopyPayloads(t, phase, phaseIndex = null, selectedToric = null) {
-    const index = Number.isInteger(phaseIndex)
-        ? phaseIndex
-        : Number.isInteger(phase && phase.idx) ? phase.idx : 0;
-    const toric = selectedToric || phaseToric(t, index);
+function buildToricCopyPayloads(toric) {
     copyPayloads.toric_m = "{" + toric.points.map(p =>
         `{${p[0]}, ${p[1]}, ${p[2] == null ? "Null" : p[2]}}`).join(", ") + "}";
     copyPayloads.toric_py = "[" + toric.points.map(p =>
         `(${p[0]}, ${p[1]}, ${p[2] == null ? "None" : p[2]})`).join(", ") + "]";
+}
+
+function buildCopyPayloads(t, phase, phaseIndex = null, selectedToric = null) {
+    const index = Number.isInteger(phaseIndex)
+        ? phaseIndex
+        : Number.isInteger(phase && phase.idx) ? phase.idx : 0;
+    buildToricCopyPayloads(selectedToric || phaseToric(t, index));
     copyPayloads.quiver_m = "{" + phase.Q[0].map((s, e) =>
         `${s + 1} -> ${phase.Q[1][e] + 1}`).join(", ") + "}";
     copyPayloads.quiver_py =
@@ -2807,7 +3047,7 @@ document.querySelectorAll(".copy-mini").forEach(btn => {
         const target = btn.dataset.copyTarget
             ? document.getElementById(btn.dataset.copyTarget) : null;
         const text = target ? target.textContent.trim()
-            : attributedCopyPayload(btn.dataset.copy, copyPayloads[btn.dataset.copy] || "");
+            : (copyPayloads[btn.dataset.copy] || "");
         const failed = () => {
             if (target) citationCopyStatus(target, false);
             else window.BraneUI?.toast(text ? "Copy unavailable. Download the phase data instead." : "No data available for this phase.");
@@ -2914,35 +3154,21 @@ window.BraneUI.configure(createTheoryCard, async id => {
 window.addEventListener("brane:theme-changed", () => {
     renderDrawCanvas();
     for(const view of window.BraneScientificViewports?.internals.active.values() || [])view.schedule();
-    if(currentTheory) {drawQuiver(document.getElementById("quiverCanvas"),currentTheory.n_gauge,currentTheory.phases[currentPhase]);refreshSeibergColors();if(seibergGraph)seibergGraph.linkColor(()=>window.BraneUI.color("label"));}
+    if(currentTheory?.phases?.[currentPhase]) {drawQuiver(document.getElementById("quiverCanvas"),currentTheory.n_gauge,currentTheory.phases[currentPhase]);refreshSeibergColors();if(seibergGraph)seibergGraph.linkColor(()=>window.BraneUI.color("label"));}
     if(resultState.entries.length)renderResultsPage();
     if(drawState.matchEntry)displayDrawMatch(drawState.matchEntry);
 });
 window.addEventListener("brane:resource-opened",event=>{
     if(!currentTheory)return;
-    if(event.detail==="pmDetails") {
-        const p=currentTheory.phases[currentPhase];
-        if(p.pm_matrix)return;
-        const expected=sumExactNonnegativeIntegers(phaseToric(currentTheory,currentPhase).points.map(p=>p[2]));
-        const matrix=window.BranePerfectMatchings?.derive(p,{expected});
-        const box=document.getElementById("pmBox");box.replaceChildren();
-        if(!matrix){box.textContent="The matrix is not stored for this phase and cannot be reconstructed within the interactive limit. Exact available multiplicities remain in the toric diagram.";copyPayloads.pm_m=copyPayloads.pm_py="";return;}
-        const table=document.createElement("table");table.className="matching-table";
-        const header=document.createElement("tr");const first=document.createElement("th");first.textContent="Field";header.append(first);
-        for(let k=0;k<matrix[0].length;k++){const th=document.createElement("th");th.textContent=`p${k+1}`;header.append(th);}table.append(header);
-        const labels=chiralTeXLabels(p);
-        matrix.forEach((row,i)=>{const tr=document.createElement("tr"),th=document.createElement("th");th.textContent="\\("+labels[i]+"\\)";tr.append(th);row.forEach(v=>{const td=document.createElement("td");td.textContent=v;td.className=v?"one":"zero";tr.append(td);});table.append(tr);});box.append(table);typesetContainer(box);
-        const note=document.createElement("p");note.className="matching-note";note.textContent="Reconstructed exactly from the published bipartite tiling; rows retain its edge order.";box.insertAdjacentElement("afterend",note);document.querySelectorAll(".matching-note").forEach(e=>{if(e!==note)e.remove();});
-        copyPayloads.pm_py="P = "+JSON.stringify(matrix)+"\n# Reconstructed from the published bipartite tiling.";
-        copyPayloads.pm_m="{"+matrix.map(row=>"{"+row.join(", ")+"}").join(", ")+"}\n(* Reconstructed from the published bipartite tiling. *)";
-        return;
-    }
+    if(event.detail==="pmDetails") return renderDerivedMatchings(currentTheory, currentPhase);
     if(event.detail!=="seibergSection")return;
     if(!seibergGraph)prepareSeibergGraph(currentTheory);
     if(seibergGraph){seibergGraph.width(document.getElementById("seibergGraph").clientWidth);seibergGraph.resumeAnimation?.();}
 });
-window.addEventListener("brane:resource-closed",()=>seibergGraph?.pauseAnimation?.());
-window.addEventListener("resize",()=>{if(seibergGraph && document.getElementById("resourceDialog")?.open)seibergGraph.width(document.getElementById("seibergGraph").clientWidth);});
+window.addEventListener("brane:resource-closed", event => {
+    if (event.detail === "seibergSection") seibergGraph?.pauseAnimation?.();
+});
+window.addEventListener("resize",()=>{if(seibergGraph && window.BraneUI.openResourceId() === "seibergSection")seibergGraph.width(document.getElementById("seibergGraph").clientWidth);});
 document.getElementById("compactPhase")?.addEventListener("change",event=>selectPhase(Number(event.target.value)));
 function syncCompactPhases() {
     if(!currentTheory)return;

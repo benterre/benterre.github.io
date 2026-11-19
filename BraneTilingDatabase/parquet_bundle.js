@@ -45,7 +45,7 @@ function loadApplication() {
     if (applicationPromise) return applicationPromise;
     applicationPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "app.js?v=25";
+        script.src = "app.js?v=26";
         script.onload = resolve;
         script.onerror = () => reject(new Error("could not load app.js"));
         document.head.appendChild(script);
@@ -10346,7 +10346,7 @@ class BraneTilingApiDataset {
             const data = await this._request(`/theories/${encodeURIComponent(id)}`);
             const t = data.theory;
             if (!t || typeof t.id !== "string" || !Number.isSafeInteger(data.stored_phase_count)
-                    || data.stored_phase_count < 1 || !Number.isSafeInteger(t.n_phases)
+                    || data.stored_phase_count < 0 || !Number.isSafeInteger(t.n_phases)
                     || data.stored_phase_count > t.n_phases)
                 throw new Error("invalid theory header from the database API");
             t._available_phase_count = data.stored_phase_count;
